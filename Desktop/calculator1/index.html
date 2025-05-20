@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Score Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      color: #22223b;
+    }
+    .container {
+      max-width: 480px;
+      margin: 48px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(60, 72, 100, 0.12);
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #3a3a5a;
+      letter-spacing: -1px;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+      color: #4f4f6e;
+    }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #c7d2fe;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      background: #f1f5ff;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus {
+      border-color: #6366f1;
+      outline: none;
+    }
+    button {
+      background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #818cf8 0%, #6366f1 100%);
+    }
+    .step {
+      animation: fadeIn 0.5s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .fields-list {
+      margin-bottom: 16px;
+    }
+    .field-item {
+      background: #f3f4f6;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+    }
+    .score-output {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #4f46e5;
+      margin-top: 16px;
+      text-align: center;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0.5;}
+      60% { transform: scale(1.1);}
+      100% { transform: scale(1); opacity: 1;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <!-- App will be rendered here -->
+  </div>
+  <script>
+    // Step 1: Ask for calculator title
+    const app = document.getElementById('app');
+    let calculator = {
+      title: '',
+      fields: []
+    };
+    let step = 1;
+
+    function renderStep1() {
+      app.innerHTML = `
+        <div class="step">
+          <h1>Create Your Score Calculator</h1>
+          <form id="titleForm">
+            <label for="calcTitle">Calculator Title</label>
+            <input type="text" id="calcTitle" name="calcTitle" required placeholder="e.g. Exam Grader" maxlength="32"/>
+            <button type="submit">Next</button>
+          </form>
+        </div>
+      `;
+      document.getElementById('titleForm').onsubmit = (e) => {
+        e.preventDefault();
+        calculator.title = document.getElementById('calcTitle').value.trim();
+        if (calculator.title) {
+          step = 2;
+          renderStep2();
+        }
+      };
+    }
+
+    function renderStep2() {
+      app.innerHTML = `
+        <div class="step">
+          <h1>${calculator.title}</h1>
+          <form id="fieldForm">
+            <label for="fieldName">Field Name</label>
+            <input type="text" id="fieldName" name="fieldName" required placeholder="e.g. Homework" maxlength="24"/>
+            
+            <label for="fieldScore">Score Value</label>
+            <input type="number" id="fieldScore" name="fieldScore" required min="1" max="100" placeholder="e.g. 10"/>
+            
+            <label for="fieldType">Input Type</label>
+            <select id="fieldType" name="fieldType" required>
+              <option value="checkbox">Checkbox (Yes/No)</option>
+              <option value="select">Select (Multiple Choices)</option>
+              <option value="number">Number (User enters value)</option>
+            </select>
+            
+            <div id="optionsContainer" style="display:none;">
+              <label for="fieldOptions">Options (comma separated)</label>
+              <input type="text" id="fieldOptions" name="fieldOptions" placeholder="e.g. A,B,C"/>
+            </div>
+            
+            <button type="submit">Add Field</button>
+          </form>
+          <div class="fields-list" id="fieldsList"></div>
+          <button id="nextStepBtn" style="display:${calculator.fields.length ? 'block' : 'none'};margin-top:12px;">Next: Enter Values</button>
+        </div>
+      `;
+
+      // Show/hide options input based on field type
+      document.getElementById('fieldType').onchange = (e) => {
+        document.getElementById('optionsContainer').style.display = 
+          e.target.value === 'select' ? 'block' : 'none';
+      };
+
+      // Add field
+      document.getElementById('fieldForm').onsubmit = (e) => {
+        e.preventDefault();
+        const name = document.getElementById('fieldName').value.trim();
+        const score = parseInt(document.getElementById('fieldScore').value, 10);
+        const type = document.getElementById('fieldType').value;
+        let options = [];
+        if (type === 'select') {
+          options = document.getElementById('fieldOptions').value.split(',').map(opt => opt.trim()).filter(Boolean);
+          if (!options.length) {
+            alert('Please enter at least one option.');
+            return;
+          }
+        }
+        calculator.fields.push({ name, score, type, options });
+        renderStep2();
+      };
+
+      // Show list of added fields
+      const fieldsList = document.getElementById('fieldsList');
+      if (calculator.fields.length) {
+        fieldsList.innerHTML = calculator.fields.map((f, i) => `
+          <div class="field-item">
+            <span><b>${f.name}</b> (${f.type === 'checkbox' ? 'Yes/No' : f.type === 'select' ? 'Select' : 'Number'}) - <span style="color:#6366f1;">${f.score} pts</span></span>
+            <button style="background:#f87171;color:#fff;padding:4px 10px;font-size:0.95em;border-radius:5px;border:none;cursor:pointer;" onclick="removeField(${i})">Remove</button>
+          </div>
+        `).join('');
+      } else {
+        fieldsList.innerHTML = `<div style="color:#a0aec0;">No fields added yet.</div>`;
+      }
+
+      // Remove field function
+      window.removeField = (idx) => {
+        calculator.fields.splice(idx, 1);
+        renderStep2();
+      };
+
+      // Next step
+      document.getElementById('nextStepBtn')?.addEventListener('click', () => {
+        step = 3;
+        renderStep3();
+      });
+    }
+
+    function renderStep3() {
+      app.innerHTML = `
+        <div class="step">
+          <h1>${calculator.title}</h1>
+          <form id="valuesForm">
+            ${calculator.fields.map((f, i) => {
+              if (f.type === 'checkbox') {
+                return `
+                  <label>
+                    <input type="checkbox" name="field_${i}" value="1" />
+                    ${f.name} <span style="color:#6366f1;">(+${f.score})</span>
+                  </label>
+                `;
+              } else if (f.type === 'select') {
+                return `
+                  <label for="field_${i}">${f.name} <span style="color:#6366f1;">(+${f.score})</span></label>
+                  <select name="field_${i}" id="field_${i}" required>
+                    <option value="">Select...</option>
+                    ${f.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                  </select>
+                `;
+              } else if (f.type === 'number') {
+                return `
+                  <label for="field_${i}">${f.name} <span style="color:#6366f1;">(0 to ${f.score})</span></label>
+                  <input type="number" name="field_${i}" id="field_${i}" min="0" max="${f.score}" required placeholder="Enter value"/>
+                `;
+              }
+              return '';
+            }).join('')}
+            <button type="submit" style="margin-top:18px;">Calculate Total Score</button>
+          </form>
+          <div id="scoreResult"></div>
+          <button id="restartBtn" style="margin-top:18px;background:#e0e7ff;color:#6366f1;">Start Over</button>
+        </div>
+      `;
+
+      document.getElementById('restartBtn').onclick = () => {
+        calculator = { title: '', fields: [] };
+        step = 1;
+        renderStep1();
+      };
+
+      document.getElementById('valuesForm').onsubmit = (e) => {
+        e.preventDefault();
+        let total = 0;
+        calculator.fields.forEach((f, i) => {
+          const fieldName = `field_${i}`;
+          if (f.type === 'checkbox') {
+            if (e.target[fieldName].checked) total += f.score;
+          } else if (f.type === 'select') {
+            if (e.target[fieldName].value) total += f.score;
+          } else if (f.type === 'number') {
+            const val = parseFloat(e.target[fieldName].value);
+            if (!isNaN(val)) total += Math.min(val, f.score);
+          }
+        });
+        document.getElementById('scoreResult').innerHTML = `
+          <div class="score-output" style="animation:pop 0.5s;">
+            Total Score: <span>${total}</span>
+          </div>
+        `;
+      };
+    }
+
+    renderStep1();
+  </script>
+</body>
+</html> 
