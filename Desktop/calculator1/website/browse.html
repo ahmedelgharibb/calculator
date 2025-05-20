@@ -3,88 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Custom Score Calculator</title>
+  <title>Browse Calculators</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <style>
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(30, 41, 59, 0.18);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.2s;
+    body {
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      color: #22223b;
     }
-    .modal-content {
+    .container {
+      max-width: 600px;
+      margin: 48px auto;
       background: #fff;
       border-radius: 18px;
-      box-shadow: 0 8px 32px rgba(60, 72, 100, 0.18);
+      box-shadow: 0 8px 32px rgba(60, 72, 100, 0.12);
       padding: 32px 18px;
-      max-width: 600px;
-      width: 98vw;
-      max-height: 90vh;
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #3a3a5a;
+      letter-spacing: -1px;
+    }
+    .calc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .calc-item {
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(60, 72, 100, 0.06);
+      cursor: pointer;
+      transition: box-shadow 0.2s, background 0.2s;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #3a3a5a;
+    }
+    .calc-item:hover {
+      background: #e0e7ff;
+      box-shadow: 0 4px 16px rgba(60, 72, 100, 0.10);
+    }
+    .fields-value-list {
       display: flex;
       flex-direction: column;
       gap: 18px;
-      position: relative;
+      margin-top: 18px;
     }
-    .close-modal-btn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
+    .field-value-row label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+      color: #4f4f6e;
+    }
+    .field-value-row select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1.5px solid #c7d2fe;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #f1f5ff;
+      transition: border 0.2s;
+    }
+    .field-value-row select:focus {
+      border-color: #6366f1;
+      outline: none;
+    }
+    .score-output {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #4f46e5;
+      margin-top: 16px;
+      text-align: center;
+    }
+    .back-btn {
       background: #e0e7ff;
       color: #6366f1;
       border: none;
       border-radius: 8px;
-      padding: 6px 14px;
-      font-size: 1.1rem;
+      padding: 10px 0;
+      font-size: 1.05rem;
       font-weight: 700;
       cursor: pointer;
+      margin-top: 18px;
+      margin-bottom: 0;
       transition: background 0.2s;
     }
-    .close-modal-btn:hover {
+    .back-btn:hover {
       background: #c7d2fe;
+    }
+    @media (max-width: 700px) {
+      .container {
+        max-width: 99vw;
+        padding: 8px 1vw;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container" id="app"></div>
-  <button id="browseBtn" style="margin: 0 auto 24px auto; display: block; background: #e0e7ff; color: #6366f1; border: none; border-radius: 8px; padding: 12px 32px; font-size: 1.1rem; font-weight: 700; cursor: pointer;">Browse Calculators</button>
-  <div id="browseModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <button class="close-modal-btn" id="closeBrowseModal">Close</button>
-      <h1>Browse Calculators</h1>
-      <div id="calcList" class="calc-list"></div>
-      <div id="calcDetail" style="display:none;"></div>
-    </div>
+  <div class="container" id="app">
+    <h1>Browse Calculators</h1>
+    <div id="calcList" class="calc-list"></div>
+    <div id="calcDetail" style="display:none;"></div>
   </div>
-  <script src="script.js"></script>
   <script>
-    // --- Browse Calculators Modal Logic ---
     const API_BASE = '/api'; // Change to your backend URL if needed
-    const browseBtn = document.getElementById('browseBtn');
-    const browseModal = document.getElementById('browseModal');
-    const closeBrowseModal = document.getElementById('closeBrowseModal');
     const calcList = document.getElementById('calcList');
     const calcDetail = document.getElementById('calcDetail');
 
-    browseBtn.onclick = () => {
-      browseModal.style.display = 'flex';
-      fetchCalculators();
-    };
-    closeBrowseModal.onclick = () => {
-      browseModal.style.display = 'none';
-      calcDetail.style.display = 'none';
-      calcList.style.display = 'flex';
-    };
-
     async function fetchCalculators() {
       calcList.innerHTML = 'Loading...';
-      calcDetail.style.display = 'none';
-      calcList.style.display = 'flex';
       const res = await fetch(`${API_BASE}/calculators`);
       const calculators = await res.json();
       if (!calculators.length) {
@@ -147,6 +182,8 @@
         `;
       };
     }
+
+    fetchCalculators();
   </script>
 </body>
 </html> 
