@@ -1,4 +1,189 @@
-<html>
-<p1>Hello Wkkkksorld</p1>
-<p2>This is a test</p2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Score Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(30, 41, 59, 0.18);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(60, 72, 100, 0.18);
+      padding: 32px 18px;
+      max-width: 600px;
+      width: 98vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+    .close-modal-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: #e0e7ff;
+      color: #6366f1;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .close-modal-btn:hover {
+      background: #c7d2fe;
+    }
+    .modal[aria-hidden="true"] {
+      display: none !important;
+    }
+    @media (max-width: 700px) {
+      .modal-content {
+        padding: 16px 4px;
+        max-width: 99vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+  <button id="browseBtn" style="margin: 0 auto 24px auto; display: block; background: #e0e7ff; color: #6366f1; border: none; border-radius: 8px; padding: 12px 32px; font-size: 1.1rem; font-weight: 700; cursor: pointer;">Browse Calculators</button>
+  <div id="browseModal" class="modal" aria-hidden="true">
+    <div class="modal-content" tabindex="-1">
+      <button class="close-modal-btn" id="closeBrowseModal" aria-label="Close">Close</button>
+      <h1>Browse Calculators</h1>
+      <div id="calcList" class="calc-list"></div>
+      <div id="calcDetail" style="display:none;"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  <script>
+    // --- Browse Calculators Modal Logic ---
+    // Use /api/calculators for Vercel serverless backend
+    const API_BASE = '/api';
+    const browseBtn = document.getElementById('browseBtn');
+    const browseModal = document.getElementById('browseModal');
+    const closeBrowseModal = document.getElementById('closeBrowseModal');
+    const calcList = document.getElementById('calcList');
+    const calcDetail = document.getElementById('calcDetail');
+
+    // Open modal
+    browseBtn.onclick = () => {
+      browseModal.style.display = 'flex';
+      browseModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      fetchCalculators();
+      setTimeout(() => document.querySelector('.modal-content').focus(), 100);
+    };
+    // Close modal
+    function closeModal() {
+      browseModal.style.display = 'none';
+      browseModal.setAttribute('aria-hidden', 'true');
+      calcDetail.style.display = 'none';
+      calcList.style.display = 'flex';
+      document.body.style.overflow = '';
+    }
+    closeBrowseModal.onclick = closeModal;
+    // Close modal on outside click
+    browseModal.onclick = (e) => {
+      if (e.target === browseModal) closeModal();
+    };
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && browseModal.style.display === 'flex') closeModal();
+    });
+
+    async function fetchCalculators() {
+      calcList.innerHTML = 'Loading...';
+      calcDetail.style.display = 'none';
+      calcList.style.display = 'flex';
+      try {
+        const res = await fetch(`${API_BASE}/calculators`);
+        if (!res.ok) throw new Error('Failed to fetch calculators');
+        const calculators = await res.json();
+        if (!calculators.length) {
+          calcList.innerHTML = '<div style="color:#a0aec0;">No calculators found. Create one to get started!</div>';
+          return;
+        }
+        calcList.innerHTML = calculators.map(calc => `
+          <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}">
+            ${calc.title}
+            <div style="font-size:0.95em;color:#7b7b9d;font-weight:400;margin-top:2px;">${new Date(calc.created_at).toLocaleString()}</div>
+          </div>
+        `).join('');
+        document.querySelectorAll('.calc-item').forEach(item => {
+          item.onclick = () => showCalculator(item.getAttribute('data-id'));
+          item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') item.click(); };
+        });
+      } catch (err) {
+        calcList.innerHTML = `<div style='color:#f87171;'>Error loading calculators.<br>${err.message}</div>`;
+      }
+    }
+
+    async function showCalculator(id) {
+      calcList.style.display = 'none';
+      calcDetail.style.display = 'block';
+      calcDetail.innerHTML = 'Loading...';
+      try {
+        const res = await fetch(`${API_BASE}/calculators/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch calculator');
+        const calc = await res.json();
+        calcDetail.innerHTML = `
+          <h2 style="margin-bottom:0.5em;">${calc.title}</h2>
+          <form id="valuesForm">
+            <div class="fields-value-list">
+              ${calc.fields.map((f, i) => `
+                <div class="field-value-row">
+                  <label for="field_${i}">${f.name}</label>
+                  <select name="field_${i}" id="field_${i}" required>
+                    <option value="">Select...</option>
+                    ${f.options.map(opt => `<option value="${opt.value}">${opt.label} (+${opt.value})</option>`).join('')}
+                  </select>
+                </div>
+              `).join('')}
+            </div>
+            <button type="submit" style="margin-top:18px;">Calculate Total Score</button>
+          </form>
+          <div id="scoreResult"></div>
+          <button class="back-btn" id="backBtn">Back to List</button>
+        `;
+        document.getElementById('backBtn').onclick = () => {
+          calcDetail.style.display = 'none';
+          calcList.style.display = 'flex';
+          fetchCalculators();
+        };
+        document.getElementById('valuesForm').onsubmit = (e) => {
+          e.preventDefault();
+          let total = 0;
+          calc.fields.forEach((f, i) => {
+            const fieldName = `field_${i}`;
+            const val = parseFloat(e.target[fieldName].value);
+            if (!isNaN(val)) total += val;
+          });
+          document.getElementById('scoreResult').innerHTML = `
+            <div class="score-output" style="animation:pop 0.5s;">
+              Total Score: <span>${total}</span>
+            </div>
+          `;
+        };
+      } catch (err) {
+        calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculators()'>Back to List</button>`;
+      }
+    }
+  </script>
+</body>
 </html>
