@@ -58,66 +58,49 @@ function renderStep2() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="create-calc-bg">
-      <div class="glass-card step animate-fadeIn">
-        <div class="progress-indicator">Step 2 of 3</div>
-        <h1 class="glass-title">${calculator.title}</h1>
+      <div class="glass-card step animate-fadeIn" style="max-width:700px;margin:40px auto 0 auto;">
+        <h1 class="glass-title" style="font-size:2rem;text-align:center;margin-bottom:1.2em;">Create Your Calculator</h1>
         <form id="fieldsForm" autocomplete="off">
-          <table class="fields-table glass-table">
-            <thead>
-              <tr>
-                <th>Field Name</th>
-                <th>Options</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="fieldsTableBody">
-              ${calculator.fields.map((f, i) => `
-                <tr>
-                  <td>
-                    <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-option-input" maxlength="24" required />
-                  </td>
-                  <td>
-                    <div class="options-list" data-idx="${i}">
-                      ${(f.options||[]).map((opt, oi) => `
-                        <div class="option-row">
-                          <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-option-input" placeholder="Label" maxlength="18" />
-                          <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-option-input" placeholder="Score" />
-                          <button type="button" class="remove-option-btn glass-btn glass-btn-sm" data-idx="${i}" data-oidx="${oi}">✕</button>
-                        </div>
-                      `).join('')}
-                      <div class="option-row">
-                        <input type="text" id="newOptionLabel${i}" placeholder="Label" maxlength="18" class="glass-option-input" />
-                        <input type="number" id="newOptionValue${i}" placeholder="Score" class="glass-option-input" />
-                        <button type="button" class="add-option-btn glass-btn glass-btn-sm" data-idx="${i}">Add</button>
-                      </div>
+          <div style="background:#fff;border-radius:14px;padding:28px 24px 18px 24px;box-shadow:0 2px 8px rgba(60,72,100,0.06);margin-bottom:28px;">
+            <label for="calcTitle" style="font-weight:700;font-size:1.1em;display:block;margin-bottom:8px;">Calculator Title</label>
+            <input type="text" id="calcTitle" name="calcTitle" required placeholder="Enter calculator name" maxlength="32" class="glass-input" value="${calculator.title || ''}" style="width:100%;margin-bottom:0;"/>
+          </div>
+          <div id="fieldsList">
+            ${calculator.fields.map((f, i) => `
+              <div class="field-card" style="background:#f8fafc;border-radius:12px;padding:20px 18px 16px 18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(60,72,100,0.04);position:relative;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                  <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-option-input" maxlength="24" required style="flex:1;font-weight:600;font-size:1.08em;" placeholder="Field label (e.g. Homework, Quiz)"/>
+                  <button type="button" class="remove-field-btn" data-idx="${i}" style="color:#ef4444;background:none;border:none;font-weight:600;font-size:1em;">Remove Field</button>
+                </div>
+                <div class="options-list" data-idx="${i}" style="display:flex;flex-direction:column;gap:10px;">
+                  ${(f.options||[]).map((opt, oi) => `
+                    <div class="option-row" style="display:flex;gap:10px;align-items:center;">
+                      <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-option-input" placeholder="Option label (A, A+, B, etc.)" maxlength="18" style="flex:2;" />
+                      <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-option-input" placeholder="Value" style="flex:1;" />
+                      <button type="button" class="remove-option-btn" data-idx="${i}" data-oidx="${oi}" style="color:#ef4444;background:none;border:none;font-size:1.1em;">✕</button>
                     </div>
-                  </td>
-                  <td>
-                    <button type="button" class="remove-field-btn glass-btn glass-btn-sm" data-idx="${i}">Remove</button>
-                  </td>
-                </tr>
-              `).join('')}
-              <tr>
-                <td><input type="text" id="newFieldName" placeholder="e.g. Homework" maxlength="24" class="glass-option-input" /></td>
-                <td colspan="2">
-                  <div id="newOptionsList" style="display:block;"></div>
-                  <div id="newOptionInputs" class="option-row">
-                    <input type="text" id="newOptionLabel" placeholder="Label" maxlength="18" class="glass-option-input" />
-                    <input type="number" id="newOptionValue" placeholder="Score" class="glass-option-input" />
-                    <button type="button" id="addNewOptionBtn" class="glass-btn glass-btn-sm">Add</button>
+                  `).join('')}
+                  <div class="option-row" style="display:flex;gap:10px;align-items:center;">
+                    <input type="text" id="newOptionLabel${i}" placeholder="Option label (A, A+, B, etc.)" maxlength="18" class="glass-option-input" style="flex:2;" />
+                    <input type="number" id="newOptionValue${i}" placeholder="Value" class="glass-option-input" style="flex:1;" />
+                    <button type="button" class="add-option-btn glass-btn glass-btn-sm" data-idx="${i}" style="min-width:60px;">+ Add Option</button>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <button type="button" id="addFieldBtn" class="glass-btn" style="margin-top:10px;">Add Field</button>
-          <button type="submit" class="glass-btn next-btn" style="margin-top:18px;${calculator.fields.length ? '' : 'display:none;'}">Next: Fill Values</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="field-card" style="background:#f8fafc;border-radius:12px;padding:20px 18px 16px 18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(60,72,100,0.04);">
+            <input type="text" id="newFieldName" placeholder="Field label (e.g. Homework, Quiz)" maxlength="24" class="glass-option-input" style="width:100%;margin-bottom:10px;" />
+            <div id="newOptionsList"></div>
+            <div id="newOptionInputs" class="option-row" style="display:flex;gap:10px;align-items:center;">
+              <input type="text" id="newOptionLabel" placeholder="Option label (A, A+, B, etc.)" maxlength="18" class="glass-option-input" style="flex:2;" />
+              <input type="number" id="newOptionValue" placeholder="Value" class="glass-option-input" style="flex:1;" />
+              <button type="button" id="addNewOptionBtn" class="glass-btn glass-btn-sm" style="min-width:60px;">+ Add Option</button>
+            </div>
+          </div>
+          <button type="button" id="addFieldBtn" class="glass-btn" style="margin-bottom:18px;width:160px;">+ Add Field</button>
+          <button type="submit" class="glass-btn next-btn" style="width:100%;font-size:1.15em;padding:16px 0;background:#111827;color:#fff;font-weight:700;">Save Calculator</button>
         </form>
-      </div>
-      <div class="bg-illustration">
-        <svg class="svg-bg-1" viewBox="0 0 300 300"><ellipse cx="150" cy="150" rx="120" ry="60" fill="#e0e7ff" opacity="0.35"/></svg>
-        <svg class="svg-bg-2" viewBox="0 0 200 200"><rect x="40" y="40" width="120" height="120" rx="40" fill="#6366f1" opacity="0.10"/></svg>
-        <svg class="svg-bg-3" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="#a5b4fc" opacity="0.13"/></svg>
       </div>
     </div>
   `;
@@ -128,10 +111,10 @@ function renderStep2() {
     const list = document.getElementById('newOptionsList');
     if (!list) return;
     list.innerHTML = newOptions.map((opt, oi) => `
-      <div class="option-row">
-        <input type="text" value="${opt.label}" data-oidx="${oi}" class="new-option-label-input glass-option-input" maxlength="18" placeholder="Label" />
-        <input type="number" value="${opt.value}" data-oidx="${oi}" class="new-option-value-input glass-option-input" placeholder="Score" />
-        <button type="button" class="remove-new-option-btn" data-oidx="${oi}">✕</button>
+      <div class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+        <input type="text" value="${opt.label}" data-oidx="${oi}" class="new-option-label-input glass-option-input" maxlength="18" placeholder="Option label (A, A+, B, etc.)" style="flex:2;" />
+        <input type="number" value="${opt.value}" data-oidx="${oi}" class="new-option-value-input glass-option-input" placeholder="Value" style="flex:1;" />
+        <button type="button" class="remove-new-option-btn" data-oidx="${oi}" style="color:#ef4444;background:none;border:none;font-size:1.1em;">✕</button>
       </div>
     `).join('');
   }
