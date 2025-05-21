@@ -268,14 +268,14 @@ function renderStep3() {
     if (calculatorSaved) return;
     const saveStatus = document.getElementById('saveStatus');
     saveStatus.textContent = 'Saving...';
+    console.log('[Supabase] Saving calculator:', calculator);
     try {
       // Save calculator to Supabase
-      const { data, error } = await window.supabase
+      const { data, error } = await supabase
         .from('calculators')
         .insert([
           {
             title: calculator.title,
-            // You may need to adjust this if your Supabase schema expects fields as a relation
             fields: calculator.fields.map((f, i) => ({
               name: f.name,
               field_order: i,
@@ -287,13 +287,18 @@ function renderStep3() {
             }))
           }
         ]);
-      if (error) throw error;
+      if (error) {
+        console.error('[Supabase] Error saving calculator:', error);
+        throw error;
+      }
+      console.log('[Supabase] Calculator saved successfully:', data);
       calculatorSaved = true;
       saveStatus.style.color = '#10b981';
       saveStatus.textContent = 'Calculator saved! You can access it from Browse Calculators.';
     } catch (err) {
       saveStatus.style.color = '#f87171';
       saveStatus.textContent = 'Error saving calculator: ' + (err.message || err);
+      console.error('[Supabase] Error:', err);
     }
   };
 }
