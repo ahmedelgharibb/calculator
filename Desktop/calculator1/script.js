@@ -236,6 +236,8 @@ function renderStep3() {
         <button type="submit" style="margin-top:18px;">Calculate Total Score</button>
       </form>
       <div id="scoreResult"></div>
+      <button id="saveCalculatorBtn" style="margin-top:18px;background:#10b981;color:#fff;">Save Calculator</button>
+      <div id="saveStatus" style="margin-top:10px;"></div>
       <button id="restartBtn" style="margin-top:18px;background:#e0e7ff;color:#6366f1;">Start Over</button>
     </div>
   `;
@@ -259,6 +261,40 @@ function renderStep3() {
         Total Score: <span>${total}</span>
       </div>
     `;
+  };
+
+  let calculatorSaved = false;
+  document.getElementById('saveCalculatorBtn').onclick = async () => {
+    if (calculatorSaved) return;
+    const saveStatus = document.getElementById('saveStatus');
+    saveStatus.textContent = 'Saving...';
+    try {
+      // Save calculator to Supabase
+      const { data, error } = await window.supabase
+        .from('calculators')
+        .insert([
+          {
+            title: calculator.title,
+            // You may need to adjust this if your Supabase schema expects fields as a relation
+            fields: calculator.fields.map((f, i) => ({
+              name: f.name,
+              field_order: i,
+              options: f.options.map((opt, j) => ({
+                label: opt.label,
+                value: opt.value,
+                option_order: j
+              }))
+            }))
+          }
+        ]);
+      if (error) throw error;
+      calculatorSaved = true;
+      saveStatus.style.color = '#10b981';
+      saveStatus.textContent = 'Calculator saved! You can access it from Browse Calculators.';
+    } catch (err) {
+      saveStatus.style.color = '#f87171';
+      saveStatus.textContent = 'Error saving calculator: ' + (err.message || err);
+    }
   };
 }
 
