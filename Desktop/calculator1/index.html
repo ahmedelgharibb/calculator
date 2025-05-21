@@ -7,196 +7,137 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(30, 41, 59, 0.18);
-      z-index: 1000;
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f6f8fa;
+      color: #22223b;
+    }
+    header {
+      background: #6366f1;
+      color: #fff;
+      padding: 0 32px;
+      height: 64px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      transition: opacity 0.2s;
+      box-shadow: 0 2px 8px rgba(60, 72, 100, 0.08);
+      z-index: 10;
+      position: sticky;
+      top: 0;
     }
-    .modal-content {
+    .logo {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-right: 32px;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(60, 72, 100, 0.12);
+    }
+    nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    nav a {
+      color: #e0e7ff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+    nav a.active, nav a:hover {
       background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 8px 32px rgba(60, 72, 100, 0.18);
-      padding: 32px 18px;
-      max-width: 600px;
-      width: 98vw;
-      max-height: 90vh;
-      overflow-y: auto;
+      color: #6366f1;
+    }
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    aside {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      padding: 32px 0 0 0;
       display: flex;
       flex-direction: column;
       gap: 18px;
-      position: relative;
+      box-shadow: 2px 0 8px rgba(60, 72, 100, 0.04);
     }
-    .close-modal-btn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      background: #e0e7ff;
+    .sidebar-link {
       color: #6366f1;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 14px;
+      font-weight: 600;
       font-size: 1.1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
+      padding: 12px 32px;
+      border-radius: 8px 0 0 8px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      margin-right: 8px;
     }
-    .close-modal-btn:hover {
-      background: #c7d2fe;
+    .sidebar-link.active, .sidebar-link:hover {
+      background: #e0e7ff;
+      color: #22223b;
     }
-    .modal[aria-hidden="true"] {
-      display: none !important;
+    main {
+      flex: 1;
+      padding: 48px 32px 32px 32px;
+      background: #f6f8fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    footer {
+      background: #fff;
+      color: #6366f1;
+      text-align: center;
+      padding: 24px 0 12px 0;
+      font-size: 1.1rem;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 48px;
+      box-shadow: 0 -2px 8px rgba(60, 72, 100, 0.04);
+    }
+    @media (max-width: 900px) {
+      aside { display: none; }
+      main { padding: 32px 8px; }
     }
     @media (max-width: 700px) {
-      .modal-content {
-        padding: 16px 4px;
-        max-width: 99vw;
-      }
+      header { padding: 0 8px; }
+      .container { padding: 0 4px; }
     }
   </style>
 </head>
 <body>
-  <div class="container" id="app"></div>
-  <button id="browseBtn" style="margin: 0 auto 24px auto; display: block; background: #e0e7ff; color: #6366f1; border: none; border-radius: 8px; padding: 12px 32px; font-size: 1.1rem; font-weight: 700; cursor: pointer;">Browse Calculators</button>
-  <div id="browseModal" class="modal" aria-hidden="true">
-    <div class="modal-content" tabindex="-1">
-      <button class="close-modal-btn" id="closeBrowseModal" aria-label="Close">Close</button>
-      <h1>Browse Calculators</h1>
-      <div id="calcList" class="calc-list"></div>
-      <div id="calcDetail" style="display:none;"></div>
-    </div>
+  <header>
+    <span class="logo">ScoreCalc</span>
+    <nav>
+      <a href="#" class="active">Home</a>
+      <a href="#create">Create Calculator</a>
+      <a href="#browse">Browse Calculators</a>
+      <a href="#about">About</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside>
+      <a href="#" class="sidebar-link active">🏠 Home</a>
+      <a href="#create" class="sidebar-link">➕ Create Calculator</a>
+      <a href="#browse" class="sidebar-link">🔍 Browse Calculators</a>
+      <a href="#about" class="sidebar-link">ℹ️ About</a>
+    </aside>
+    <main>
+      <div class="container" id="app"></div>
+    </main>
   </div>
+  <footer>
+    &copy; 2024 ScoreCalc &mdash; Built with Supabase &amp; Vercel
+  </footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="script.js"></script>
-  <script>
-    // --- Supabase Integration ---
-    // Set your Supabase project URL and anon key below
-    const SUPABASE_URL = 'https://jckwvrzcjuggnfcbogrr.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impja3d2cnpjanVnZ25mY2JvZ3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTIwMTYsImV4cCI6MjA1NjI2ODAxNn0.p2a0om1X40AJVhldUdtaU-at0SSPz6hLbrAg-ELHcnY';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const browseBtn = document.getElementById('browseBtn');
-    const browseModal = document.getElementById('browseModal');
-    const closeBrowseModal = document.getElementById('closeBrowseModal');
-    const calcList = document.getElementById('calcList');
-    const calcDetail = document.getElementById('calcDetail');
-
-    // Open modal
-    browseBtn.onclick = () => {
-      browseModal.style.display = 'flex';
-      browseModal.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      fetchCalculators();
-      setTimeout(() => document.querySelector('.modal-content').focus(), 100);
-    };
-    // Close modal
-    function closeModal() {
-      browseModal.style.display = 'none';
-      browseModal.setAttribute('aria-hidden', 'true');
-      calcDetail.style.display = 'none';
-      calcList.style.display = 'flex';
-      document.body.style.overflow = '';
-    }
-    closeBrowseModal.onclick = closeModal;
-    // Close modal on outside click
-    browseModal.onclick = (e) => {
-      if (e.target === browseModal) closeModal();
-    };
-    // Close modal on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && browseModal.style.display === 'flex') closeModal();
-    });
-
-    async function fetchCalculators() {
-      calcList.innerHTML = 'Loading...';
-      calcDetail.style.display = 'none';
-      calcList.style.display = 'flex';
-      try {
-        // Fetch calculators with fields and options using Supabase
-        const { data: calculators, error } = await supabase
-          .from('calculators')
-          .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-        if (!calculators.length) {
-          calcList.innerHTML = '<div style="color:#a0aec0;">No calculators found. Create one to get started!</div>';
-          return;
-        }
-        calcList.innerHTML = calculators.map(calc => `
-          <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}">
-            ${calc.title}
-            <div style="font-size:0.95em;color:#7b7b9d;font-weight:400;margin-top:2px;">${new Date(calc.created_at).toLocaleString()}</div>
-          </div>
-        `).join('');
-        document.querySelectorAll('.calc-item').forEach(item => {
-          item.onclick = () => showCalculator(item.getAttribute('data-id'));
-          item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') item.click(); };
-        });
-      } catch (err) {
-        calcList.innerHTML = `<div style='color:#f87171;'>Error loading calculators.<br>${err.message}</div>`;
-      }
-    }
-
-    async function showCalculator(id) {
-      calcList.style.display = 'none';
-      calcDetail.style.display = 'block';
-      calcDetail.innerHTML = 'Loading...';
-      try {
-        // Fetch a single calculator with fields and options using Supabase
-        const { data: calculators, error } = await supabase
-          .from('calculators')
-          .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
-          .eq('id', id)
-          .limit(1);
-        if (error) throw error;
-        const calc = calculators && calculators[0];
-        if (!calc) throw new Error('Calculator not found');
-        calcDetail.innerHTML = `
-          <h2 style="margin-bottom:0.5em;">${calc.title}</h2>
-          <form id="valuesForm">
-            <div class="fields-value-list">
-              ${calc.fields.map((f, i) => `
-                <div class="field-value-row">
-                  <label for="field_${i}">${f.name}</label>
-                  <select name="field_${i}" id="field_${i}" required>
-                    <option value="">Select...</option>
-                    ${f.options.map(opt => `<option value="${opt.value}">${opt.label} (+${opt.value})</option>`).join('')}
-                  </select>
-                </div>
-              `).join('')}
-            </div>
-            <button type="submit" style="margin-top:18px;">Calculate Total Score</button>
-          </form>
-          <div id="scoreResult"></div>
-          <button class="back-btn" id="backBtn">Back to List</button>
-        `;
-        document.getElementById('backBtn').onclick = () => {
-          calcDetail.style.display = 'none';
-          calcList.style.display = 'flex';
-          fetchCalculators();
-        };
-        document.getElementById('valuesForm').onsubmit = (e) => {
-          e.preventDefault();
-          let total = 0;
-          calc.fields.forEach((f, i) => {
-            const fieldName = `field_${i}`;
-            const val = parseFloat(e.target[fieldName].value);
-            if (!isNaN(val)) total += val;
-          });
-          document.getElementById('scoreResult').innerHTML = `
-            <div class="score-output" style="animation:pop 0.5s;">
-              Total Score: <span>${total}</span>
-            </div>
-          `;
-        };
-      } catch (err) {
-        calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculators()'>Back to List</button>`;
-      }
-    }
-  </script>
 </body>
 </html>

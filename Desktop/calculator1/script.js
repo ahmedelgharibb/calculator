@@ -321,6 +321,169 @@ function renderStep3() {
   };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderStep1();
-}); 
+// SPA Navigation and Section Rendering
+const appContainer = document.getElementById('app');
+
+function renderHome() {
+  appContainer.innerHTML = `
+    <section style="text-align:center;padding:48px 0 32px 0;">
+      <h1 style="font-size:2.6rem;font-weight:900;color:#6366f1;margin-bottom:0.3em;">Welcome to ScoreCalc</h1>
+      <p style="font-size:1.3rem;color:#4b5563;max-width:600px;margin:0 auto 1.5em auto;">Create, save, and reuse custom score calculators for exams, assignments, or anything you want. Fast, beautiful, and always available in the cloud.</p>
+      <a href="#create" class="sidebar-link active" style="display:inline-block;font-size:1.2rem;padding:16px 40px;margin-top:18px;background:#6366f1;color:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(60,72,100,0.08);font-weight:700;transition:background 0.2s;">Get Started</a>
+    </section>
+    <section style="display:flex;flex-wrap:wrap;gap:32px;justify-content:center;margin-top:32px;">
+      <div style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(60,72,100,0.06);padding:32px 24px;max-width:320px;flex:1 1 260px;">
+        <h2 style="color:#6366f1;font-size:1.3rem;margin-bottom:0.5em;">🛠️ Build Custom Calculators</h2>
+        <p style="color:#4b5563;">Add fields, options, and scoring logic to match your needs. Save and reuse anytime.</p>
+      </div>
+      <div style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(60,72,100,0.06);padding:32px 24px;max-width:320px;flex:1 1 260px;">
+        <h2 style="color:#6366f1;font-size:1.3rem;margin-bottom:0.5em;">☁️ Cloud Storage</h2>
+        <p style="color:#4b5563;">Your calculators are securely stored in the cloud. Access them from any device, anytime.</p>
+      </div>
+      <div style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(60,72,100,0.06);padding:32px 24px;max-width:320px;flex:1 1 260px;">
+        <h2 style="color:#6366f1;font-size:1.3rem;margin-bottom:0.5em;">✨ Minimal & Modern</h2>
+        <p style="color:#4b5563;">Enjoy a clean, distraction-free interface designed for speed and clarity.</p>
+      </div>
+    </section>
+  `;
+}
+
+function renderAbout() {
+  appContainer.innerHTML = `
+    <section style="max-width:700px;margin:0 auto;padding:48px 0 32px 0;">
+      <h1 style="font-size:2.2rem;font-weight:900;color:#6366f1;margin-bottom:0.3em;">About ScoreCalc</h1>
+      <p style="font-size:1.15rem;color:#4b5563;">ScoreCalc is a modern web app for building, saving, and reusing custom score calculators. Built with Supabase, Vercel, and love. Perfect for teachers, students, and anyone who needs flexible scoring tools.</p>
+      <ul style="color:#6366f1;font-size:1.1rem;margin-top:2em;line-height:2;">
+        <li>🔒 100% privacy: your data is yours</li>
+        <li>💡 Open source and free to use</li>
+        <li>🌎 Access from any device</li>
+      </ul>
+      <p style="margin-top:2em;color:#4b5563;">Made by <a href="https://github.com/ahmedelgharibb" target="_blank" style="color:#6366f1;text-decoration:underline;">Ahmed El Gharib</a></p>
+    </section>
+  `;
+}
+
+function renderBrowse() {
+  // Reuse the modal logic, but render inline in the main area
+  appContainer.innerHTML = `
+    <section style="max-width:700px;margin:0 auto;padding:48px 0 32px 0;">
+      <h1 style="font-size:2.2rem;font-weight:900;color:#6366f1;margin-bottom:0.3em;">Browse Calculators</h1>
+      <div id="calcList" class="calc-list"></div>
+      <div id="calcDetail" style="display:none;"></div>
+    </section>
+  `;
+  fetchCalculatorsInline();
+}
+
+async function fetchCalculatorsInline() {
+  const calcList = document.getElementById('calcList');
+  const calcDetail = document.getElementById('calcDetail');
+  calcList.innerHTML = 'Loading...';
+  calcDetail.style.display = 'none';
+  try {
+    const { data: calculators, error } = await supabase
+      .from('calculators')
+      .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!calculators.length) {
+      calcList.innerHTML = '<div style="color:#a0aec0;">No calculators found. Create one to get started!</div>';
+      return;
+    }
+    calcList.innerHTML = calculators.map(calc => `
+      <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:12px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
+        <div style="font-size:1.2rem;font-weight:700;color:#6366f1;">${calc.title}</div>
+        <div style="font-size:0.98em;color:#7b7b9d;font-weight:400;margin-top:2px;">${new Date(calc.created_at).toLocaleString()}</div>
+      </div>
+    `).join('');
+    document.querySelectorAll('.calc-item').forEach(item => {
+      item.onclick = () => showCalculatorInline(item.getAttribute('data-id'));
+      item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') item.click(); };
+    });
+  } catch (err) {
+    calcList.innerHTML = `<div style='color:#f87171;'>Error loading calculators.<br>${err.message}</div>`;
+  }
+}
+
+async function showCalculatorInline(id) {
+  const calcList = document.getElementById('calcList');
+  const calcDetail = document.getElementById('calcDetail');
+  calcList.style.display = 'none';
+  calcDetail.style.display = 'block';
+  calcDetail.innerHTML = 'Loading...';
+  try {
+    const { data: calculators, error } = await supabase
+      .from('calculators')
+      .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
+      .eq('id', id)
+      .limit(1);
+    if (error) throw error;
+    const calc = calculators && calculators[0];
+    if (!calc) throw new Error('Calculator not found');
+    calcDetail.innerHTML = `
+      <h2 style="margin-bottom:0.5em;">${calc.title}</h2>
+      <form id="valuesForm">
+        <div class="fields-value-list">
+          ${calc.fields.map((f, i) => `
+            <div class="field-value-row">
+              <label for="field_${i}">${f.name}</label>
+              <select name="field_${i}" id="field_${i}" required>
+                <option value="">Select...</option>
+                ${f.options.map(opt => `<option value="${opt.value}">${opt.label} (+${opt.value})</option>`).join('')}
+              </select>
+            </div>
+          `).join('')}
+        </div>
+        <button type="submit" style="margin-top:18px;">Calculate Total Score</button>
+      </form>
+      <div id="scoreResult"></div>
+      <button class="back-btn" id="backBtn">Back to List</button>
+    </form>
+    <div id="scoreResult"></div>
+    <button class="back-btn" id="backBtn">Back to List</button>
+  `;
+    document.getElementById('backBtn').onclick = () => {
+      calcDetail.style.display = 'none';
+      calcList.style.display = 'block';
+      fetchCalculatorsInline();
+    };
+    document.getElementById('valuesForm').onsubmit = (e) => {
+      e.preventDefault();
+      let total = 0;
+      calc.fields.forEach((f, i) => {
+        const fieldName = `field_${i}`;
+        const val = parseFloat(e.target[fieldName].value);
+        if (!isNaN(val)) total += val;
+      });
+      document.getElementById('scoreResult').innerHTML = `
+        <div class="score-output" style="animation:pop 0.5s;">
+          Total Score: <span>${total}</span>
+        </div>
+      `;
+    };
+  } catch (err) {
+    calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
+  }
+}
+
+// Navigation logic
+function setActiveNav(hash) {
+  document.querySelectorAll('nav a, aside .sidebar-link').forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === hash) link.classList.add('active');
+    if (hash === '#' && link.getAttribute('href') === '#') link.classList.add('active');
+  });
+}
+
+function handleNavigation() {
+  const hash = window.location.hash || '#';
+  setActiveNav(hash);
+  if (hash === '#' || hash === '#home') renderHome();
+  else if (hash === '#create') renderStep1();
+  else if (hash === '#browse') renderBrowse();
+  else if (hash === '#about') renderAbout();
+  else renderHome();
+}
+
+window.addEventListener('hashchange', handleNavigation);
+document.addEventListener('DOMContentLoaded', handleNavigation); 
