@@ -1,250 +1,214 @@
-body {
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  min-height: 100vh;
-  color: #22223b;
-}
-
-/* General container and layout improvements */
-.container, .step, section, main, .fields-table, .calc-list, .modal-content {
-  box-sizing: border-box;
-  max-width: 100vw;
-  word-break: break-word;
-}
-
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 0 16px;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(60, 72, 100, 0.12);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.step, section {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 12px rgba(60,72,100,0.06);
-  padding: 32px 18px;
-  margin-bottom: 32px;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  word-break: break-word;
-  margin-top: 0;
-}
-
-label, input, select, button, p, ul, li {
-  word-break: break-word;
-}
-
-h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #3a3a5a;
-  letter-spacing: -1px;
-}
-
-label {
-  font-weight: 600;
-  margin-bottom: 6px;
-  display: block;
-  color: #4f4f6e;
-}
-
-.fields-table {
-  width: 100%;
-  max-width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 18px;
-}
-
-.fields-table th, .fields-table td {
-  padding: 8px 6px;
-  text-align: left;
-  vertical-align: top;
-  word-break: break-word;
-}
-
-.fields-table th {
-  background: #f1f5ff;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #6366f1;
-  border-radius: 6px 6px 0 0;
-}
-
-.fields-table tr {
-  background: #f9fafb;
-  border-radius: 6px;
-}
-
-.fields-table tr:last-child td {
-  border-bottom: none;
-}
-
-.fields-table td {
-  background: #f3f4f6;
-  border-radius: 6px;
-  max-width: 260px;
-}
-
-input[type="text"], input[type="number"], select {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  margin-bottom: 6px;
-  font-size: 1rem;
-}
-
-input[type="text"]:focus, input[type="number"]:focus, select:focus {
-  border-color: #6366f1;
-  outline: none;
-}
-
-button {
-  font-size: 1rem;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 22px;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  margin-bottom: 6px;
-}
-
-button:active {
-  opacity: 0.92;
-}
-
-.remove-field-btn {
-  background: #f87171 !important;
-  color: #fff !important;
-  padding: 4px 10px !important;
-  font-size: 0.95em !important;
-  border-radius: 5px !important;
-  border: none !important;
-  cursor: pointer !important;
-  margin-top: 0 !important;
-}
-
-.add-option-btn, #addNewOptionBtn {
-  background: #6366f1 !important;
-  color: #fff !important;
-  padding: 4px 10px !important;
-  font-size: 0.95em !important;
-  border-radius: 5px !important;
-  border: none !important;
-  cursor: pointer !important;
-  margin-top: 0 !important;
-}
-
-.option-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 4px;
-  width: 100%;
-}
-
-.option-row input[type="text"] {
-  max-width: 90px;
-}
-
-.option-row input[type="number"] {
-  max-width: 70px;
-}
-
-.step {
-  animation: fadeIn 0.5s;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px);}
-  to { opacity: 1; transform: translateY(0);}
-}
-
-.score-output {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #6366f1;
-  margin-top: 12px;
-  word-break: break-word;
-}
-
-@keyframes pop {
-  0% { transform: scale(0.8); opacity: 0.5;}
-  60% { transform: scale(1.1);}
-  100% { transform: scale(1); opacity: 1;}
-}
-
-.calc-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.calc-item {
-  background: #f6f8fa;
-  border-radius: 12px;
-  padding: 18px 16px;
-  box-shadow: 0 2px 8px rgba(60,72,100,0.04);
-  cursor: pointer;
-  transition: box-shadow 0.2s;
-  word-break: break-word;
-}
-
-.calc-item:hover {
-  box-shadow: 0 4px 16px rgba(60,72,100,0.10);
-}
-
-@media (max-width: 900px) {
-  .container, .step, section {
-    padding: 18px 4px;
-    border-radius: 12px;
+<!-- Base styles -->
+<style>
+  /* Only including styles that can't be easily replaced with Tailwind */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px);}
+    to { opacity: 1; transform: translateY(0);}
   }
-  main {
-    padding: 18px 2px 18px 2px !important;
-  }
-  .fields-table th, .fields-table td {
-    padding: 6px 2px;
-  }
-}
 
-@media (max-width: 600px) {
-  .container, .step, section {
-    padding: 10px 2px;
-    border-radius: 8px;
+  @keyframes pop {
+    0% { transform: scale(0.8); opacity: 0.5;}
+    60% { transform: scale(1.1);}
+    100% { transform: scale(1); opacity: 1;}
   }
-  h1 {
-    font-size: 1.5rem !important;
-  }
-  h2 {
-    font-size: 1.1rem !important;
-  }
-  .fields-table th, .fields-table td {
-    padding: 4px 1px;
-    font-size: 0.98rem;
-  }
-  button, input, select {
-    font-size: 0.98rem;
-    padding: 8px 8px;
-  }
-}
+</style>
 
-/* Prevent horizontal overflow everywhere */
-html, body {
-  max-width: 100vw;
-  overflow-x: hidden;
-} 
+<!-- Example HTML structure with Tailwind classes -->
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-100 font-sans text-[#22223b] m-0">
+  <div class="max-w-[900px] w-full mx-auto px-4 bg-white rounded-xl shadow-lg flex flex-col gap-6">
+    
+    <!-- Step/Section Example -->
+    <section class="bg-white rounded-xl shadow-sm p-8 mb-8 max-w-full overflow-x-auto animate-[fadeIn_0.5s]">
+      <h1 class="text-3xl font-bold mb-2 text-[#3a3a5a] tracking-tight">Section Title</h1>
+      
+      <label class="font-semibold mb-1.5 block text-[#4f4f6e]">Field Label</label>
+      <input type="text" class="w-full px-2.5 py-2 rounded-lg border border-gray-200 mb-1.5 text-base focus:border-indigo-500 focus:outline-none">
+      
+      <!-- Fields Table -->
+      <table class="w-full max-w-full border-collapse mb-4.5">
+        <thead>
+          <tr>
+            <th class="p-2 text-left align-top bg-[#f1f5ff] text-base font-semibold text-indigo-500 rounded-t-lg">Header</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="bg-gray-50 rounded-lg">
+            <td class="bg-gray-100 rounded-lg max-w-[260px] p-2 text-left align-top break-words">Content</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- Option Row -->
+      <div class="flex items-center gap-1 mb-1 w-full">
+        <input type="text" class="max-w-[90px] px-2.5 py-2 rounded-lg border border-gray-200 mb-1.5 text-base">
+        <input type="number" class="max-w-[70px] px-2.5 py-2 rounded-lg border border-gray-200 mb-1.5 text-base">
+        <button class="bg-indigo-500 text-white py-1 px-2.5 text-sm rounded border-none cursor-pointer mt-0">Add</button>
+        <button class="bg-red-400 text-white py-1 px-2.5 text-sm rounded border-none cursor-pointer mt-0">Remove</button>
+      </div>
+      
+      <!-- Score Output -->
+      <div class="text-xl font-bold text-indigo-500 mt-3 break-words">Score: 95</div>
+      
+      <!-- Calc List -->
+      <div class="flex flex-col gap-3 mt-4.5">
+        <div class="bg-gray-50 rounded-xl p-4.5 shadow-sm cursor-pointer transition-shadow hover:shadow-md break-words">
+          Calculator Item
+        </div>
+      </div>
+    </section>
+    
+  </div>
+</div>
+
+<!-- Tailwind CSS classes to replace all the original CSS -->
+<!-- 
+Original CSS mapped to Tailwind:
+
+body:
+- bg-gradient-to-br from-gray-50 to-indigo-100
+- font-sans
+- m-0
+- min-h-screen
+- text-[#22223b]
+
+.container:
+- max-w-[900px]
+- mx-auto
+- w-full
+- px-4
+- bg-white
+- rounded-xl
+- shadow-lg
+- flex
+- flex-col
+- gap-6
+
+.step, section:
+- bg-white
+- rounded-xl
+- shadow-sm
+- p-8 (sm:p-4 xs:p-2.5)
+- mb-8
+- max-w-full
+- overflow-x-auto
+- animate-[fadeIn_0.5s]
+
+h1:
+- text-3xl (sm:text-2xl)
+- font-bold
+- mb-2
+- text-[#3a3a5a]
+- tracking-tight
+
+label:
+- font-semibold
+- mb-1.5
+- block
+- text-[#4f4f6e]
+
+.fields-table:
+- w-full
+- max-w-full
+- border-collapse
+- mb-4.5
+
+.fields-table th, .fields-table td:
+- p-2 (sm:p-1.5 xs:p-1)
+- text-left
+- align-top
+- break-words
+
+.fields-table th:
+- bg-[#f1f5ff]
+- text-base
+- font-semibold
+- text-indigo-500
+- rounded-t-lg
+
+.fields-table tr:
+- bg-gray-50
+- rounded-lg
+
+.fields-table td:
+- bg-gray-100
+- rounded-lg
+- max-w-[260px]
+
+input[type="text"], input[type="number"], select:
+- w-full
+- max-w-full
+- box-border
+- px-2.5 py-2
+- rounded-lg
+- border
+- border-gray-200
+- mb-1.5
+- text-base
+
+input[type="text"]:focus, input[type="number"]:focus, select:focus:
+- border-indigo-500
+- outline-none
+
+button:
+- text-base
+- border-none
+- rounded-lg
+- px-5.5 py-2.5
+- cursor-pointer
+- transition-colors
+- mb-1.5
+
+.remove-field-btn:
+- bg-red-400
+- text-white
+- py-1 px-2.5
+- text-sm
+- rounded
+- border-none
+- cursor-pointer
+- mt-0
+
+.add-option-btn, #addNewOptionBtn:
+- bg-indigo-500
+- text-white
+- py-1 px-2.5
+- text-sm
+- rounded
+- border-none
+- cursor-pointer
+- mt-0
+
+.option-row:
+- flex
+- items-center
+- gap-1
+- mb-1
+- w-full
+
+.score-output:
+- text-xl
+- font-bold
+- text-indigo-500
+- mt-3
+- break-words
+
+.calc-list:
+- flex
+- flex-col
+- gap-3
+- mt-4.5
+
+.calc-item:
+- bg-gray-50
+- rounded-xl
+- p-4.5
+- shadow-sm
+- cursor-pointer
+- transition-shadow
+- hover:shadow-md
+- break-words
+
+Media queries are handled with Tailwind responsive prefixes:
+- sm: for max-width: 600px
+- md: for max-width: 900px
+-->
