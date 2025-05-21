@@ -129,8 +129,8 @@ function renderStep2() {
     if (!list) return;
     list.innerHTML = newOptions.map((opt, oi) => `
       <div class="option-row">
-        <input type="text" value="${opt.label}" data-oidx="${oi}" class="new-option-label-input" maxlength="18" placeholder="Label" />
-        <input type="number" value="${opt.value}" data-oidx="${oi}" class="new-option-value-input" placeholder="Score" />
+        <input type="text" value="${opt.label}" data-oidx="${oi}" class="new-option-label-input glass-option-input" maxlength="18" placeholder="Label" />
+        <input type="number" value="${opt.value}" data-oidx="${oi}" class="new-option-value-input glass-option-input" placeholder="Score" />
         <button type="button" class="remove-new-option-btn" data-oidx="${oi}">✕</button>
       </div>
     `).join('');
