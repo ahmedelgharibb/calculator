@@ -69,34 +69,36 @@ function renderStep2() {
             ${calculator.fields.map((f, i) => `
               <div class="field-card" style="background:#f8fafc;border-radius:12px;padding:20px 18px 16px 18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(60,72,100,0.04);position:relative;">
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-                  <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-option-input" maxlength="24" required style="flex:1;font-weight:600;font-size:1.08em;" placeholder="Field label (e.g. Homework, Quiz)"/>
+                  <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-option-input" maxlength="24" required style="flex:1;font-weight:600;font-size:1.08em;" placeholder="Field Name (e.g., 'Quiz')" aria-label="Field Name (e.g., 'Quiz')"/>
                   <button type="button" class="remove-field-btn" data-idx="${i}" style="color:#ef4444;background:none;border:none;font-weight:600;font-size:1em;">Remove Field</button>
                 </div>
-                <div class="options-list" data-idx="${i}" style="display:flex;flex-direction:column;gap:10px;">
+                <div class="options-list" data-idx="${i}" style="display:flex;flex-direction:column;gap:10px;margin-left:12px;">
+                  <div style="font-weight:600;font-size:1em;margin-bottom:4px;">Options</div>
                   ${(f.options||[]).map((opt, oi) => `
-                    <div class="option-row" style="display:flex;gap:10px;align-items:center;">
-                      <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-option-input" placeholder="Option label (A, A+, B, etc.)" maxlength="18" style="flex:2;" />
-                      <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-option-input" placeholder="Value" style="flex:1;" />
+                    <div class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:2px;">
+                      <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-option-input" placeholder="Label (e.g., 'A+')" maxlength="18" style="flex:2;" aria-label="Option Label (e.g., 'A+')" />
+                      <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-option-input" placeholder="Points (e.g., 100)" style="flex:1;" aria-label="Points (e.g., 100)" />
                       <button type="button" class="remove-option-btn" data-idx="${i}" data-oidx="${oi}" style="color:#ef4444;background:none;border:none;font-size:1.1em;">✕</button>
                     </div>
                   `).join('')}
-                  <div class="option-row" style="display:flex;gap:10px;align-items:center;">
-                    <input type="text" id="newOptionLabel${i}" placeholder="Option label (A, A+, B, etc.)" maxlength="18" class="glass-option-input" style="flex:2;" />
-                    <input type="number" id="newOptionValue${i}" placeholder="Value" class="glass-option-input" style="flex:1;" />
-                    <button type="button" class="add-option-btn glass-btn glass-btn-sm" data-idx="${i}" style="min-width:60px;">+ Add Option</button>
+                  <div class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:2px;">
+                    <input type="text" id="newOptionLabel${i}" placeholder="Label (e.g., 'A+')" maxlength="18" class="glass-option-input" style="flex:2;" aria-label="Option Label (e.g., 'A+')" />
+                    <input type="number" id="newOptionValue${i}" placeholder="Points (e.g., 100)" class="glass-option-input" style="flex:1;" aria-label="Points (e.g., 100)" />
                   </div>
+                  <button type="button" class="add-option-btn glass-btn glass-btn-sm" data-idx="${i}" style="margin-top:4px;width:100%;font-weight:600;background:linear-gradient(90deg,#a5b4fc,#818cf8);color:#fff;">+ Add Another Option</button>
                 </div>
               </div>
             `).join('')}
           </div>
           <div class="field-card" style="background:#f8fafc;border-radius:12px;padding:20px 18px 16px 18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(60,72,100,0.04);">
-            <input type="text" id="newFieldName" placeholder="Field label (e.g. Homework, Quiz)" maxlength="24" class="glass-option-input" style="width:100%;margin-bottom:10px;" />
+            <input type="text" id="newFieldName" placeholder="Field Name (e.g., 'Homework')" maxlength="24" class="glass-option-input" style="width:100%;margin-bottom:10px;" aria-label="Field Name (e.g., 'Homework')" />
             <div id="newOptionsList"></div>
-            <div id="newOptionInputs" class="option-row" style="display:flex;gap:10px;align-items:center;">
-              <input type="text" id="newOptionLabel" placeholder="Option label (A, A+, B, etc.)" maxlength="18" class="glass-option-input" style="flex:2;" />
-              <input type="number" id="newOptionValue" placeholder="Value" class="glass-option-input" style="flex:1;" />
-              <button type="button" id="addNewOptionBtn" class="glass-btn glass-btn-sm" style="min-width:60px;">+ Add Option</button>
+            <div style="font-weight:600;font-size:1em;margin-bottom:4px;margin-left:2px;">Options</div>
+            <div id="newOptionInputs" class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:2px;">
+              <input type="text" id="newOptionLabel" placeholder="Label (e.g., 'Full Credit')" maxlength="18" class="glass-option-input" style="flex:2;" aria-label="Option Label (e.g., 'Full Credit')" />
+              <input type="number" id="newOptionValue" placeholder="Points (e.g., 10)" class="glass-option-input" style="flex:1;" aria-label="Points (e.g., 10)" />
             </div>
+            <button type="button" id="addNewOptionBtn" class="glass-btn glass-btn-sm" style="margin-top:4px;width:100%;font-weight:600;background:linear-gradient(90deg,#a5b4fc,#818cf8);color:#fff;">+ Add Another Option</button>
           </div>
           <button type="button" id="addFieldBtn" class="glass-btn" style="margin-bottom:18px;width:160px;">+ Add Field</button>
           <button type="submit" class="glass-btn next-btn" style="width:100%;font-size:1.15em;padding:16px 0;background:#111827;color:#fff;font-weight:700;">Save Calculator</button>
@@ -112,8 +114,8 @@ function renderStep2() {
     if (!list) return;
     list.innerHTML = newOptions.map((opt, oi) => `
       <div class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
-        <input type="text" value="${opt.label}" data-oidx="${oi}" class="new-option-label-input glass-option-input" maxlength="18" placeholder="Option label (A, A+, B, etc.)" style="flex:2;" />
-        <input type="number" value="${opt.value}" data-oidx="${oi}" class="new-option-value-input glass-option-input" placeholder="Value" style="flex:1;" />
+        <input type="text" value="${opt.label}" data-oidx="${oi}" class="new-option-label-input glass-option-input" maxlength="18" placeholder="Label (e.g., 'Full Credit')" style="flex:2;" aria-label="Option Label (e.g., 'Full Credit')" />
+        <input type="number" value="${opt.value}" data-oidx="${oi}" class="new-option-value-input glass-option-input" placeholder="Points (e.g., 10)" style="flex:1;" aria-label="Points (e.g., 10)" />
         <button type="button" class="remove-new-option-btn" data-oidx="${oi}" style="color:#ef4444;background:none;border:none;font-size:1.1em;">✕</button>
       </div>
     `).join('');
