@@ -270,31 +270,49 @@ function renderStep3() {
     saveStatus.textContent = 'Saving...';
     console.log('[Supabase] Saving calculator:', calculator);
     try {
-      // Save calculator to Supabase
-      const { data, error } = await supabase
+      // 1. Insert calculator (title only)
+      const { data: calcData, error: calcError } = await supabase
         .from('calculators')
-        .insert([
-          {
-            title: calculator.title,
-            fields: calculator.fields.map((f, i) => ({
-              name: f.name,
-              field_order: i,
-              options: f.options.map((opt, j) => ({
-                label: opt.label,
-                value: opt.value,
-                option_order: j
-              }))
-            }))
-          }
-        ]);
-      if (error) {
-        console.error('[Supabase] Error saving calculator:', error);
-        throw error;
+        .insert([{ title: calculator.title }])
+        .select('id');
+      if (calcError) {
+        console.error('[Supabase] Error saving calculator:', calcError);
+        throw calcError;
       }
-      console.log('[Supabase] Calculator saved successfully:', data);
+      const calculatorId = calcData && calcData[0] && calcData[0].id;
+      console.log('[Supabase] Calculator inserted with id:', calculatorId);
+      // 2. Insert fields
+      let fieldIds = [];
+      for (let i = 0; i < calculator.fields.length; i++) {
+        const field = calculator.fields[i];
+        const { data: fieldData, error: fieldError } = await supabase
+          .from('calculator_fields')
+          .insert([{ calculator_id: calculatorId, name: field.name, field_order: i }])
+          .select('id');
+        if (fieldError) {
+          console.error('[Supabase] Error saving field:', fieldError);
+          throw fieldError;
+        }
+        const fieldId = fieldData && fieldData[0] && fieldData[0].id;
+        fieldIds.push(fieldId);
+        console.log(`[Supabase] Field inserted with id: ${fieldId}`);
+        // 3. Insert options for this field
+        for (let j = 0; j < (field.options || []).length; j++) {
+          const opt = field.options[j];
+          const { error: optError } = await supabase
+            .from('calculator_options')
+            .insert([{ field_id: fieldId, label: opt.label, value: opt.value, option_order: j }]);
+          if (optError) {
+            console.error('[Supabase] Error saving option:', optError);
+            throw optError;
+          }
+          console.log(`[Supabase] Option inserted for field ${fieldId}:`, opt);
+        }
+      }
       calculatorSaved = true;
       saveStatus.style.color = '#10b981';
       saveStatus.textContent = 'Calculator saved! You can access it from Browse Calculators.';
+      console.log('[Supabase] Calculator, fields, and options saved successfully.');
     } catch (err) {
       saveStatus.style.color = '#f87171';
       saveStatus.textContent = 'Error saving calculator: ' + (err.message || err);
