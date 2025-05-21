@@ -70,6 +70,7 @@
       <div id="calcDetail" style="display:none;"></div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="script.js"></script>
   <script>
     // --- Supabase Integration ---
@@ -196,10 +197,6 @@
         calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculators()'>Back to List</button>`;
       }
     }
-    // Load Supabase JS client
-    var supabaseScript = document.createElement('script');
-    supabaseScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js';
-    document.head.appendChild(supabaseScript);
   </script>
 </body>
 </html>
