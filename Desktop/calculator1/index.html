@@ -72,9 +72,12 @@
   </div>
   <script src="script.js"></script>
   <script>
-    // --- Browse Calculators Modal Logic ---
-    // Set this to your deployed backend URL (e.g., https://your-backend.onrender.com)
-    const API_BASE = 'https://your-backend-url.com';
+    // --- Supabase Integration ---
+    // Set your Supabase project URL and anon key below
+    const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR_PUBLIC_ANON_KEY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const browseBtn = document.getElementById('browseBtn');
     const browseModal = document.getElementById('browseModal');
     const closeBrowseModal = document.getElementById('closeBrowseModal');
@@ -112,9 +115,12 @@
       calcDetail.style.display = 'none';
       calcList.style.display = 'flex';
       try {
-        const res = await fetch(`${API_BASE}/calculators`);
-        if (!res.ok) throw new Error('Failed to fetch calculators');
-        const calculators = await res.json();
+        // Fetch calculators with fields and options using Supabase
+        const { data: calculators, error } = await supabase
+          .from('calculators')
+          .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
         if (!calculators.length) {
           calcList.innerHTML = '<div style="color:#a0aec0;">No calculators found. Create one to get started!</div>';
           return;
@@ -139,9 +145,15 @@
       calcDetail.style.display = 'block';
       calcDetail.innerHTML = 'Loading...';
       try {
-        const res = await fetch(`${API_BASE}/calculators/${id}`);
-        if (!res.ok) throw new Error('Failed to fetch calculator');
-        const calc = await res.json();
+        // Fetch a single calculator with fields and options using Supabase
+        const { data: calculators, error } = await supabase
+          .from('calculators')
+          .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
+          .eq('id', id)
+          .limit(1);
+        if (error) throw error;
+        const calc = calculators && calculators[0];
+        if (!calc) throw new Error('Calculator not found');
         calcDetail.innerHTML = `
           <h2 style="margin-bottom:0.5em;">${calc.title}</h2>
           <form id="valuesForm">
@@ -184,6 +196,10 @@
         calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculators()'>Back to List</button>`;
       }
     }
+    // Load Supabase JS client
+    var supabaseScript = document.createElement('script');
+    supabaseScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js';
+    document.head.appendChild(supabaseScript);
   </script>
 </body>
 </html>
