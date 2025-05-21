@@ -12,18 +12,41 @@ let step = 1;
 function renderStep1() {
   const app = document.getElementById('app');
   app.innerHTML = `
-    <div class="step">
-      <h1>Create Your Score Calculator</h1>
-      <form id="titleForm">
-        <label for="calcTitle">Calculator Title</label>
-        <input type="text" id="calcTitle" name="calcTitle" required placeholder="e.g. Exam Grader" maxlength="32"/>
-        <button type="submit">Next</button>
-      </form>
+    <div class="create-calc-bg">
+      <div class="glass-card step animate-fadeIn">
+        <div class="progress-indicator">Step 1 of 3</div>
+        <h1 class="glass-title">Create Your Score Calculator</h1>
+        <form id="titleForm" autocomplete="off">
+          <label for="calcTitle" class="glass-label flex items-center gap-2">Calculator Title
+            <span class="info-tooltip" tabindex="0" aria-label="What is this?">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#e0e7ff"/><text x="12" y="16" text-anchor="middle" font-size="14" fill="#6366f1" font-family="Arial" font-weight="bold">i</text></svg>
+              <span class="tooltip-text">This is the name of your calculator. Example: 'Exam Grader', 'GPA Calculator', etc.</span>
+            </span>
+          </label>
+          <input type="text" id="calcTitle" name="calcTitle" required placeholder="e.g. Exam Grader" maxlength="32" class="glass-input"/>
+          <button type="submit" id="nextBtn" class="glass-btn next-btn" disabled>Next</button>
+        </form>
+      </div>
+      <div class="bg-illustration">
+        <svg class="svg-bg-1" viewBox="0 0 300 300"><ellipse cx="150" cy="150" rx="120" ry="60" fill="#e0e7ff" opacity="0.35"/></svg>
+        <svg class="svg-bg-2" viewBox="0 0 200 200"><rect x="40" y="40" width="120" height="120" rx="40" fill="#6366f1" opacity="0.10"/></svg>
+        <svg class="svg-bg-3" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="#a5b4fc" opacity="0.13"/></svg>
+      </div>
     </div>
   `;
+  const titleInput = document.getElementById('calcTitle');
+  const nextBtn = document.getElementById('nextBtn');
+  titleInput.addEventListener('input', () => {
+    nextBtn.disabled = !titleInput.value.trim();
+    if (!nextBtn.disabled) {
+      nextBtn.classList.add('btn-animate');
+    } else {
+      nextBtn.classList.remove('btn-animate');
+    }
+  });
   document.getElementById('titleForm').onsubmit = (e) => {
     e.preventDefault();
-    calculator.title = document.getElementById('calcTitle').value.trim();
+    calculator.title = titleInput.value.trim();
     if (calculator.title) {
       step = 2;
       renderStep2();
@@ -34,60 +57,68 @@ function renderStep1() {
 function renderStep2() {
   const app = document.getElementById('app');
   app.innerHTML = `
-    <div class="step">
-      <h1>${calculator.title}</h1>
-      <form id="fieldsForm">
-        <table class="fields-table">
-          <thead>
-            <tr>
-              <th>Field Name</th>
-              <th>Options</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="fieldsTableBody">
-            ${calculator.fields.map((f, i) => `
+    <div class="create-calc-bg">
+      <div class="glass-card step animate-fadeIn">
+        <div class="progress-indicator">Step 2 of 3</div>
+        <h1 class="glass-title">${calculator.title}</h1>
+        <form id="fieldsForm" autocomplete="off">
+          <table class="fields-table glass-table">
+            <thead>
               <tr>
-                <td style="vertical-align:top;width:160px;max-width:180px;">
-                  <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input" maxlength="24" style="width:100%;box-sizing:border-box;" required />
-                </td>
-                <td style="vertical-align:top;min-width:220px;max-width:260px;">
-                  <div class="options-list" data-idx="${i}">
-                    ${(f.options||[]).map((opt, oi) => `
+                <th>Field Name</th>
+                <th>Options</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="fieldsTableBody">
+              ${calculator.fields.map((f, i) => `
+                <tr>
+                  <td style="vertical-align:top;width:160px;max-width:180px;">
+                    <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-input" maxlength="24" required />
+                  </td>
+                  <td style="vertical-align:top;min-width:220px;max-width:260px;">
+                    <div class="options-list" data-idx="${i}">
+                      ${(f.options||[]).map((opt, oi) => `
+                        <div class="option-row">
+                          <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-input" placeholder="Label" maxlength="18" />
+                          <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-input" placeholder="Score" />
+                          <button type="button" class="remove-option-btn glass-btn glass-btn-sm" data-idx="${i}" data-oidx="${oi}">✕</button>
+                        </div>
+                      `).join('')}
                       <div class="option-row">
-                        <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input" placeholder="Label" maxlength="18" />
-                        <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input" placeholder="Score" />
-                        <button type="button" class="remove-option-btn" data-idx="${i}" data-oidx="${oi}">✕</button>
+                        <input type="text" id="newOptionLabel${i}" placeholder="Label" maxlength="18" class="glass-input" />
+                        <input type="number" id="newOptionValue${i}" placeholder="Score" class="glass-input" />
+                        <button type="button" class="add-option-btn glass-btn glass-btn-sm" data-idx="${i}">Add</button>
                       </div>
-                    `).join('')}
-                    <div class="option-row">
-                      <input type="text" id="newOptionLabel${i}" placeholder="Label" maxlength="18" />
-                      <input type="number" id="newOptionValue${i}" placeholder="Score" />
-                      <button type="button" class="add-option-btn" data-idx="${i}">Add</button>
                     </div>
+                  </td>
+                  <td style="vertical-align:top;width:60px;">
+                    <button type="button" class="remove-field-btn glass-btn glass-btn-sm" data-idx="${i}">Remove</button>
+                  </td>
+                </tr>
+              `).join('')}
+              <tr>
+                <td><input type="text" id="newFieldName" placeholder="e.g. Homework" maxlength="24" class="glass-input" /></td>
+                <td colspan="2">
+                  <div id="newOptionsList" style="display:block;"></div>
+                  <div id="newOptionInputs" class="flex gap-2 items-center mt-2">
+                    <input type="text" id="newOptionLabel" placeholder="Label" maxlength="18" class="glass-input" />
+                    <input type="number" id="newOptionValue" placeholder="Score" class="glass-input" />
+                    <button type="button" id="addNewOptionBtn" class="glass-btn glass-btn-sm">Add</button>
                   </div>
                 </td>
-                <td style="vertical-align:top;width:60px;">
-                  <button type="button" class="remove-field-btn" data-idx="${i}">Remove</button>
-                </td>
               </tr>
-            `).join('')}
-            <tr>
-              <td><input type="text" id="newFieldName" placeholder="e.g. Homework" maxlength="24" style="width:100%;box-sizing:border-box;" /></td>
-              <td colspan="2">
-                <div id="newOptionsList" style="display:block;"></div>
-                <div id="newOptionInputs" style="display:flex;gap:4px;align-items:center;">
-                  <input type="text" id="newOptionLabel" placeholder="Label" maxlength="18" />
-                  <input type="number" id="newOptionValue" placeholder="Score" />
-                  <button type="button" id="addNewOptionBtn">Add</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <button type="button" id="addFieldBtn" style="margin-top:10px;">Add Field</button>
-        <button type="submit" style="margin-top:18px;${calculator.fields.length ? '' : 'display:none;'}">Next: Fill Values</button>
-      </form>
+            </tbody>
+          </table>
+          <button type="button" id="addFieldBtn" class="glass-btn" style="margin-top:10px;">Add Field</button>
+          <button type="submit" class="glass-btn next-btn" style="margin-top:18px;${calculator.fields.length ? '' : 'display:none;'}">Next: Fill Values</button>
+        </form>
+      </div>
+      <div class="bg-illustration">
+        <svg class="svg-bg-1" viewBox="0 0 300 300"><ellipse cx="150" cy="150" rx="120" ry="60" fill="#e0e7ff" opacity="0.35"/></svg>
+        <svg class="svg-bg-2" viewBox="0 0 200 200"><rect x="40" y="40" width="120" height="120" rx="40" fill="#6366f1" opacity="0.10"/></svg>
+        <svg class="svg-bg-3" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="#a5b4fc" opacity="0.13"/></svg>
+      </div>
     </div>
   `;
 

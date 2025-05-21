@@ -1,288 +1,170 @@
-<!-- Base styles -->
-<style>
-  /* Only including styles that can't be easily replaced with Tailwind */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(16px);}
-    to { opacity: 1; transform: translateY(0);}
-  }
+/* Only including styles that can't be easily replaced with Tailwind */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px);}
+  to { opacity: 1; transform: translateY(0);}
+}
 
-  @keyframes pop {
-    0% { transform: scale(0.8); opacity: 0.5;}
-    60% { transform: scale(1.1);}
-    100% { transform: scale(1); opacity: 1;}
-  }
-</style>
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0.5;}
+  60% { transform: scale(1.1);}
+  100% { transform: scale(1); opacity: 1;}
+}
 
-<!-- Example HTML structure with Tailwind classes -->
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-100 font-sans text-[#22223b] m-0">
-  <div class="max-w-[900px] w-full mx-auto px-4 bg-white rounded-xl shadow-lg flex flex-col gap-6">
-    
-    <!-- Step/Section Example -->
-    <section class="bg-white rounded-xl shadow-sm p-8 mb-8 max-w-full overflow-x-auto animate-[fadeIn_0.5s]">
-      <h1 class="text-3xl font-bold mb-2 text-[#3a3a5a] tracking-tight">Section Title</h1>
-      
-      <label class="font-semibold mb-1.5 block text-[#4f4f6e]">Field Label</label>
-      <input type="text" class="w-full px-2.5 py-2 rounded-lg border border-gray-200 mb-1.5 text-base focus:border-indigo-500 focus:outline-none">
-      
-      <!-- Fields Table -->
-      <table class="w-full max-w-full border-collapse mb-4.5">
-        <thead>
-          <tr>
-            <th class="p-2 text-left align-top bg-[#f1f5ff] text-base font-semibold text-indigo-500 rounded-t-lg">Header</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="bg-gray-50 rounded-lg">
-            <td class="bg-gray-100 rounded-lg max-w-[260px] p-2 text-left align-top break-words">Content</td>
-          </tr>
-        </tbody>
-      </table>
-      
-      <!-- Option Row -->
-      <div class="flex items-center gap-1 mb-1 w-full">
-        <input type="text" class="max-w-[90px] px-2.5 py-2 rounded-lg border border-gray-200 mb-1.5 text-base">
-        <input type="number" class="max-w-[70px] px-2.5 py-2 rounded-lg border border-gray-200 mb-1.5 text-base">
-        <button class="bg-indigo-500 text-white py-1 px-2.5 text-sm rounded border-none cursor-pointer mt-0">Add</button>
-        <button class="bg-red-400 text-white py-1 px-2.5 text-sm rounded border-none cursor-pointer mt-0">Remove</button>
-      </div>
-      
-      <!-- Score Output -->
-      <div class="text-xl font-bold text-indigo-500 mt-3 break-words">Score: 95</div>
-      
-      <!-- Calc List -->
-      <div class="flex flex-col gap-3 mt-4.5">
-        <div class="bg-gray-50 rounded-xl p-4.5 shadow-sm cursor-pointer transition-shadow hover:shadow-md break-words">
-          Calculator Item
-        </div>
-      </div>
-    </section>
-    
-  </div>
-</div>
-
-<!-- Tailwind CSS classes to replace all the original CSS -->
-<!-- 
-Original CSS mapped to Tailwind:
-
-body:
-- bg-gradient-to-br from-gray-50 to-indigo-100
-- font-sans
-- m-0
-- min-h-screen
-- text-[#22223b]
-
-.container:
-- max-w-[900px]
-- mx-auto
-- w-full
-- px-4
-- bg-white
-- rounded-xl
-- shadow-lg
-- flex
-- flex-col
-- gap-6
-
-.step, section:
-- bg-white
-- rounded-xl
-- shadow-sm
-- p-8 (sm:p-4 xs:p-2.5)
-- mb-8
-- max-w-full
-- overflow-x-auto
-- animate-[fadeIn_0.5s]
-
-h1:
-- text-3xl (sm:text-2xl)
-- font-bold
-- mb-2
-- text-[#3a3a5a]
-- tracking-tight
-
-label:
-- font-semibold
-- mb-1.5
-- block
-- text-[#4f4f6e]
-
-.fields-table:
-- w-full
-- max-w-full
-- border-collapse
-- mb-4.5
-
-.fields-table th, .fields-table td:
-- p-2 (sm:p-1.5 xs:p-1)
-- text-left
-- align-top
-- break-words
-
-.fields-table th:
-- bg-[#f1f5ff]
-- text-base
-- font-semibold
-- text-indigo-500
-- rounded-t-lg
-
-.fields-table tr:
-- bg-gray-50
-- rounded-lg
-
-.fields-table td:
-- bg-gray-100
-- rounded-lg
-- max-w-[260px]
-
-input[type="text"], input[type="number"], select:
-- w-full
-- max-w-full
-- box-border
-- px-2.5 py-2
-- rounded-lg
-- border
-- border-gray-200
-- mb-1.5
-- text-base
-
-input[type="text"]:focus, input[type="number"]:focus, select:focus:
-- border-indigo-500
-- outline-none
-
-button:
-- text-base
-- border-none
-- rounded-lg
-- px-5.5 py-2.5
-- cursor-pointer
-- transition-colors
-- mb-1.5
-
-.remove-field-btn:
-- bg-red-400
-- text-white
-- py-1 px-2.5
-- text-sm
-- rounded
-- border-none
-- cursor-pointer
-- mt-0
-
-.add-option-btn, #addNewOptionBtn:
-- bg-indigo-500
-- text-white
-- py-1 px-2.5
-- text-sm
-- rounded
-- border-none
-- cursor-pointer
-- mt-0
-
-.option-row:
-- flex
-- items-center
-- gap-1
-- mb-1
-- w-full
-
-.score-output:
-- text-xl
-- font-bold
-- text-indigo-500
-- mt-3
-- break-words
-
-.calc-list:
-- flex
-- flex-col
-- gap-3
-- mt-4.5
-
-.calc-item:
-- bg-gray-50
-- rounded-xl
-- p-4.5
-- shadow-sm
-- cursor-pointer
-- transition-shadow
-- hover:shadow-md
-- break-words
-
-Media queries are handled with Tailwind responsive prefixes:
-- sm: for max-width: 600px
-- md: for max-width: 900px
--->
-
-/* Modern form and button design */
-input[type="text"], input[type="number"] {
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1.5px solid var(--primary-light);
-  font-size: 1.15rem;
-  background: #f8fafc;
-  color: var(--text);
-  transition: border 0.18s, box-shadow 0.18s;
-  outline: none;
-  margin-right: 10px;
+/* Glassmorphism & Neumorphism Styles for Create Calculator */
+.glass-card {
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 8px 32px 0 rgba(99,102,241,0.10), 0 1.5px 8px 0 rgba(99,102,241,0.08);
+  border-radius: 28px;
+  padding: 2.5rem 2rem 2.5rem 2rem;
+  max-width: 480px;
+  margin: 48px auto 0 auto;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(12px) saturate(1.2);
+  border: 1.5px solid #e0e7ff;
+  animation: fadeIn 0.6s;
+}
+.glass-title {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #6366f1;
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+.glass-label {
+  font-size: 1.08rem;
+  color: #4f4f6e;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.glass-input {
+  width: 100%;
+  padding: 1.1rem 1.2rem;
+  border-radius: 16px;
+  border: 1.5px solid #e0e7ff;
+  font-size: 1.13rem;
+  background: rgba(245,247,255,0.85);
+  color: #3a3a5a;
+  margin-bottom: 1.1rem;
   box-shadow: 0 2px 8px rgba(99,102,241,0.04);
+  transition: border 0.18s, box-shadow 0.18s;
 }
-input[type="text"]:focus, input[type="number"]:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-light);
+.glass-input:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 2px #e0e7ff;
 }
-
-button, input[type="submit"] {
+.glass-btn {
   font-size: 1.18rem;
   font-weight: 700;
   border: none;
-  border-radius: 12px;
-  padding: 14px 36px;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 14px;
+  padding: 1.1rem 2.5rem;
+  background: linear-gradient(90deg, #6366f1 0%, #a5b4fc 100%);
   color: #fff;
   box-shadow: 0 4px 16px rgba(99,102,241,0.10);
   cursor: pointer;
   transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
   margin: 8px 8px 8px 0;
   letter-spacing: 0.01em;
+  opacity: 1;
 }
-button:hover, input[type="submit"]:hover {
-  background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
-  color: #fff;
-  box-shadow: 0 6px 24px rgba(99,102,241,0.16);
-  transform: translateY(-2px) scale(1.03);
+.glass-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-button:active, input[type="submit"]:active {
-  background: var(--primary-dark);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(99,102,241,0.10);
-  transform: scale(0.98);
+.glass-btn-sm {
+  font-size: 1rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 10px;
+  margin: 0 0.2rem;
 }
-
-.form-group label {
-  font-size: 1.13rem;
-  margin-bottom: 6px;
-  color: var(--primary);
+.btn-animate {
+  animation: btnPulse 0.7s cubic-bezier(.4,0,.2,1);
 }
-
-.form-section {
-  gap: 28px;
+@keyframes btnPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 #a5b4fc44; }
+  60% { transform: scale(1.07); box-shadow: 0 0 0 8px #a5b4fc22; }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 #a5b4fc00; }
 }
-
-.categories-list {
-  gap: 18px;
+.progress-indicator {
+  font-size: 1.08rem;
+  color: #6366f1;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  letter-spacing: 0.01em;
 }
-
-.category-row input[type="text"], .category-row input[type="number"] {
-  margin-bottom: 0;
+.info-tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-left: 0.3em;
 }
-
+.info-tooltip svg {
+  vertical-align: middle;
+}
+.tooltip-text {
+  visibility: hidden;
+  width: 220px;
+  background: #fff;
+  color: #6366f1;
+  text-align: left;
+  border-radius: 10px;
+  padding: 0.7em 1em;
+  position: absolute;
+  z-index: 10;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+  font-size: 0.98rem;
+  opacity: 0;
+  transition: opacity 0.18s;
+  pointer-events: none;
+}
+.info-tooltip:focus .tooltip-text,
+.info-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+.create-calc-bg {
+  position: relative;
+  min-height: 80vh;
+  width: 100%;
+  overflow: hidden;
+  background: none;
+}
+.bg-illustration {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.svg-bg-1 {
+  position: absolute; left: -60px; top: 10px; width: 320px; height: 180px; z-index: 0;
+}
+.svg-bg-2 {
+  position: absolute; right: -40px; top: 120px; width: 180px; height: 180px; z-index: 0;
+}
+.svg-bg-3 {
+  position: absolute; left: 50%; bottom: -30px; width: 120px; height: 120px; z-index: 0; transform: translateX(-50%);
+}
 @media (max-width: 600px) {
-  input[type="text"], input[type="number"] {
-    font-size: 1rem;
-    padding: 12px 10px;
+  .glass-card {
+    padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+    max-width: 99vw;
+    margin: 24px auto 0 auto;
   }
-  button, input[type="submit"] {
-    font-size: 1.05rem;
-    padding: 12px 18px;
+  .glass-title {
+    font-size: 1.3rem;
   }
+  .progress-indicator {
+    font-size: 0.98rem;
+  }
+  .svg-bg-1 { width: 180px; height: 90px; left: -30px; top: 0; }
+  .svg-bg-2 { width: 100px; height: 100px; right: -20px; top: 60px; }
+  .svg-bg-3 { width: 70px; height: 70px; left: 50%; bottom: -10px; }
 }
