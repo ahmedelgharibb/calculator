@@ -168,3 +168,51 @@
   .svg-bg-2 { width: 100px; height: 100px; right: -20px; top: 60px; }
   .svg-bg-3 { width: 70px; height: 70px; left: 50%; bottom: -10px; }
 }
+
+/* Compact option row for Step 2 */
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+.glass-option-input {
+  padding: 0.5rem 0.8rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1.2px solid #e0e7ff;
+  background: rgba(245,247,255,0.92);
+  color: #3a3a5a;
+  margin-bottom: 0;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.03);
+  width: 90px;
+  max-width: 100px;
+}
+.fields-table td {
+  padding: 0.3rem 0.5rem;
+  background: transparent;
+  border: none;
+  vertical-align: top;
+  max-width: 180px;
+  overflow: visible;
+}
+.fields-table th {
+  padding: 0.3rem 0.5rem;
+  font-size: 1.01rem;
+}
+@media (max-width: 600px) {
+  .option-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+  }
+  .glass-option-input {
+    width: 100%;
+    max-width: 100%;
+    font-size: 0.98rem;
+  }
+  .fields-table td, .fields-table th {
+    padding: 0.18rem 0.2rem;
+  }
+}

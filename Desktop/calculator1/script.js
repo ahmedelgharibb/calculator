@@ -73,37 +73,37 @@ function renderStep2() {
             <tbody id="fieldsTableBody">
               ${calculator.fields.map((f, i) => `
                 <tr>
-                  <td style="vertical-align:top;width:160px;max-width:180px;">
-                    <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-input" maxlength="24" required />
+                  <td>
+                    <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-option-input" maxlength="24" required />
                   </td>
-                  <td style="vertical-align:top;min-width:220px;max-width:260px;">
+                  <td>
                     <div class="options-list" data-idx="${i}">
                       ${(f.options||[]).map((opt, oi) => `
                         <div class="option-row">
-                          <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-input" placeholder="Label" maxlength="18" />
-                          <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-input" placeholder="Score" />
+                          <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-option-input" placeholder="Label" maxlength="18" />
+                          <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-option-input" placeholder="Score" />
                           <button type="button" class="remove-option-btn glass-btn glass-btn-sm" data-idx="${i}" data-oidx="${oi}">✕</button>
                         </div>
                       `).join('')}
                       <div class="option-row">
-                        <input type="text" id="newOptionLabel${i}" placeholder="Label" maxlength="18" class="glass-input" />
-                        <input type="number" id="newOptionValue${i}" placeholder="Score" class="glass-input" />
+                        <input type="text" id="newOptionLabel${i}" placeholder="Label" maxlength="18" class="glass-option-input" />
+                        <input type="number" id="newOptionValue${i}" placeholder="Score" class="glass-option-input" />
                         <button type="button" class="add-option-btn glass-btn glass-btn-sm" data-idx="${i}">Add</button>
                       </div>
                     </div>
                   </td>
-                  <td style="vertical-align:top;width:60px;">
+                  <td>
                     <button type="button" class="remove-field-btn glass-btn glass-btn-sm" data-idx="${i}">Remove</button>
                   </td>
                 </tr>
               `).join('')}
               <tr>
-                <td><input type="text" id="newFieldName" placeholder="e.g. Homework" maxlength="24" class="glass-input" /></td>
+                <td><input type="text" id="newFieldName" placeholder="e.g. Homework" maxlength="24" class="glass-option-input" /></td>
                 <td colspan="2">
                   <div id="newOptionsList" style="display:block;"></div>
-                  <div id="newOptionInputs" class="flex gap-2 items-center mt-2">
-                    <input type="text" id="newOptionLabel" placeholder="Label" maxlength="18" class="glass-input" />
-                    <input type="number" id="newOptionValue" placeholder="Score" class="glass-input" />
+                  <div id="newOptionInputs" class="option-row">
+                    <input type="text" id="newOptionLabel" placeholder="Label" maxlength="18" class="glass-option-input" />
+                    <input type="number" id="newOptionValue" placeholder="Score" class="glass-option-input" />
                     <button type="button" id="addNewOptionBtn" class="glass-btn glass-btn-sm">Add</button>
                   </div>
                 </td>
