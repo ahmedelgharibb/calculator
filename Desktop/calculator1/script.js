@@ -182,6 +182,7 @@ function renderStep2() {
     }
     calculator.fields.push({ name, options });
     newOptions = [];
+    renderNewOptions();
     renderStep2();
   };
 
