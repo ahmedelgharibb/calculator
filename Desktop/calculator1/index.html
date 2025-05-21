@@ -116,12 +116,24 @@
 <body>
   <header>
     <span class="logo">ScoreCalc</span>
-    <nav>
+    <nav id="mainNav">
       <a href="#" class="active">Home</a>
       <a href="#create">Create Calculator</a>
       <a href="#browse">Browse Calculators</a>
       <a href="#about">About</a>
     </nav>
+    <button id="menuToggle" aria-label="Open menu" style="display:none;background:none;border:none;outline:none;cursor:pointer;margin-left:auto;padding:8px;">
+      <span style="display:block;width:28px;height:4px;background:#fff;border-radius:2px;margin:5px 0;"></span>
+      <span style="display:block;width:28px;height:4px;background:#fff;border-radius:2px;margin:5px 0;"></span>
+      <span style="display:block;width:28px;height:4px;background:#fff;border-radius:2px;margin:5px 0;"></span>
+    </button>
+    <div id="mobileMenu" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(60,72,100,0.98);z-index:1001;flex-direction:column;align-items:center;justify-content:center;">
+      <a href="#" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">Home</a>
+      <a href="#create" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">Create Calculator</a>
+      <a href="#browse" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">Browse Calculators</a>
+      <a href="#about" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">About</a>
+      <button id="closeMobileMenu" aria-label="Close menu" style="margin-top:32px;font-size:1.5rem;background:#fff;color:#6366f1;border:none;border-radius:8px;padding:10px 32px;">Close</button>
+    </div>
   </header>
   <div class="layout">
     <aside>
@@ -139,5 +151,39 @@
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="script.js"></script>
+  <script>
+    // Responsive mobile menu logic
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const closeMobileMenu = document.getElementById('closeMobileMenu');
+    const mainNav = document.getElementById('mainNav');
+
+    function showMobileMenu() {
+      mobileMenu.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    function hideMobileMenu() {
+      mobileMenu.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    menuToggle.onclick = showMobileMenu;
+    closeMobileMenu.onclick = hideMobileMenu;
+    mobileMenu.onclick = (e) => {
+      if (e.target.classList.contains('mobile-link')) hideMobileMenu();
+    };
+
+    function handleResizeNav() {
+      if (window.innerWidth <= 700) {
+        mainNav.style.display = 'none';
+        menuToggle.style.display = 'block';
+      } else {
+        mainNav.style.display = 'flex';
+        menuToggle.style.display = 'none';
+        hideMobileMenu();
+      }
+    }
+    window.addEventListener('resize', handleResizeNav);
+    document.addEventListener('DOMContentLoaded', handleResizeNav);
+  </script>
 </body>
 </html>
