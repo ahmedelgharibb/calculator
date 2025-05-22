@@ -57,119 +57,50 @@ function renderStep1() {
 function renderStep2() {
   const app = document.getElementById('app');
   app.innerHTML = `
-    <div class="create-calc-bg">
-      <div class="glass-card step animate-fadeIn" style="max-width:700px;margin:40px auto 0 auto;">
-        <h1 class="glass-title" style="font-size:2rem;text-align:center;margin-bottom:1.2em;">Create Your Calculator</h1>
-        <form id="fieldsForm" autocomplete="off">
-          <div style="background:#fff;border-radius:14px;padding:28px 24px 18px 24px;box-shadow:0 2px 8px rgba(60,72,100,0.06);margin-bottom:28px;">
-            <label for="calcTitle" style="font-weight:700;font-size:1.1em;display:block;margin-bottom:8px;">Calculator Title</label>
-            <input type="text" id="calcTitle" name="calcTitle" required placeholder="Enter calculator name" maxlength="32" class="glass-input" value="${calculator.title || ''}" style="width:100%;margin-bottom:0;"/>
-          </div>
-          <div id="fieldsList">
-            ${calculator.fields.map((f, i) => `
-              <div class="field-card" style="background:#f8fafc;border-radius:12px;padding:20px 18px 16px 18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(60,72,100,0.04);position:relative;">
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-                  <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input glass-option-input" maxlength="24" required style="flex:1;font-weight:600;font-size:1.08em;" placeholder="Field Name (e.g., 'Quiz')" aria-label="Field Name (e.g., 'Quiz')"/>
-                  <button type="button" class="remove-field-btn" data-idx="${i}" style="color:#ef4444;background:none;border:none;font-weight:600;font-size:1em;">Remove Field</button>
-                </div>
-                <div class="options-list" data-idx="${i}" style="display:flex;flex-direction:column;gap:10px;margin-left:12px;">
-                  <div style="font-weight:600;font-size:1em;margin-bottom:4px;">Options</div>
-                  ${(f.options||[]).map((opt, oi) => `
-                    <div class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:2px;">
-                      <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input glass-option-input" placeholder="Label (e.g., 'A+')" maxlength="18" style="flex:2;" aria-label="Option Label (e.g., 'A+')" />
-                      <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input glass-option-input" placeholder="Points (e.g., 100)" style="flex:1;" aria-label="Points (e.g., 100)" />
-                      <button type="button" class="remove-option-btn" data-idx="${i}" data-oidx="${oi}" style="color:#ef4444;background:none;border:none;font-size:1.1em;">✕</button>
-                    </div>
-                  `).join('')}
-                  <div class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:2px;">
-                    <input type="text" id="newOptionLabel${i}" placeholder="Label (e.g., 'A+')" maxlength="18" class="glass-option-input" style="flex:2;" aria-label="Option Label (e.g., 'A+')" />
-                    <input type="number" id="newOptionValue${i}" placeholder="Points (e.g., 100)" class="glass-option-input" style="flex:1;" aria-label="Points (e.g., 100)" />
-                  </div>
-                  <button type="button" class="add-option-btn glass-btn glass-btn-sm" data-idx="${i}" style="margin-top:4px;width:100%;font-weight:600;background:linear-gradient(90deg,#a5b4fc,#818cf8);color:#fff;">+ Add Another Option</button>
-                </div>
+    <div class="flex justify-center items-center min-h-[80vh] w-full">
+      <form id="fieldsForm" autocomplete="off" class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-xl border border-gray-100">
+        <h2 class="text-3xl font-extrabold text-center mb-8 text-gray-800">Create Your Calculator</h2>
+        <div class="mb-6">
+          <label for="calcTitle" class="block text-lg font-bold text-gray-700 mb-2">Calculator Title</label>
+          <input type="text" id="calcTitle" name="calcTitle" required placeholder="Enter calculator name" maxlength="32" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-0 bg-gray-50" value="${calculator.title || ''}" />
+        </div>
+        <div id="fieldsList">
+          ${calculator.fields.map((f, i) => `
+            <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
+              <div class="flex items-center gap-2 mb-3">
+                <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
+                <button type="button" class="remove-field-btn text-red-500 text-sm font-semibold ml-2" data-idx="${i}">Remove Field</button>
               </div>
-            `).join('')}
-          </div>
-          <div class="field-card" style="background:#f8fafc;border-radius:12px;padding:20px 18px 16px 18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(60,72,100,0.04);">
-            <input type="text" id="newFieldName" placeholder="Field Name (e.g., 'Homework')" maxlength="24" class="glass-option-input" style="width:100%;margin-bottom:10px;" aria-label="Field Name (e.g., 'Homework')" />
-            <div id="newOptionsList"></div>
-            <div style="font-weight:600;font-size:1em;margin-bottom:4px;margin-left:2px;">Options</div>
-            <div id="newOptionInputs" class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:2px;">
-              <input type="text" id="newOptionLabel" placeholder="Label (e.g., 'Full Credit')" maxlength="18" class="glass-option-input" style="flex:2;" aria-label="Option Label (e.g., 'Full Credit')" />
-              <input type="number" id="newOptionValue" placeholder="Points (e.g., 10)" class="glass-option-input" style="flex:1;" aria-label="Points (e.g., 10)" />
+              ${(f.options||[]).map((opt, oi) => `
+                <div class="flex gap-2 mb-2">
+                  <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Option label (A, A+, B, etc.)" maxlength="18" aria-label="Option label (A, A+, B, etc.)" />
+                  <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Value" aria-label="Value" />
+                </div>
+              `).join('')}
+              <button type="button" class="add-option-btn bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg px-3 py-2 mt-2 text-sm" data-idx="${i}">+ Add Option</button>
             </div>
-            <button type="button" id="addNewOptionBtn" class="glass-btn glass-btn-sm" style="margin-top:4px;width:100%;font-weight:600;background:linear-gradient(90deg,#a5b4fc,#818cf8);color:#fff;">+ Add Another Option</button>
-          </div>
-          <button type="button" id="addFieldBtn" class="glass-btn" style="margin-bottom:18px;width:160px;">+ Add Field</button>
-          <button type="submit" class="glass-btn next-btn" style="width:100%;font-size:1.15em;padding:16px 0;background:#111827;color:#fff;font-weight:700;">Save Calculator</button>
-        </form>
-      </div>
+          `).join('')}
+        </div>
+        <button type="button" id="addFieldBtn" class="border border-gray-200 bg-white hover:bg-gray-100 text-gray-800 font-semibold rounded-lg px-4 py-2 mb-6 w-full">+ Add Field</button>
+        <button type="submit" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-4 text-lg transition">Save Calculator</button>
+      </form>
     </div>
   `;
 
-  // New field options state
-  let newOptions = [];
-  function renderNewOptions() {
-    const list = document.getElementById('newOptionsList');
-    if (!list) return;
-    list.innerHTML = newOptions.map((opt, oi) => `
-      <div class="option-row" style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
-        <input type="text" value="${opt.label}" data-oidx="${oi}" class="new-option-label-input glass-option-input" maxlength="18" placeholder="Label (e.g., 'Full Credit')" style="flex:2;" aria-label="Option Label (e.g., 'Full Credit')" />
-        <input type="number" value="${opt.value}" data-oidx="${oi}" class="new-option-value-input glass-option-input" placeholder="Points (e.g., 10)" style="flex:1;" aria-label="Points (e.g., 10)" />
-        <button type="button" class="remove-new-option-btn" data-oidx="${oi}" style="color:#ef4444;background:none;border:none;font-size:1.1em;">✕</button>
-      </div>
-    `).join('');
-  }
-
-  // Add new option for new field
-  document.getElementById('addNewOptionBtn').onclick = () => {
-    const label = document.getElementById('newOptionLabel').value.trim();
-    const value = parseFloat(document.getElementById('newOptionValue').value);
-    if (!label || isNaN(value)) {
-      alert('Enter label and score for the option.');
-      return;
-    }
-    newOptions.push({ label, value });
-    document.getElementById('newOptionLabel').value = '';
-    document.getElementById('newOptionValue').value = '';
-    renderNewOptions();
-  };
-  // Remove new option
-  document.getElementById('newOptionsList').onclick = (e) => {
-    if (e.target.classList.contains('remove-new-option-btn')) {
-      const oidx = e.target.getAttribute('data-oidx');
-      newOptions.splice(oidx, 1);
-      renderNewOptions();
-    }
-  };
-  // Edit new option
-  document.getElementById('newOptionsList').oninput = (e) => {
-    if (e.target.classList.contains('new-option-label-input')) {
-      const oidx = e.target.getAttribute('data-oidx');
-      newOptions[oidx].label = e.target.value;
-    } else if (e.target.classList.contains('new-option-value-input')) {
-      const oidx = e.target.getAttribute('data-oidx');
-      newOptions[oidx].value = parseFloat(e.target.value) || 0;
-    }
-  };
-
-  // Add new field
+  // Add field logic
   document.getElementById('addFieldBtn').onclick = () => {
-    const name = document.getElementById('newFieldName').value.trim();
-    let options = newOptions.filter(opt => opt.label && !isNaN(opt.value));
-    if (!name) {
-      alert('Please enter a field name.');
-      return;
-    }
-    if (!options.length) {
-      alert('Please add at least one option for the field.');
-      return;
-    }
-    calculator.fields.push({ name, options });
-    newOptions = [];
-    renderNewOptions();
+    calculator.fields.push({ name: '', options: [] });
     renderStep2();
   };
+
+  // Remove field logic
+  document.querySelectorAll('.remove-field-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      const idx = btn.getAttribute('data-idx');
+      calculator.fields.splice(idx, 1);
+      renderStep2();
+    };
+  });
 
   // Edit field name
   document.querySelectorAll('.field-name-input').forEach(inp => {
@@ -179,7 +110,17 @@ function renderStep2() {
     };
   });
 
-  // Option editing for existing fields
+  // Add option logic
+  document.querySelectorAll('.add-option-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      const idx = btn.getAttribute('data-idx');
+      calculator.fields[idx].options = calculator.fields[idx].options || [];
+      calculator.fields[idx].options.push({ label: '', value: '' });
+      renderStep2();
+    };
+  });
+
+  // Edit option label/value
   document.querySelectorAll('.option-label-input').forEach(inp => {
     inp.oninput = (e) => {
       const idx = e.target.getAttribute('data-idx');
@@ -191,53 +132,15 @@ function renderStep2() {
     inp.oninput = (e) => {
       const idx = e.target.getAttribute('data-idx');
       const oidx = e.target.getAttribute('data-oidx');
-      calculator.fields[idx].options[oidx].value = parseFloat(e.target.value) || 0;
-    };
-  });
-  document.querySelectorAll('.add-option-btn').forEach(btn => {
-    btn.onclick = (e) => {
-      const idx = btn.getAttribute('data-idx');
-      const label = document.getElementById(`newOptionLabel${idx}`).value.trim();
-      const value = parseFloat(document.getElementById(`newOptionValue${idx}`).value);
-      if (!label || isNaN(value)) {
-        alert('Enter label and score for the option.');
-        return;
-      }
-      calculator.fields[idx].options = calculator.fields[idx].options || [];
-      calculator.fields[idx].options.push({ label, value });
-      renderStep2();
-    };
-  });
-  document.querySelectorAll('.remove-option-btn').forEach(btn => {
-    btn.onclick = (e) => {
-      const idx = btn.getAttribute('data-idx');
-      const oidx = btn.getAttribute('data-oidx');
-      calculator.fields[idx].options.splice(oidx, 1);
-      renderStep2();
+      calculator.fields[idx].options[oidx].value = e.target.value;
     };
   });
 
-  // Remove field
-  document.querySelectorAll('.remove-field-btn').forEach(btn => {
-    btn.onclick = (e) => {
-      const idx = btn.getAttribute('data-idx');
-      calculator.fields.splice(idx, 1);
-      renderStep2();
-    };
-  });
-
-  // Submit all fields
+  // Save Calculator
   document.getElementById('fieldsForm').onsubmit = (e) => {
     e.preventDefault();
-    // Validate all fields
-    for (const f of calculator.fields) {
-      if (!f.name || !f.options || !f.options.length) {
-        alert('Please fill all fields and ensure each has options.');
-        return;
-      }
-    }
-    step = 3;
-    renderStep3();
+    // Save logic here
+    // ...
   };
 }
 
