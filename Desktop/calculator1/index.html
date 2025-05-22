@@ -6,6 +6,7 @@
   <title>Custom Score Calculator</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -113,40 +114,40 @@
     }
   </style>
 </head>
-<body>
-  <header>
-    <span class="logo">ScoreCalc</span>
-    <nav id="mainNav">
-      <a href="#" class="active">Home</a>
-      <a href="#create">Create Calculator</a>
-      <a href="#browse">Browse Calculators</a>
-      <a href="#about">About</a>
-    </nav>
-    <button id="menuToggle" aria-label="Open menu" style="display:none;background:none;border:none;outline:none;cursor:pointer;margin-left:auto;padding:8px;">
-      <span style="display:block;width:28px;height:4px;background:#fff;border-radius:2px;margin:5px 0;"></span>
-      <span style="display:block;width:28px;height:4px;background:#fff;border-radius:2px;margin:5px 0;"></span>
-      <span style="display:block;width:28px;height:4px;background:#fff;border-radius:2px;margin:5px 0;"></span>
-    </button>
-    <div id="mobileMenu" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(60,72,100,0.98);z-index:1001;flex-direction:column;align-items:center;justify-content:center;">
-      <a href="#" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">Home</a>
-      <a href="#create" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">Create Calculator</a>
-      <a href="#browse" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">Browse Calculators</a>
-      <a href="#about" class="mobile-link" style="color:#fff;font-size:2rem;margin:18px 0;text-decoration:none;">About</a>
-      <button id="closeMobileMenu" aria-label="Close menu" style="margin-top:32px;font-size:1.5rem;background:#fff;color:#6366f1;border:none;border-radius:8px;padding:10px 32px;">Close</button>
+<body class="bg-gray-50 text-gray-900 font-sans">
+  <header class="bg-indigo-600 text-white shadow sticky top-0 z-10">
+    <div class="flex items-center h-16 px-6">
+      <span class="text-2xl font-extrabold tracking-tight mr-8">ScoreCalc</span>
+      <nav id="mainNav" class="flex gap-6 items-center flex-1">
+        <a href="#" class="hover:bg-white hover:text-indigo-600 px-4 py-2 rounded-lg font-semibold transition active">Home</a>
+        <a href="#create" class="hover:bg-white hover:text-indigo-600 px-4 py-2 rounded-lg font-semibold transition">Create Calculator</a>
+        <a href="#browse" class="hover:bg-white hover:text-indigo-600 px-4 py-2 rounded-lg font-semibold transition">Browse Calculators</a>
+        <a href="#about" class="hover:bg-white hover:text-indigo-600 px-4 py-2 rounded-lg font-semibold transition">About</a>
+      </nav>
+      <button id="menuToggle" aria-label="Open menu" class="block md:hidden ml-auto p-2 rounded hover:bg-indigo-700 focus:outline-none">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div id="mobileMenu" class="hidden fixed top-0 left-0 w-full h-full bg-indigo-900 bg-opacity-95 z-50 flex-col items-center justify-center">
+      <a href="#" class="text-white text-3xl my-4 mobile-link">Home</a>
+      <a href="#create" class="text-white text-3xl my-4 mobile-link">Create Calculator</a>
+      <a href="#browse" class="text-white text-3xl my-4 mobile-link">Browse Calculators</a>
+      <a href="#about" class="text-white text-3xl my-4 mobile-link">About</a>
+      <button id="closeMobileMenu" aria-label="Close menu" class="mt-8 text-indigo-600 bg-white px-8 py-3 rounded-lg text-xl font-bold">Close</button>
     </div>
   </header>
-  <div class="layout">
-    <aside>
-      <a href="#" class="sidebar-link active">🏠 Home</a>
-      <a href="#create" class="sidebar-link">➕ Create Calculator</a>
-      <a href="#browse" class="sidebar-link">🔍 Browse Calculators</a>
-      <a href="#about" class="sidebar-link">ℹ️ About</a>
+  <div class="flex min-h-screen">
+    <aside class="hidden md:flex flex-col gap-4 w-60 bg-white border-r border-gray-200 py-10 shadow-lg">
+      <a href="#" class="sidebar-link flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-indigo-600 hover:bg-indigo-50 active">🏠 Home</a>
+      <a href="#create" class="sidebar-link flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-indigo-600 hover:bg-indigo-50">➕ Create Calculator</a>
+      <a href="#browse" class="sidebar-link flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-indigo-600 hover:bg-indigo-50">🔍 Browse Calculators</a>
+      <a href="#about" class="sidebar-link flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-indigo-600 hover:bg-indigo-50">ℹ️ About</a>
     </aside>
-    <main>
-      <div class="container" id="app"></div>
+    <main class="flex-1 px-4 md:px-12 py-10 bg-gray-50 min-h-screen flex flex-col items-stretch">
+      <div class="max-w-3xl w-full mx-auto" id="app"></div>
     </main>
   </div>
-  <footer>
+  <footer class="bg-white text-indigo-600 text-center py-8 text-lg border-t border-gray-200 shadow-inner mt-12">
     &copy; 2024 ScoreCalc &mdash; Built with Supabase &amp; Vercel
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -159,11 +160,13 @@
     const mainNav = document.getElementById('mainNav');
 
     function showMobileMenu() {
-      mobileMenu.style.display = 'flex';
+      mobileMenu.classList.remove('hidden');
+      mobileMenu.classList.add('flex');
       document.body.style.overflow = 'hidden';
     }
     function hideMobileMenu() {
-      mobileMenu.style.display = 'none';
+      mobileMenu.classList.add('hidden');
+      mobileMenu.classList.remove('flex');
       document.body.style.overflow = '';
     }
     menuToggle.onclick = showMobileMenu;
@@ -173,7 +176,7 @@
     };
 
     function handleResizeNav() {
-      if (window.innerWidth <= 700) {
+      if (window.innerWidth <= 900) {
         mainNav.style.display = 'none';
         menuToggle.style.display = 'block';
       } else {
