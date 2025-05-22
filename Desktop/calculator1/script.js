@@ -69,7 +69,7 @@ function renderStep2() {
             <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
               <div class="flex items-center gap-2 mb-3">
                 <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
-                <button type="button" class="remove-field-btn text-red-500 text-sm font-semibold ml-2" data-idx="${i}">Remove Field</button>
+                <button type="button" class="remove-field-btn text-red-500 text-sm font-semibold ml-2 transition-colors duration-150 hover:text-red-700" data-idx="${i}">Remove Field</button>
               </div>
               ${(f.options||[]).map((opt, oi) => `
                 <div class="flex gap-2 mb-2">
@@ -77,11 +77,11 @@ function renderStep2() {
                   <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Value" aria-label="Value" />
                 </div>
               `).join('')}
-              <button type="button" class="add-option-btn bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg px-3 py-2 mt-2 text-sm" data-idx="${i}">+ Add Option</button>
+              <button type="button" class="add-option-btn w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-3 text-base transition mb-2 mt-2" data-idx="${i}">+ Add Option</button>
             </div>
           `).join('')}
         </div>
-        <button type="button" id="addFieldBtn" class="border border-gray-200 bg-white hover:bg-gray-100 text-gray-800 font-semibold rounded-lg px-4 py-2 mb-6 w-full">+ Add Field</button>
+        <button type="button" id="addFieldBtn" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-3 text-base transition mb-6">+ Add Field</button>
         <button type="submit" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-4 text-lg transition">Save Calculator</button>
       </form>
     </div>
