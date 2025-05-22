@@ -71,13 +71,20 @@ function renderStep2() {
                 <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
                 <button type="button" class="remove-field-btn text-red-500 text-sm font-semibold ml-2 transition-colors duration-150 hover:text-red-700" data-idx="${i}">Remove Field</button>
               </div>
-              ${(f.options||[]).map((opt, oi) => `
-                <div class="flex gap-2 mb-2">
-                  <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Option label (A, A+, B, etc.)" maxlength="18" aria-label="Option label (A, A+, B, etc.)" />
-                  <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Value" aria-label="Value" />
-                </div>
-              `).join('')}
-              <button type="button" class="add-option-btn w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-3 text-base transition mb-2 mt-2" data-idx="${i}">+ Add Option</button>
+              <div class="flex gap-2 mb-2">
+                <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Option label (A, A+, B, etc.)" maxlength="18" aria-label="Option label (A, A+, B, etc.)" />
+                <input type="number" id="optionValueInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-32 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Value" aria-label="Value" />
+              </div>
+              <button type="button" class="add-option-btn w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-3 text-base transition mb-2" data-idx="${i}">+ Add Option</button>
+              <div id="optionsList${i}" class="mt-2">
+                ${(f.options||[]).map((opt, oi) => `
+                  <div class="flex gap-2 items-center mb-2">
+                    <div class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-800">${opt.label}</div>
+                    <div class="w-32 px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 text-center">${opt.value}</div>
+                    <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2 transition-colors duration-150 hover:text-red-700" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
+                  </div>
+                `).join('')}
+              </div>
             </div>
           `).join('')}
         </div>
@@ -114,25 +121,32 @@ function renderStep2() {
   document.querySelectorAll('.add-option-btn').forEach(btn => {
     btn.onclick = (e) => {
       const idx = btn.getAttribute('data-idx');
+      const labelInput = document.getElementById(`optionLabelInput${idx}`);
+      const valueInput = document.getElementById(`optionValueInput${idx}`);
+      const label = labelInput.value.trim();
+      const value = valueInput.value.trim();
+      if (!label || !value) {
+        labelInput.classList.add('border-red-400');
+        valueInput.classList.add('border-red-400');
+        return;
+      }
       calculator.fields[idx].options = calculator.fields[idx].options || [];
-      calculator.fields[idx].options.push({ label: '', value: '' });
+      calculator.fields[idx].options.push({ label, value });
+      labelInput.value = '';
+      valueInput.value = '';
+      labelInput.classList.remove('border-red-400');
+      valueInput.classList.remove('border-red-400');
       renderStep2();
     };
   });
 
-  // Edit option label/value
-  document.querySelectorAll('.option-label-input').forEach(inp => {
-    inp.oninput = (e) => {
-      const idx = e.target.getAttribute('data-idx');
-      const oidx = e.target.getAttribute('data-oidx');
-      calculator.fields[idx].options[oidx].label = e.target.value;
-    };
-  });
-  document.querySelectorAll('.option-value-input').forEach(inp => {
-    inp.oninput = (e) => {
-      const idx = e.target.getAttribute('data-idx');
-      const oidx = e.target.getAttribute('data-oidx');
-      calculator.fields[idx].options[oidx].value = e.target.value;
+  // Remove option logic
+  document.querySelectorAll('.remove-option-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      const idx = btn.getAttribute('data-idx');
+      const oidx = btn.getAttribute('data-oidx');
+      calculator.fields[idx].options.splice(oidx, 1);
+      renderStep2();
     };
   });
 
