@@ -72,8 +72,8 @@ function renderStep2() {
                 <button type="button" class="remove-field-btn text-red-500 text-sm font-semibold ml-2 transition-colors duration-150 hover:text-red-700" data-idx="${i}">Remove Field</button>
               </div>
               <div class="flex gap-2 mb-2">
-                <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-20 min-w-[70px] max-w-[100px] focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Option label (A, A+, B, etc.)" maxlength="18" aria-label="Option label (A, A+, B, etc.)" />
-                <input type="number" id="optionValueInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1 min-w-[180px] focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Value" aria-label="Value" />
+                <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-[2_2_0%] min-w-[120px] max-w-[300px] focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Option label (A, A+, B, etc.)" maxlength="18" aria-label="Option label (A, A+, B, etc.)" />
+                <input type="number" id="optionValueInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-[1_1_0%] min-w-[60px] max-w-[120px] focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Value" aria-label="Value" />
               </div>
               <button type="button" class="add-option-btn w-full max-w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-4 text-lg transition mb-2" data-idx="${i}">+ Add Option</button>
               <div id="optionsList${i}" class="mt-2">
