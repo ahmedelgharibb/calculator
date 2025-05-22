@@ -507,4 +507,106 @@ function handleNavigation() {
 }
 
 window.addEventListener('hashchange', handleNavigation);
-document.addEventListener('DOMContentLoaded', handleNavigation); 
+document.addEventListener('DOMContentLoaded', handleNavigation);
+
+// --- Modern calculator creation UI logic ---
+document.addEventListener('DOMContentLoaded', () => {
+  const calcForm = document.getElementById('calcForm');
+  if (!calcForm) return;
+  const calcTitleInput = document.getElementById('calcTitle');
+  const fieldNameInput = document.getElementById('fieldName');
+  const addOptionBtn = document.querySelector('.add-option-btn');
+  const addFieldBtn = document.querySelector('.add-field-btn');
+  const saveBtn = document.querySelector('.save-btn');
+  const optionsSection = document.querySelector('.options-section');
+  const optionRow = optionsSection.querySelector('.option-row');
+  const calcTitleError = document.getElementById('calcTitleError');
+  const fieldNameError = document.getElementById('fieldNameError');
+
+  let options = [];
+  let fields = [];
+
+  function renderOptions() {
+    // Remove all but the first option row
+    optionsSection.querySelectorAll('.option-row').forEach((row, idx) => { if (idx > 0) row.remove(); });
+    options.forEach((opt, i) => {
+      const row = document.createElement('div');
+      row.className = 'option-row';
+      row.innerHTML = `
+        <input type="text" placeholder="e.g., A+" value="${opt.label}" required>
+        <input type="number" placeholder="e.g., 100" value="${opt.points}" required>
+        <button type="button" class="remove-option-btn" aria-label="Remove option" style="color:#ef4444;background:none;border:none;font-size:1.1em;">✕</button>
+      `;
+      row.querySelector('.remove-option-btn').onclick = () => {
+        options.splice(i, 1);
+        renderOptions();
+      };
+      // Update option values on input
+      row.querySelectorAll('input').forEach((input, idx) => {
+        input.oninput = (e) => {
+          if (idx === 0) options[i].label = e.target.value;
+          else options[i].points = e.target.value;
+        };
+      });
+      optionsSection.insertBefore(row, addOptionBtn);
+    });
+  }
+
+  addOptionBtn.onclick = () => {
+    const label = optionRow.querySelector('input[type="text"]').value.trim();
+    const points = optionRow.querySelector('input[type="number"]').value.trim();
+    if (!label || !points) {
+      optionRow.querySelectorAll('input').forEach(inp => inp.classList.add('error'));
+      return;
+    }
+    options.push({ label, points });
+    optionRow.querySelectorAll('input').forEach(inp => { inp.value = ''; inp.classList.remove('error'); });
+    renderOptions();
+  };
+
+  addFieldBtn.onclick = () => {
+    const fieldName = fieldNameInput.value.trim();
+    if (!fieldName) {
+      fieldNameInput.classList.add('error');
+      fieldNameError.textContent = 'Field name is required.';
+      return;
+    }
+    if (!options.length) {
+      fieldNameError.textContent = 'Add at least one option.';
+      return;
+    }
+    fields.push({ name: fieldName, options: [...options] });
+    fieldNameInput.value = '';
+    options = [];
+    renderOptions();
+    fieldNameError.textContent = '';
+  };
+
+  calcForm.onsubmit = (e) => {
+    e.preventDefault();
+    let valid = true;
+    if (!calcTitleInput.value.trim()) {
+      calcTitleInput.classList.add('error');
+      calcTitleError.textContent = 'Calculator title is required.';
+      valid = false;
+    } else {
+      calcTitleInput.classList.remove('error');
+      calcTitleError.textContent = '';
+    }
+    if (!fields.length) {
+      fieldNameError.textContent = 'Add at least one field.';
+      valid = false;
+    } else {
+      fieldNameError.textContent = '';
+    }
+    if (!valid) return;
+    // Save logic here (e.g., send to backend)
+    alert('Calculator saved!');
+    // Reset form
+    calcTitleInput.value = '';
+    fieldNameInput.value = '';
+    options = [];
+    fields = [];
+    renderOptions();
+  };
+}); 

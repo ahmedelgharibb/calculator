@@ -216,3 +216,110 @@
     padding: 0.18rem 0.2rem;
   }
 }
+
+/* Modern calculator creation UI redesign */
+body, html {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: #f4f6fb;
+}
+.calc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #6366f1;
+  margin-bottom: 24px;
+}
+.calc-icon {
+  font-size: 2.3rem;
+}
+.calc-section, .field-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px 18px 16px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px rgba(60,72,100,0.04);
+}
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  color: #22223b;
+}
+.required { color: #ef4444; }
+input[type='text'], input[type='number'] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e0e7ff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 1em;
+  transition: border 0.2s;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(60,72,100,0.03);
+}
+input:focus { border-color: #6366f1; outline: none; }
+input.error { border-color: #ef4444; }
+.error-message {
+  color: #ef4444;
+  font-size: 0.95em;
+  margin-bottom: 6px;
+}
+.add-option-btn, .add-field-btn, .save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 0;
+  margin-top: 8px;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(60,72,100,0.06);
+  transition: background 0.2s, filter 0.2s;
+  font-size: 1.08em;
+}
+.add-option-btn {
+  background: linear-gradient(90deg,#a5b4fc,#6366f1);
+  color: #fff;
+}
+.add-field-btn {
+  background: #6366f1;
+  color: #fff;
+}
+.save-btn {
+  background: #10b981;
+  color: #fff;
+  font-size: 1.15em;
+  margin-top: 18px;
+}
+.add-option-btn:hover, .add-field-btn:hover, .save-btn:hover {
+  filter: brightness(0.95);
+}
+.field-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px 18px 16px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px rgba(60,72,100,0.04);
+}
+.options-section label {
+  margin-bottom: 2px;
+}
+.option-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 2px;
+}
+@media (max-width: 600px) {
+  .calc-section, .field-section, .field-card {
+    padding: 14px 6px 12px 6px;
+  }
+  .calc-header {
+    font-size: 1.3rem;
+  }
+}
