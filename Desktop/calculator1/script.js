@@ -450,12 +450,12 @@ async function fetchCalculatorsInline() {
       const ampm = hour < 12 ? 'am' : 'pm';
       const formattedTime = `${hour12}:${minutes} ${ampm}`;
       return `
-        <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:18px;padding:22px 32px;margin-bottom:26px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
-          <div style="font-size:1.35rem;font-weight:800;color:#181824;letter-spacing:-0.01em;">${calc.title}</div>
-          <div style="font-size:1.01rem;color:#8b95a1;font-weight:500;margin-top:4px;margin-bottom:6px;min-height:1.2em;">
+        <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:22px;padding:38px 32px 32px 32px;margin-bottom:36px;box-shadow:0 2px 12px rgba(60,72,100,0.09);cursor:pointer;transition:box-shadow 0.2s;display:flex;flex-direction:column;align-items:center;min-height:180px;max-width:420px;width:100%;margin-left:auto;margin-right:auto;">
+          <div style="font-size:1.55rem;font-weight:900;color:#181824;letter-spacing:-0.01em;text-align:center;width:100%;">${calc.title}</div>
+          <div style="font-size:1.08rem;color:#8b95a1;font-weight:500;margin-top:10px;margin-bottom:10px;min-height:1.2em;text-align:center;width:100%;">
             ${calc.purpose && calc.purpose.trim() ? calc.purpose : '<span style=\'color:#cbd5e1;font-style:italic;\'>No purpose provided</span>'}
           </div>
-          <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${formattedTime}</div>
+          <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:auto;text-align:center;width:100%;">${formattedTime}</div>
         </div>
       `;
     }).join('');
