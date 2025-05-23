@@ -375,14 +375,63 @@ nav a.active {
     margin-right: 0.5rem;
   }
   nav {
+    display: none !important;
+  }
+  #menuToggle {
+    display: block !important;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    margin-left: auto;
+    z-index: 101;
+  }
+  #mobileMenu {
     display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #232946;
+    background: rgba(35,41,70,0.98);
+    z-index: 200;
+    transition: opacity 0.3s;
   }
-  nav {
-    gap: 1rem;
+  #mobileMenu.flex {
+    display: flex !important;
   }
-  nav a {
-    font-size: 0.95rem;
-    padding: 0.4rem 0.7rem;
+  #mobileMenu a {
+    color: #fff;
+    font-size: 2.2rem;
+    margin: 1.2rem 0;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    transition: color 0.18s;
+  }
+  #mobileMenu a:hover {
+    color: #bfc0c0;
+  }
+  #closeMobileMenu {
+    margin-top: 2.5rem;
+    background: #fff;
+    color: #232946;
+    font-size: 1.3rem;
+    font-weight: 900;
+    border-radius: 1.2rem;
+    padding: 0.9rem 2.5rem;
+    box-shadow: 0 4px 24px #23294633;
+    border: none;
+    transition: background 0.18s, color 0.18s;
+  }
+  #closeMobileMenu:hover {
+    background: #232946;
+    color: #fff;
+    border: 1.5px solid #fff;
   }
   .main-glass {
     padding: 1.2rem 0.1rem;
