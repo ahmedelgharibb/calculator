@@ -306,6 +306,7 @@ header > div {
   justify-content: flex-start;
   padding: 0 2.5rem;
   height: 70px;
+  background: none;
 }
 .logo {
   font-size: 2.2rem;
@@ -319,6 +320,7 @@ nav {
   display: flex;
   gap: 2.8rem;
   align-items: center;
+  background: none;
 }
 nav a {
   color: #bfc0c0;
