@@ -452,7 +452,9 @@ async function fetchCalculatorsInline() {
       return `
         <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:18px;padding:22px 32px;margin-bottom:26px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
           <div style="font-size:1.35rem;font-weight:800;color:#181824;letter-spacing:-0.01em;">${calc.title}</div>
-          <div style="font-size:1.02rem;color:#6b7280;font-weight:500;margin-top:2px;margin-bottom:2px;">${calc.purpose ? calc.purpose : ''}</div>
+          <div style="font-size:1.01rem;color:#8b95a1;font-weight:500;margin-top:4px;margin-bottom:6px;min-height:1.2em;">
+            ${calc.purpose && calc.purpose.trim() ? calc.purpose : '<span style=\'color:#cbd5e1;font-style:italic;\'>No purpose provided</span>'}
+          </div>
           <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${formattedTime}</div>
         </div>
       `;
