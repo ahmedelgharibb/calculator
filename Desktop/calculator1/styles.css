@@ -375,6 +375,9 @@ nav a.active {
     margin-right: 0.5rem;
   }
   nav {
+    display: none;
+  }
+  nav {
     gap: 1rem;
   }
   nav a {
