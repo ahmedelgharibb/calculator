@@ -76,7 +76,7 @@ function renderStep2() {
           <label for="calcTitle" class="block text-lg font-bold text-gray-700 mb-2">Calculator Title</label>
           <input type="text" id="calcTitle" name="calcTitle" required placeholder="Enter calculator name" maxlength="32" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-0 bg-gray-50" value="${calculator.title || ''}" />
           <label for="calcPurpose" class="block text-lg font-bold text-gray-700 mb-2 mt-4">Purpose</label>
-          <input type="text" id="calcPurpose" name="calcPurpose" readonly tabindex="-1" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-base bg-gray-100 text-gray-500 mb-0" value="${calculator.purpose || ''}" />
+          <input type="text" id="calcPurpose" name="calcPurpose" required placeholder="e.g. Calculate final exam grades for Math 101" maxlength="80" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-base bg-gray-50 mb-0" value="${calculator.purpose || ''}" />
         </div>
         <div id="fieldsList">
           ${calculator.fields.map((f, i) => `
@@ -114,6 +114,12 @@ function renderStep2() {
   calcTitleInput.oninput = (e) => {
     calculator.title = e.target.value;
     calcTitleInput.classList.remove('border-red-400');
+  };
+  // Sync calculator purpose
+  const calcPurposeInput = document.getElementById('calcPurpose');
+  calcPurposeInput.oninput = (e) => {
+    calculator.purpose = e.target.value;
+    calcPurposeInput.classList.remove('border-red-400');
   };
 
   // Add field logic
