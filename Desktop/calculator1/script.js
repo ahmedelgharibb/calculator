@@ -471,7 +471,8 @@ async function fetchCalculatorsInline() {
       const ampm = hour < 12 ? 'am' : 'pm';
       const formattedTime = `${hour12}:${minutes} ${ampm}`;
       return `
-        <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:22px;padding:38px 32px 32px 32px;margin-bottom:36px;box-shadow:0 2px 12px rgba(60,72,100,0.09);cursor:pointer;transition:box-shadow 0.2s;display:flex;flex-direction:column;align-items:center;min-height:180px;max-width:420px;width:100%;margin-left:auto;margin-right:auto;">
+        <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:22px;padding:38px 32px 32px 32px;margin-bottom:36px;box-shadow:0 2px 12px rgba(60,72,100,0.09);cursor:pointer;transition:box-shadow 0.2s;display:flex;flex-direction:column;align-items:center;min-height:180px;max-width:420px;width:100%;margin-left:auto;margin-right:auto;position:relative;">
+          <button class="delete-calc-btn" title="Delete calculator" aria-label="Delete calculator" style="position:absolute;top:18px;right:18px;background:none;border:none;color:#e11d48;font-size:1.3rem;cursor:pointer;z-index:2;transition:color 0.18s;"><span aria-hidden="true">&times;</span></button>
           <div style="font-size:1.55rem;font-weight:900;color:#181824;letter-spacing:-0.01em;text-align:center;width:100%;">${calc.title}</div>
           <div style="font-size:1.08rem;color:#8b95a1;font-weight:500;margin-top:10px;margin-bottom:10px;min-height:1.2em;text-align:center;width:100%;">
             ${calc.purpose && calc.purpose.trim() ? calc.purpose : '<span style=\'color:#cbd5e1;font-style:italic;\'>No purpose provided</span>'}
@@ -480,6 +481,20 @@ async function fetchCalculatorsInline() {
         </div>
       `;
     }).join('');
+    // Add delete logic
+    document.querySelectorAll('.delete-calc-btn').forEach((btn, idx) => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        const calcId = btn.closest('.calc-item').getAttribute('data-id');
+        if (!calcId) return;
+        if (!confirm('Are you sure you want to delete this calculator? This cannot be undone.')) return;
+        btn.disabled = true;
+        btn.innerHTML = '<span style="font-size:1.1em;">...</span>';
+        // Delete calculator and cascade
+        await supabase.from('calculators').delete().eq('id', calcId);
+        fetchCalculatorsInline();
+      };
+    });
     document.querySelectorAll('.calc-item').forEach(item => {
       item.onclick = () => showCalculatorInline(item.getAttribute('data-id'));
       item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') item.click(); };
