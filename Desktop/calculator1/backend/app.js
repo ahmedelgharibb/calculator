@@ -41,6 +41,7 @@ async function getCalculator(id) {
   return {
     id: calculator.id,
     title: calculator.title,
+    purpose: calculator.purpose,
     created_at: calculator.created_at,
     fields
   };
@@ -48,16 +49,16 @@ async function getCalculator(id) {
 
 // POST /calculators: Save a new calculator
 app.post('/calculators', async (req, res) => {
-  const { title, fields } = req.body;
-  if (!title || !fields || !Array.isArray(fields) || !fields.length) {
+  const { title, purpose, fields } = req.body;
+  if (!title || !purpose || !fields || !Array.isArray(fields) || !fields.length) {
     return res.status(400).json({ error: 'Invalid calculator data' });
   }
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const calcRes = await client.query(
-      'INSERT INTO calculators (title) VALUES ($1) RETURNING id, created_at',
-      [title]
+      'INSERT INTO calculators (title, purpose) VALUES ($1, $2) RETURNING id, created_at',
+      [title, purpose]
     );
     const calculatorId = calcRes.rows[0].id;
     for (let i = 0; i < fields.length; i++) {

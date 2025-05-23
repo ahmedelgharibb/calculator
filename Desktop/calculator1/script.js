@@ -5,6 +5,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Step 1: Ask for calculator title
 let calculator = {
   title: '',
+  purpose: '',
   fields: []
 };
 let step = 1;
@@ -24,6 +25,13 @@ function renderStep1() {
             </span>
           </label>
           <input type="text" id="calcTitle" name="calcTitle" required placeholder="e.g. Exam Grader" maxlength="32" class="glass-input"/>
+          <label for="calcPurpose" class="glass-label flex items-center gap-2 mt-4">Purpose
+            <span class="info-tooltip" tabindex="0" aria-label="What is this?">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#e0e7ff"/><text x="12" y="16" text-anchor="middle" font-size="14" fill="#6366f1" font-family="Arial" font-weight="bold">i</text></svg>
+              <span class="tooltip-text">Describe what this calculator is for. Example: 'Calculate final exam grades for Math 101.'</span>
+            </span>
+          </label>
+          <input type="text" id="calcPurpose" name="calcPurpose" required placeholder="e.g. Calculate final exam grades for Math 101" maxlength="80" class="glass-input"/>
           <button type="submit" id="nextBtn" class="glass-btn next-btn" disabled>Next</button>
         </form>
       </div>
@@ -35,19 +43,23 @@ function renderStep1() {
     </div>
   `;
   const titleInput = document.getElementById('calcTitle');
+  const purposeInput = document.getElementById('calcPurpose');
   const nextBtn = document.getElementById('nextBtn');
-  titleInput.addEventListener('input', () => {
-    nextBtn.disabled = !titleInput.value.trim();
+  function validate() {
+    nextBtn.disabled = !(titleInput.value.trim() && purposeInput.value.trim());
     if (!nextBtn.disabled) {
       nextBtn.classList.add('btn-animate');
     } else {
       nextBtn.classList.remove('btn-animate');
     }
-  });
+  }
+  titleInput.addEventListener('input', validate);
+  purposeInput.addEventListener('input', validate);
   document.getElementById('titleForm').onsubmit = (e) => {
     e.preventDefault();
     calculator.title = titleInput.value.trim();
-    if (calculator.title) {
+    calculator.purpose = purposeInput.value.trim();
+    if (calculator.title && calculator.purpose) {
       step = 2;
       renderStep2();
     }
@@ -412,7 +424,7 @@ async function fetchCalculatorsInline() {
   try {
     const { data: calculators, error } = await supabase
       .from('calculators')
-      .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
+      .select('id, title, purpose, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
       .order('created_at', { ascending: false });
     if (error) throw error;
     if (!calculators.length) {
@@ -432,6 +444,7 @@ async function fetchCalculatorsInline() {
       return `
         <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:18px;padding:22px 32px;margin-bottom:26px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
           <div style="font-size:1.35rem;font-weight:800;color:#181824;letter-spacing:-0.01em;">${calc.title}</div>
+          <div style="font-size:1.02rem;color:#6b7280;font-weight:500;margin-top:2px;margin-bottom:2px;">${calc.purpose ? calc.purpose : ''}</div>
           <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${formattedTime}</div>
         </div>
       `;
