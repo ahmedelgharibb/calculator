@@ -358,47 +358,104 @@ async function showCalculatorInline(id) {
     if (error) throw error;
     const calc = calculators && calculators[0];
     if (!calc) throw new Error('Calculator not found');
-    calcDetail.innerHTML = `
-      <h2 style="margin-bottom:0.5em;">${calc.title}</h2>
-      <form id="valuesForm">
-        <div class="fields-value-list">
-          ${calc.fields.map((f, i) => `
-            <div class="field-value-row">
-              <label for="field_${i}">${f.name}</label>
-              <select name="field_${i}" id="field_${i}" required>
-                <option value="">Select...</option>
-                ${f.options.map(opt => `<option value="${opt.value}">${opt.label} (+${opt.value})</option>`).join('')}
-              </select>
+
+    // Quiz state
+    let currentStep = 0;
+    const answers = Array(calc.fields.length).fill(null);
+
+    function renderQuizStep() {
+      const field = calc.fields[currentStep];
+      const totalSteps = calc.fields.length;
+      const progress = ((currentStep) / totalSteps) * 100;
+      calcDetail.innerHTML = `
+        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+          <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
+            <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
+          </div>
+          <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
+          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${field.name}</div>
+          <form id="quizForm">
+            <div style="display:flex;flex-direction:column;gap:1.1rem;">
+              ${field.options.map((opt, i) => `
+                <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
+                  <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
+                  <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
+                </label>
+              `).join('')}
             </div>
-          `).join('')}
-        </div>
-        <button type="submit" style="margin-top:18px;">Calculate Total Score</button>
-      </form>
-      <div id="scoreResult"></div>
-      <button class="back-btn" id="backBtn">Back to List</button>
-    </form>
-    <div id="scoreResult"></div>
-    <button class="back-btn" id="backBtn">Back to List</button>
-  `;
-    document.getElementById('backBtn').onclick = () => {
-      calcDetail.style.display = 'none';
-      calcList.style.display = 'block';
-      fetchCalculatorsInline();
-    };
-    document.getElementById('valuesForm').onsubmit = (e) => {
-      e.preventDefault();
-      let total = 0;
-      calc.fields.forEach((f, i) => {
-        const fieldName = `field_${i}`;
-        const val = parseFloat(e.target[fieldName].value);
-        if (!isNaN(val)) total += val;
-      });
-      document.getElementById('scoreResult').innerHTML = `
-        <div class="score-output" style="animation:pop 0.5s;">
-          Total Score: <span>${total}</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
+              <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;${currentStep===0?'opacity:0.5;pointer-events:none;':''}">Previous</button>
+              <button type="submit" id="nextBtn" class="glass-btn" style="background:#6b7280;color:#fff;font-weight:700;min-width:90px;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
+            </div>
+          </form>
+          <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Back</button>
         </div>
       `;
-    };
+      document.getElementById('backBtn').onclick = () => {
+        calcDetail.style.display = 'none';
+        calcList.style.display = 'block';
+        fetchCalculatorsInline();
+      };
+      document.getElementById('prevBtn').onclick = () => {
+        if (currentStep > 0) {
+          currentStep--;
+          renderQuizStep();
+        }
+      };
+      document.getElementById('quizForm').onsubmit = (e) => {
+        e.preventDefault();
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (!selected) return;
+        answers[currentStep] = parseInt(selected.value);
+        if (currentStep < totalSteps - 1) {
+          currentStep++;
+          renderQuizStep();
+        } else {
+          renderQuizResult();
+        }
+      };
+      // Select radio on click
+      document.querySelectorAll('input[name="option"]').forEach((input, i) => {
+        input.onchange = () => {
+          answers[currentStep] = parseInt(input.value);
+          renderQuizStep();
+        };
+      });
+    }
+
+    function renderQuizResult() {
+      let total = 0;
+      calc.fields.forEach((f, i) => {
+        const answerIdx = answers[i];
+        if (answerIdx != null && f.options[answerIdx]) {
+          const val = parseFloat(f.options[answerIdx].value);
+          if (!isNaN(val)) total += val;
+        }
+      });
+      calcDetail.innerHTML = `
+        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+          <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
+            <div style="height:100%;width:100%;background:#181824;"></div>
+          </div>
+          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Total Score</div>
+          <div style="text-align:center;font-size:2.8rem;font-weight:900;color:#10b981;margin-bottom:2.5rem;">${total}</div>
+          <button class="glass-btn" id="restartBtn" style="background:#181824;color:#fff;font-weight:700;min-width:120px;">Restart</button>
+          <button class="back-btn" id="backBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Back to List</button>
+        </div>
+      `;
+      document.getElementById('restartBtn').onclick = () => {
+        currentStep = 0;
+        answers.fill(null);
+        renderQuizStep();
+      };
+      document.getElementById('backBtn').onclick = () => {
+        calcDetail.style.display = 'none';
+        calcList.style.display = 'block';
+        fetchCalculatorsInline();
+      };
+    }
+
+    renderQuizStep();
   } catch (err) {
     calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
   }
