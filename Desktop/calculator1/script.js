@@ -427,7 +427,7 @@ function renderBrowse() {
 async function fetchCalculatorsInline() {
   const calcList = document.getElementById('calcList');
   const calcDetail = document.getElementById('calcDetail');
-  calcList.innerHTML = 'Loading...';
+  calcList.innerHTML = `<div class="loader-container"><div class="loader"></div></div>`;
   calcDetail.style.display = 'none';
   try {
     const { data: calculators, error } = await supabase
