@@ -424,10 +424,17 @@ async function fetchCalculatorsInline() {
       // Add 3 hours to created_at for Egypt time
       const createdAt = new Date(calc.created_at);
       createdAt.setHours(createdAt.getHours() + 3);
+      // Floor to the hour
+      createdAt.setMinutes(0, 0, 0);
+      // Format as '9 am' (12-hour, lowercase)
+      const hour = createdAt.getHours();
+      const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+      const ampm = hour < 12 ? 'am' : 'pm';
+      const formattedTime = `${hour12} ${ampm}`;
       return `
         <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:18px;padding:22px 32px;margin-bottom:26px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
           <div style="font-size:1.35rem;font-weight:800;color:#181824;letter-spacing:-0.01em;">${calc.title}</div>
-          <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${createdAt.toLocaleString()}</div>
+          <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${formattedTime}</div>
         </div>
       `;
     }).join('');
