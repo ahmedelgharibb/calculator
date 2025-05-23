@@ -391,9 +391,9 @@ nav a.active {
     gap: 12px;
   }
   .feature-card {
-    padding: 1rem 0.4rem 1rem 0.4rem;
+    padding: 0.7rem 0.1rem 0.7rem 0.1rem;
     min-width: 0;
-    max-width: 94vw;
+    max-width: 88vw;
   }
 }
 
@@ -430,9 +430,9 @@ footer {
     gap: 12px;
   }
   .feature-card {
-    padding: 1rem 0.4rem 1rem 0.4rem;
+    padding: 0.7rem 0.1rem 0.7rem 0.1rem;
     min-width: 0;
-    max-width: 94vw;
+    max-width: 88vw;
   }
 }
 
