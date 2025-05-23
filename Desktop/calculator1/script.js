@@ -463,15 +463,19 @@ async function showCalculatorInline(id) {
     function renderAttemptsList() {
       calcDetail.innerHTML = `
         <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Previous Attempts</h2>
+          <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
-            ${attempts.length === 0 ? '<div style="color:#a0aec0;">No attempts yet.</div>' :
+            ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
               `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th></tr></thead><tbody>` +
               attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;'>${a.score}</td></tr>`).join('') +
               '</tbody></table>'}
           </div>
-          <button class="glass-btn" id="startQuizBtn" style="margin-bottom:1.2rem;">New Quiz</button>
-          <button class="back-btn" id="backBtn" style="background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Back to List</button>
+          <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
+            <button class="glass-btn" id="startQuizBtn" style="margin-bottom:0;margin-right:1.2rem;">New Quiz</button>
+          </div>
         </div>
       `;
       document.getElementById('startQuizBtn').onclick = () => renderNamePrompt();
