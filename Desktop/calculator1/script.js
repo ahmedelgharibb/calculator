@@ -397,7 +397,7 @@ function renderBrowse() {
   // Reuse the modal logic, but render inline in the main area
   appContainer.innerHTML = `
     <section style="max-width:700px;margin:0 auto;padding:48px 0 32px 0;">
-      <h1 style="font-size:2.2rem;font-weight:900;color:#6366f1;margin-bottom:0.3em;">Browse Calculators</h1>
+      <h1 style="font-size:2.6rem;font-weight:900;color:#181824;margin-bottom:2.2em;text-align:center;letter-spacing:-0.02em;">Browse Calculators</h1>
       <div id="calcList" class="calc-list"></div>
       <div id="calcDetail" style="display:none;"></div>
     </section>
@@ -417,13 +417,13 @@ async function fetchCalculatorsInline() {
       .order('created_at', { ascending: false });
     if (error) throw error;
     if (!calculators.length) {
-      calcList.innerHTML = '<div style="color:#a0aec0;">No calculators found. Create one to get started!</div>';
+      calcList.innerHTML = '<div style="color:#a0aec0;text-align:center;">No calculators found. Create one to get started!</div>';
       return;
     }
     calcList.innerHTML = calculators.map(calc => `
-      <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:12px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
-        <div style="font-size:1.2rem;font-weight:700;color:#6366f1;">${calc.title}</div>
-        <div style="font-size:0.98em;color:#7b7b9d;font-weight:400;margin-top:2px;">${new Date(calc.created_at).toLocaleString()}</div>
+      <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:18px;padding:22px 32px;margin-bottom:26px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
+        <div style="font-size:1.35rem;font-weight:800;color:#181824;letter-spacing:-0.01em;">${calc.title}</div>
+        <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${new Date(calc.created_at).toLocaleString()}</div>
       </div>
     `).join('');
     document.querySelectorAll('.calc-item').forEach(item => {
