@@ -666,18 +666,22 @@ async function showCalculatorInline(id) {
             nextBtn.onmouseover = function() {
               this.style.background = '#181824';
               this.style.opacity = '1';
+              this.style.boxShadow = '0 8px 32px #23294633';
             };
             nextBtn.onmouseout = function() {
               this.style.background = '#232946';
               this.style.opacity = '0.92';
+              this.style.boxShadow = '0 4px 24px #23294633';
             };
             nextBtn.onfocus = function() {
               this.style.background = '#181824';
               this.style.opacity = '1';
+              this.style.boxShadow = '0 8px 32px #23294633';
             };
             nextBtn.onblur = function() {
               this.style.background = '#232946';
               this.style.opacity = '0.92';
+              this.style.boxShadow = '0 4px 24px #23294633';
             };
           }
         }, 0);

@@ -15,9 +15,9 @@
 }
 
 @keyframes btnPulse {
-  0% { box-shadow: 0 0 0 0 rgba(234, 0, 148, 0.6); }
-  70% { box-shadow: 0 0 0 10px rgba(234, 0, 148, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(234, 0, 148, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(35,41,70,0.18); }
+  70% { box-shadow: 0 0 0 10px rgba(35,41,70,0); }
+  100% { box-shadow: 0 0 0 0 rgba(35,41,70,0); }
 }
 
 /* Minimalist card design */
@@ -67,9 +67,9 @@
 
 .glass-input:focus {
   outline: none;
-  border-color: #ea0094;
+  border-color: #232946;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(234,0,148,0.2);
+  box-shadow: 0 0 0 3px #23294633;
 }
 
 .glass-input::placeholder {
@@ -79,7 +79,7 @@
 
 .glass-btn {
   position: relative;
-  background: linear-gradient(to right, #ea0094, #ff5aac);
+  background: #232946;
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -89,6 +89,7 @@
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
+  box-shadow: 0 4px 24px #23294633;
 }
 
 .glass-btn::before {
@@ -96,7 +97,7 @@
   position: absolute;
   top: 0; left: 0;
   right: 0; bottom: 0;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.10);
   z-index: 0;
   border-radius: inherit;
   opacity: 0;
@@ -109,11 +110,13 @@
 
 .glass-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(234,0,148,0.4);
+  box-shadow: 0 8px 32px #23294633;
+  background: #181824;
 }
 
 .glass-btn:active {
   transform: scale(0.98);
+  background: #181824;
 }
 
 .glass-btn:disabled {
@@ -153,7 +156,7 @@
 }
 
 .info-tooltip svg {
-  fill: #ea0094;
+  fill: #232946;
   height: 16px;
   width: 16px;
 }
