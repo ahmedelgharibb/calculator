@@ -451,71 +451,123 @@ async function showCalculatorInline(id) {
     const calc = calculators && calculators[0];
     if (!calc) throw new Error('Calculator not found');
 
-    // Quiz state
-    let currentStep = 0;
-    const answers = Array(calc.fields.length).fill(null);
+    // --- Fetch previous attempts ---
+    const { data: attempts, error: attemptsError } = await supabase
+      .from('quiz_attempts')
+      .select('id, user_name, score, created_at')
+      .eq('calculator_id', id)
+      .order('created_at', { ascending: false });
+    if (attemptsError) throw attemptsError;
 
-    function renderQuizStep() {
-      const field = calc.fields[currentStep];
-      const totalSteps = calc.fields.length;
-      const progress = ((currentStep) / totalSteps) * 100;
+    // --- Render previous attempts and New Quiz button ---
+    function renderAttemptsList() {
       calcDetail.innerHTML = `
         <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-          <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
-            <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
+          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Previous Attempts</h2>
+          <div style="margin-bottom:2rem;">
+            ${attempts.length === 0 ? '<div style="color:#a0aec0;">No attempts yet.</div>' :
+              `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th></tr></thead><tbody>` +
+              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;'>${a.score}</td></tr>`).join('') +
+              '</tbody></table>'}
           </div>
-          <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
-          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${field.name}</div>
-          <form id="quizForm">
-            <div style="display:flex;flex-direction:column;gap:1.1rem;">
-              ${field.options.map((opt, i) => `
-                <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
-                  <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
-                  <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
-                </label>
-              `).join('')}
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
-              <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;${currentStep===0?'opacity:0.5;pointer-events:none;':''}">Previous</button>
-              <button type="submit" id="nextBtn" class="glass-btn" style="background:#6b7280;color:#fff;font-weight:700;min-width:90px;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
-            </div>
-          </form>
-          <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Back</button>
+          <button class="glass-btn" id="startQuizBtn" style="margin-bottom:1.2rem;">New Quiz</button>
+          <button class="back-btn" id="backBtn" style="background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Back to List</button>
         </div>
       `;
+      document.getElementById('startQuizBtn').onclick = () => renderNamePrompt();
       document.getElementById('backBtn').onclick = () => {
         calcDetail.style.display = 'none';
         calcList.style.display = 'block';
         fetchCalculatorsInline();
       };
-      document.getElementById('prevBtn').onclick = () => {
-        if (currentStep > 0) {
-          currentStep--;
-          renderQuizStep();
-        }
-      };
-      document.getElementById('quizForm').onsubmit = (e) => {
-        e.preventDefault();
-        const selected = document.querySelector('input[name="option"]:checked');
-        if (!selected) return;
-        answers[currentStep] = parseInt(selected.value);
-        if (currentStep < totalSteps - 1) {
-          currentStep++;
-          renderQuizStep();
-        } else {
-          renderQuizResult();
-        }
-      };
-      // Select radio on click
-      document.querySelectorAll('input[name="option"]').forEach((input, i) => {
-        input.onchange = () => {
-          answers[currentStep] = parseInt(input.value);
-          renderQuizStep();
-        };
-      });
     }
 
-    function renderQuizResult() {
+    // --- Prompt for user name before quiz ---
+    function renderNamePrompt() {
+      calcDetail.innerHTML = `
+        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Your Name</h2>
+          <form id="nameForm">
+            <input type="text" id="quizUserName" class="glass-input" placeholder="Your name" maxlength="64" required style="margin-bottom:1.5rem;" />
+            <button type="submit" class="glass-btn">Start Quiz</button>
+            <button type="button" class="back-btn" id="cancelNameBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
+          </form>
+        </div>
+      `;
+      document.getElementById('cancelNameBtn').onclick = renderAttemptsList;
+      document.getElementById('nameForm').onsubmit = (e) => {
+        e.preventDefault();
+        const userName = document.getElementById('quizUserName').value.trim();
+        if (!userName) {
+          document.getElementById('quizUserName').classList.add('border-red-400');
+          return;
+        }
+        renderQuizStep(userName);
+      };
+    }
+
+    // --- Quiz state ---
+    function renderQuizStep(userName) {
+      let currentStep = 0;
+      const answers = Array(calc.fields.length).fill(null);
+      function showStep() {
+        const field = calc.fields[currentStep];
+        const totalSteps = calc.fields.length;
+        calcDetail.innerHTML = `
+          <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+            <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
+              <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
+            </div>
+            <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
+            <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${field.name}</div>
+            <form id="quizForm">
+              <div style="display:flex;flex-direction:column;gap:1.1rem;">
+                ${field.options.map((opt, i) => `
+                  <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
+                    <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
+                    <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
+                  </label>
+                `).join('')}
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
+                <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;${currentStep===0?'opacity:0.5;pointer-events:none;':''}">Previous</button>
+                <button type="submit" id="nextBtn" class="glass-btn" style="background:#6b7280;color:#fff;font-weight:700;min-width:90px;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
+              </div>
+            </form>
+            <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
+          </div>
+        `;
+        document.getElementById('backBtn').onclick = renderAttemptsList;
+        document.getElementById('prevBtn').onclick = () => {
+          if (currentStep > 0) {
+            currentStep--;
+            showStep();
+          }
+        };
+        document.getElementById('quizForm').onsubmit = (e) => {
+          e.preventDefault();
+          const selected = document.querySelector('input[name="option"]:checked');
+          if (!selected) return;
+          answers[currentStep] = parseInt(selected.value);
+          if (currentStep < totalSteps - 1) {
+            currentStep++;
+            showStep();
+          } else {
+            renderQuizResult(userName, answers);
+          }
+        };
+        document.querySelectorAll('input[name="option"]').forEach((input, i) => {
+          input.onchange = () => {
+            answers[currentStep] = parseInt(input.value);
+            showStep();
+          };
+        });
+      }
+      showStep();
+    }
+
+    // --- Quiz result and save ---
+    async function renderQuizResult(userName, answers) {
       let total = 0;
       calc.fields.forEach((f, i) => {
         const answerIdx = answers[i];
@@ -524,30 +576,23 @@ async function showCalculatorInline(id) {
           if (!isNaN(val)) total += val;
         }
       });
-      calcDetail.innerHTML = `
-        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-          <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
-            <div style="height:100%;width:100%;background:#181824;"></div>
-          </div>
-          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Total Score</div>
-          <div style="text-align:center;font-size:2.8rem;font-weight:900;color:#10b981;margin-bottom:2.5rem;">${total}</div>
-          <button class="glass-btn" id="restartBtn" style="background:#181824;color:#fff;font-weight:700;min-width:120px;">Restart</button>
-          <button class="back-btn" id="backBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Back to List</button>
-        </div>
-      `;
-      document.getElementById('restartBtn').onclick = () => {
-        currentStep = 0;
-        answers.fill(null);
-        renderQuizStep();
-      };
-      document.getElementById('backBtn').onclick = () => {
-        calcDetail.style.display = 'none';
-        calcList.style.display = 'block';
-        fetchCalculatorsInline();
-      };
+      // Save attempt to DB
+      const { error: saveError } = await supabase
+        .from('quiz_attempts')
+        .insert([{ calculator_id: id, user_name: userName, answers: JSON.stringify(answers), score: total }]);
+      // Refetch attempts and show list
+      const { data: newAttempts } = await supabase
+        .from('quiz_attempts')
+        .select('id, user_name, score, created_at')
+        .eq('calculator_id', id)
+        .order('created_at', { ascending: false });
+      attempts.length = 0;
+      attempts.push(...(newAttempts || []));
+      renderAttemptsList();
     }
 
-    renderQuizStep();
+    // Initial render
+    renderAttemptsList();
   } catch (err) {
     calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
   }
