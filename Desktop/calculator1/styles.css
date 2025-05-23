@@ -289,7 +289,7 @@ body, html {
 
 /* Redesigned header */
 header {
-  background: #232946;
+  background: #181824;
   box-shadow: 0 4px 24px rgba(24, 24, 36, 0.18);
   position: sticky;
   top: 0;
@@ -334,14 +334,14 @@ nav a {
   outline: none;
 }
 nav a.active, nav a:focus, nav a:hover {
-  color: #232946;
-  background: #fff;
-  box-shadow: 0 4px 24px rgba(255,255,255,0.10);
+  color: #fff;
+  background: #393a5a;
+  box-shadow: 0 4px 24px rgba(57,58,90,0.18);
   font-weight: 900;
   z-index: 2;
 }
 nav a.active {
-  box-shadow: 0 8px 32px rgba(255,255,255,0.18);
+  box-shadow: 0 8px 32px rgba(57,58,90,0.28);
   color: #fff;
   background: #393a5a;
 }
