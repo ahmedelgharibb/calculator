@@ -416,7 +416,7 @@ function renderBrowse() {
   appContainer.innerHTML = `
     <section style="max-width:700px;margin:0 auto;padding:48px 0 32px 0;">
       <h1 style="font-size:2.6rem;font-weight:900;color:#181824;margin-bottom:1.2em;text-align:center;letter-spacing:-0.02em;">Browse Calculators</h1>
-      <div style="display:flex;justify-content:center;margin-bottom:2.2em;">
+      <div id="searchBarContainer" style="display:flex;justify-content:center;margin-bottom:2.2em;">
         <input id="calcSearch" type="text" placeholder="Search calculators..." aria-label="Search calculators" style="width:100%;max-width:420px;padding:0.85em 1.2em;font-size:1.1rem;border-radius:1.1em;border:1.5px solid #e5e7eb;background:#f8fafc;color:#232946;box-shadow:0 2px 8px rgba(60,72,100,0.04);outline:none;transition:border 0.18s;" />
       </div>
       <div id="calcList" class="calc-list"></div>
@@ -424,7 +424,6 @@ function renderBrowse() {
     </section>
   `;
   fetchCalculatorsInline();
-  // Add search logic
   setTimeout(() => {
     const searchInput = document.getElementById('calcSearch');
     if (!searchInput) return;
@@ -507,6 +506,9 @@ async function fetchCalculatorsInline() {
 async function showCalculatorInline(id) {
   const calcList = document.getElementById('calcList');
   const calcDetail = document.getElementById('calcDetail');
+  // Hide search bar when showing details/quiz
+  const searchBar = document.getElementById('searchBarContainer');
+  if (searchBar) searchBar.style.display = 'none';
   calcList.style.display = 'none';
   calcDetail.style.display = 'block';
   calcDetail.innerHTML = 'Loading...';
@@ -551,6 +553,9 @@ async function showCalculatorInline(id) {
       document.getElementById('backBtn').onclick = () => {
         calcDetail.style.display = 'none';
         calcList.style.display = 'block';
+        // Show search bar again
+        const searchBar = document.getElementById('searchBarContainer');
+        if (searchBar) searchBar.style.display = 'flex';
         fetchCalculatorsInline();
       };
     }
