@@ -388,7 +388,6 @@ function renderAbout() {
         <li>💡 Open source and free to use</li>
         <li>🌎 Access from any device</li>
       </ul>
-      <p style="margin-top:2em;color:#181824;">Made by <a href="https://github.com/ahmedelgharibb" target="_blank" style="color:#3b82f6;text-decoration:underline;">Ahmed El Gharib</a></p>
     </section>
   `;
 }
