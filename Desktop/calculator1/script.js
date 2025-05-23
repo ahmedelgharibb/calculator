@@ -627,8 +627,8 @@ async function showCalculatorInline(id) {
                 `).join('')}
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
-                <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;${currentStep===0?'opacity:0.5;pointer-events:none;':''}">Previous</button>
-                <button type="submit" id="nextBtn" class="glass-btn" style="background:#6b7280;color:#fff;font-weight:700;min-width:90px;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
+                <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;opacity:${currentStep===0?'0.55':'1'};pointer-events:${currentStep===0?'none':'auto'};">Previous</button>
+                <button type="submit" id="nextBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;min-width:140px;opacity:0.92;transition:background 0.18s;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
               </div>
             </form>
             <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
@@ -659,6 +659,28 @@ async function showCalculatorInline(id) {
             showStep();
           };
         });
+        // Add dark hover for Finish/Next button
+        setTimeout(() => {
+          const nextBtn = document.getElementById('nextBtn');
+          if (nextBtn) {
+            nextBtn.onmouseover = function() {
+              this.style.background = '#181824';
+              this.style.opacity = '1';
+            };
+            nextBtn.onmouseout = function() {
+              this.style.background = '#232946';
+              this.style.opacity = '0.92';
+            };
+            nextBtn.onfocus = function() {
+              this.style.background = '#181824';
+              this.style.opacity = '1';
+            };
+            nextBtn.onblur = function() {
+              this.style.background = '#232946';
+              this.style.opacity = '0.92';
+            };
+          }
+        }, 0);
       }
       showStep();
     }
