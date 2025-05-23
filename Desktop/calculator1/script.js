@@ -381,14 +381,14 @@ function renderHome() {
 function renderAbout() {
   appContainer.innerHTML = `
     <section style="max-width:700px;margin:0 auto;padding:48px 0 32px 0;">
-      <h1 style="font-size:2.2rem;font-weight:900;color:#6366f1;margin-bottom:0.3em;">About ScoreCalc</h1>
-      <p style="font-size:1.15rem;color:#4b5563;">ScoreCalc is a modern web app for building, saving, and reusing custom score calculators. Built with Supabase, Vercel, and love. Perfect for teachers, students, and anyone who needs flexible scoring tools.</p>
-      <ul style="color:#6366f1;font-size:1.1rem;margin-top:2em;line-height:2;">
+      <h1 style="font-size:2.2rem;font-weight:900;color:#181824;margin-bottom:0.3em;">About ScoreCalc</h1>
+      <p style="font-size:1.15rem;color:#181824;">ScoreCalc is a modern web app for building, saving, and reusing custom score calculators. Built with Supabase, Vercel, and love. Perfect for teachers, students, and anyone who needs flexible scoring tools.</p>
+      <ul style="color:#181824;font-size:1.1rem;margin-top:2em;line-height:2;">
         <li>🔒 100% privacy: your data is yours</li>
         <li>💡 Open source and free to use</li>
         <li>🌎 Access from any device</li>
       </ul>
-      <p style="margin-top:2em;color:#4b5563;">Made by <a href="https://github.com/ahmedelgharibb" target="_blank" style="color:#6366f1;text-decoration:underline;">Ahmed El Gharib</a></p>
+      <p style="margin-top:2em;color:#181824;">Made by <a href="https://github.com/ahmedelgharibb" target="_blank" style="color:#3b82f6;text-decoration:underline;">Ahmed El Gharib</a></p>
     </section>
   `;
 }
