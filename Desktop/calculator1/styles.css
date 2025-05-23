@@ -398,6 +398,10 @@ nav a.active {
     margin-left: auto;
     margin-right: auto;
   }
+  .feature-card > * {
+    margin-left: 0.7rem;
+    margin-right: 0.7rem;
+  }
 }
 
 /* Footer */
