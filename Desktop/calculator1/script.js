@@ -94,10 +94,23 @@ function renderStep2() {
     </div>
   `;
 
+  // --- Modernized create calculator form logic ---
+  // Sync calculator title
+  const calcTitleInput = document.getElementById('calcTitle');
+  calcTitleInput.oninput = (e) => {
+    calculator.title = e.target.value;
+    calcTitleInput.classList.remove('border-red-400');
+  };
+
   // Add field logic
   document.getElementById('addFieldBtn').onclick = () => {
     calculator.fields.push({ name: '', options: [] });
     renderStep2();
+    // Focus new field
+    setTimeout(() => {
+      const lastField = document.querySelectorAll('.field-name-input');
+      if (lastField.length) lastField[lastField.length - 1].focus();
+    }, 50);
   };
 
   // Remove field logic
@@ -109,15 +122,21 @@ function renderStep2() {
     };
   });
 
-  // Edit field name
+  // Edit field name with validation
   document.querySelectorAll('.field-name-input').forEach(inp => {
     inp.oninput = (e) => {
       const idx = e.target.getAttribute('data-idx');
       calculator.fields[idx].name = e.target.value;
+      // Inline validation: no empty or duplicate names
+      inp.classList.remove('border-red-400');
+      const names = calculator.fields.map(f => f.name.trim());
+      if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim()).length > 1) {
+        inp.classList.add('border-red-400');
+      }
     };
   });
 
-  // Add option logic
+  // Add option logic with validation
   document.querySelectorAll('.add-option-btn').forEach(btn => {
     btn.onclick = (e) => {
       const idx = btn.getAttribute('data-idx');
@@ -125,17 +144,21 @@ function renderStep2() {
       const valueInput = document.getElementById(`optionValueInput${idx}`);
       const label = labelInput.value.trim();
       const value = valueInput.value.trim();
-      if (!label || !value) {
-        labelInput.classList.add('border-red-400');
-        valueInput.classList.add('border-red-400');
-        return;
-      }
+      labelInput.classList.remove('border-red-400');
+      valueInput.classList.remove('border-red-400');
+      // Inline validation: no empty or duplicate labels, value must be a number
+      const labels = (calculator.fields[idx].options || []).map(opt => opt.label.trim());
+      let hasError = false;
+      if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
+      if (!value || isNaN(value)) { valueInput.classList.add('border-red-400'); hasError = true; }
+      if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
+      if (hasError) return;
       calculator.fields[idx].options = calculator.fields[idx].options || [];
       calculator.fields[idx].options.push({ label, value });
       labelInput.value = '';
       valueInput.value = '';
-      labelInput.classList.remove('border-red-400');
-      valueInput.classList.remove('border-red-400');
+      // Focus label input for quick entry
+      setTimeout(() => labelInput.focus(), 50);
       renderStep2();
     };
   });
@@ -153,9 +176,32 @@ function renderStep2() {
   // Save Calculator
   document.getElementById('fieldsForm').onsubmit = async (e) => {
     e.preventDefault();
-    // Validate
-    if (!calculator.title.trim() || !calculator.fields.length || calculator.fields.some(f => !f.name.trim() || !f.options.length)) {
-      alert('Please fill in all fields and add at least one option for each field.');
+    // Validate title
+    if (!calculator.title.trim()) {
+      calcTitleInput.classList.add('border-red-400');
+      calcTitleInput.focus();
+      return;
+    }
+    // Validate fields and options
+    let hasError = false;
+    calculator.fields.forEach((f, i) => {
+      const fieldInput = document.querySelector(`.field-name-input[data-idx='${i}']`);
+      if (!f.name.trim() || calculator.fields.filter(ff => ff.name.trim() === f.name.trim()).length > 1) {
+        fieldInput.classList.add('border-red-400');
+        hasError = true;
+      }
+      if (!f.options.length) {
+        fieldInput.classList.add('border-red-400');
+        hasError = true;
+      }
+      (f.options || []).forEach((opt, oi) => {
+        if (!opt.label.trim() || isNaN(opt.value)) {
+          hasError = true;
+        }
+      });
+    });
+    if (!calculator.fields.length || hasError) {
+      alert('Please fill in all fields, avoid duplicates, and add at least one valid option for each field.');
       return;
     }
     // Show saving status
