@@ -229,10 +229,10 @@ function renderStep2() {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
     try {
-      // 1. Insert calculator (title only)
+      // 1. Insert calculator (title and purpose)
       const { data: calcData, error: calcError } = await supabase
         .from('calculators')
-        .insert([{ title: calculator.title }])
+        .insert([{ title: calculator.title, purpose: calculator.purpose }])
         .select('id');
       if (calcError) throw calcError;
       const calculatorId = calcData && calcData[0] && calcData[0].id;
@@ -320,10 +320,10 @@ function renderStep3() {
     saveStatus.textContent = 'Saving...';
     console.log('[Supabase] Saving calculator:', calculator);
     try {
-      // 1. Insert calculator (title only)
+      // 1. Insert calculator (title and purpose)
       const { data: calcData, error: calcError } = await supabase
         .from('calculators')
-        .insert([{ title: calculator.title }])
+        .insert([{ title: calculator.title, purpose: calculator.purpose }])
         .select('id');
       if (calcError) {
         console.error('[Supabase] Error saving calculator:', calcError);
