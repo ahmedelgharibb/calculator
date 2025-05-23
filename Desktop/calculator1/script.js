@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fieldNameError.textContent = '';
   };
 
-  calcForm.onsubmit = (e) => {
+  calcForm.onsubmit = async (e) => {
     e.preventDefault();
     let valid = true;
     if (!calcTitleInput.value.trim()) {
@@ -747,11 +747,42 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       fieldNameError.textContent = '';
     }
+    if (!calcPurposeInput.value.trim()) {
+      calcPurposeInput.classList.add('error');
+      valid = false;
+    } else {
+      calcPurposeInput.classList.remove('error');
+    }
     if (!valid) return;
-    // Save logic here (e.g., send to backend)
+    // Save to Supabase
+    const { data: calcData, error: calcError } = await supabase
+      .from('calculators')
+      .insert([{ title: calcTitleInput.value.trim(), purpose: calcPurposeInput.value.trim() }])
+      .select('id');
+    if (calcError) {
+      alert('Error saving calculator: ' + (calcError.message || calcError));
+      return;
+    }
+    const calculatorId = calcData && calcData[0] && calcData[0].id;
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+      const { data: fieldData, error: fieldError } = await supabase
+        .from('calculator_fields')
+        .insert([{ calculator_id: calculatorId, name: field.name, field_order: i }])
+        .select('id');
+      if (fieldError) continue;
+      const fieldId = fieldData && fieldData[0] && fieldData[0].id;
+      for (let j = 0; j < (field.options || []).length; j++) {
+        const opt = field.options[j];
+        await supabase
+          .from('calculator_options')
+          .insert([{ field_id: fieldId, label: opt.label, value: opt.points, option_order: j }]);
+      }
+    }
     alert('Calculator saved!');
     // Reset form
     calcTitleInput.value = '';
+    calcPurposeInput.value = '';
     fieldNameInput.value = '';
     options = [];
     fields = [];
