@@ -151,10 +151,56 @@ function renderStep2() {
   });
 
   // Save Calculator
-  document.getElementById('fieldsForm').onsubmit = (e) => {
+  document.getElementById('fieldsForm').onsubmit = async (e) => {
     e.preventDefault();
-    // Save logic here
-    // ...
+    // Validate
+    if (!calculator.title.trim() || !calculator.fields.length || calculator.fields.some(f => !f.name.trim() || !f.options.length)) {
+      alert('Please fill in all fields and add at least one option for each field.');
+      return;
+    }
+    // Show saving status
+    const saveBtn = document.querySelector('#fieldsForm button[type="submit"]');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    try {
+      // 1. Insert calculator (title only)
+      const { data: calcData, error: calcError } = await supabase
+        .from('calculators')
+        .insert([{ title: calculator.title }])
+        .select('id');
+      if (calcError) throw calcError;
+      const calculatorId = calcData && calcData[0] && calcData[0].id;
+      // 2. Insert fields
+      for (let i = 0; i < calculator.fields.length; i++) {
+        const field = calculator.fields[i];
+        const { data: fieldData, error: fieldError } = await supabase
+          .from('calculator_fields')
+          .insert([{ calculator_id: calculatorId, name: field.name, field_order: i }])
+          .select('id');
+        if (fieldError) throw fieldError;
+        const fieldId = fieldData && fieldData[0] && fieldData[0].id;
+        // 3. Insert options for this field
+        for (let j = 0; j < (field.options || []).length; j++) {
+          const opt = field.options[j];
+          const { error: optError } = await supabase
+            .from('calculator_options')
+            .insert([{ field_id: fieldId, label: opt.label, value: opt.value, option_order: j }]);
+          if (optError) throw optError;
+        }
+      }
+      // Success
+      app.innerHTML = `<div class="main-glass" style="padding:3rem 2rem;text-align:center;max-width:480px;margin:60px auto 0 auto;">
+        <h2 style="font-size:2rem;font-weight:900;color:#10b981;margin-bottom:1.5rem;">Calculator Saved!</h2>
+        <p style="font-size:1.15rem;color:#374151;margin-bottom:2.5rem;">Your calculator has been saved. You can access it from <b>Browse Calculators</b>.</p>
+        <button class="glass-btn" onclick="window.location.hash='#browse'">Go to Browse Calculators</button>
+      </div>`;
+      calculator = { title: '', fields: [] };
+      step = 1;
+    } catch (err) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Calculator';
+      alert('Error saving calculator: ' + (err.message || err));
+    }
   };
 }
 
