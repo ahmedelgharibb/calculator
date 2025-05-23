@@ -264,25 +264,25 @@ const appContainer = document.getElementById('app');
 
 function renderHome() {
   appContainer.innerHTML = `
-    <section style="text-align:center;padding:48px 0 32px 0;">
-      <h1 style="font-size:2.6rem;font-weight:900;color:#6366f1;margin-bottom:0.3em;">Welcome to ScoreCalc</h1>
-      <p style="font-size:1.3rem;color:#4b5563;max-width:600px;margin:0 auto 1.5em auto;">Create, save, and reuse custom score calculators for exams, assignments, or anything you want. Fast, beautiful, and always available in the cloud.</p>
-      <a href="#create" class="sidebar-link active" style="display:inline-block;font-size:1.2rem;padding:16px 40px;margin-top:18px;background:#6366f1;color:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(60,72,100,0.08);font-weight:700;transition:background 0.2s;">Get Started</a>
-    </section>
-    <section style="display:flex;flex-wrap:wrap;gap:32px;justify-content:center;margin-top:32px;">
-      <div style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(60,72,100,0.06);padding:32px 24px;max-width:320px;flex:1 1 260px;">
-        <h2 style="color:#6366f1;font-size:1.3rem;margin-bottom:0.5em;">🛠️ Build Custom Calculators</h2>
-        <p style="color:#4b5563;">Add fields, options, and scoring logic to match your needs. Save and reuse anytime.</p>
+    <div class="main-glass">
+      <h1>Welcome to ScoreCalc</h1>
+      <p>Create, save, and reuse custom score calculators for exams, assignments, or anything you want. Fast, beautiful, and always available in the cloud.</p>
+      <button class="cta-btn" onclick="window.location.hash='#create'">Get Started</button>
+      <div class="features">
+        <div class="feature-card">
+          <h2>🛠️ Build Custom Calculators</h2>
+          <p>Add fields, options, and scoring logic to match your needs. Save and reuse anytime.</p>
+        </div>
+        <div class="feature-card">
+          <h2>☁️ Cloud Storage</h2>
+          <p>Your calculators are securely stored in the cloud. Access them from any device, anytime.</p>
+        </div>
+        <div class="feature-card">
+          <h2>✨ Minimal & Modern</h2>
+          <p>Enjoy a clean, distraction-free interface designed for speed and clarity.</p>
+        </div>
       </div>
-      <div style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(60,72,100,0.06);padding:32px 24px;max-width:320px;flex:1 1 260px;">
-        <h2 style="color:#6366f1;font-size:1.3rem;margin-bottom:0.5em;">☁️ Cloud Storage</h2>
-        <p style="color:#4b5563;">Your calculators are securely stored in the cloud. Access them from any device, anytime.</p>
-      </div>
-      <div style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(60,72,100,0.06);padding:32px 24px;max-width:320px;flex:1 1 260px;">
-        <h2 style="color:#6366f1;font-size:1.3rem;margin-bottom:0.5em;">✨ Minimal & Modern</h2>
-        <p style="color:#4b5563;">Enjoy a clean, distraction-free interface designed for speed and clarity.</p>
-      </div>
-    </section>
+    </div>
   `;
 }
 
