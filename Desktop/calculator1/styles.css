@@ -418,3 +418,13 @@ footer {
     max-width: 100vw;
   }
 }
+
+/* Add this at the end of the file or in the button section */
+.add-option-btn {
+  padding: 0.4rem 0.8rem !important;
+  font-size: 0.95rem !important;
+  border-radius: 0.6rem !important;
+  min-width: unset !important;
+  max-width: 180px !important;
+  line-height: 1.1;
+}
