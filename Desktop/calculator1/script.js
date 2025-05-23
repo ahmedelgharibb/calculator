@@ -520,7 +520,7 @@ function handleNavigation() {
   const hash = window.location.hash || '#';
   setActiveNav(hash);
   if (hash === '#' || hash === '#home') renderHome();
-  else if (hash === '#create') renderStep1();
+  else if (hash === '#create') renderStep2();
   else if (hash === '#browse') renderBrowse();
   else if (hash === '#about') renderAbout();
   else renderHome();
