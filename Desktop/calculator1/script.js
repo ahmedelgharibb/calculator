@@ -543,7 +543,7 @@ async function showCalculatorInline(id) {
               '</tbody></table>'}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
-            <button class="glass-btn" id="startQuizBtn" style="margin-bottom:0;margin-right:1.2rem;background:#181824;color:#fff;font-weight:700;font-size:1.15rem;">New Quiz</button>
+            <button class="glass-btn" id="startQuizBtn" style="margin-bottom:0;margin-right:1.2rem;background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">New Quiz</button>
           </div>
         </div>
       `;
@@ -562,7 +562,7 @@ async function showCalculatorInline(id) {
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Quiz Name</h2>
           <form id="nameForm">
             <input type="text" id="quizUserName" class="glass-input" placeholder="Quiz name" maxlength="64" required style="margin-bottom:1.5rem;" />
-            <button type="submit" class="glass-btn" style="background:#181824;color:#fff;font-weight:700;font-size:1.15rem;">Start Quiz</button>
+            <button type="submit" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">Start Quiz</button>
             <button type="button" class="back-btn" id="cancelNameBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
           </form>
         </div>
