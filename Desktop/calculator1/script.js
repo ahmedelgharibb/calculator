@@ -490,7 +490,7 @@ async function showCalculatorInline(id) {
     function renderNamePrompt() {
       calcDetail.innerHTML = `
         <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Your Name</h2>
+          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Quiz Name</h2>
           <form id="nameForm">
             <input type="text" id="quizUserName" class="glass-input" placeholder="Your name" maxlength="64" required style="margin-bottom:1.5rem;" />
             <button type="submit" class="glass-btn">Start Quiz</button>
