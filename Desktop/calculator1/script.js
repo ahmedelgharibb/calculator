@@ -420,12 +420,17 @@ async function fetchCalculatorsInline() {
       calcList.innerHTML = '<div style="color:#a0aec0;text-align:center;">No calculators found. Create one to get started!</div>';
       return;
     }
-    calcList.innerHTML = calculators.map(calc => `
-      <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:18px;padding:22px 32px;margin-bottom:26px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
-        <div style="font-size:1.35rem;font-weight:800;color:#181824;letter-spacing:-0.01em;">${calc.title}</div>
-        <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${new Date(calc.created_at).toLocaleString()}</div>
-      </div>
-    `).join('');
+    calcList.innerHTML = calculators.map(calc => {
+      // Add 3 hours to created_at for Egypt time
+      const createdAt = new Date(calc.created_at);
+      createdAt.setHours(createdAt.getHours() + 3);
+      return `
+        <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:18px;padding:22px 32px;margin-bottom:26px;box-shadow:0 2px 8px rgba(60,72,100,0.06);cursor:pointer;transition:box-shadow 0.2s;">
+          <div style="font-size:1.35rem;font-weight:800;color:#181824;letter-spacing:-0.01em;">${calc.title}</div>
+          <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:6px;">${createdAt.toLocaleString()}</div>
+        </div>
+      `;
+    }).join('');
     document.querySelectorAll('.calc-item').forEach(item => {
       item.onclick = () => showCalculatorInline(item.getAttribute('data-id'));
       item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') item.click(); };
