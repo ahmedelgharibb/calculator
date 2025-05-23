@@ -487,12 +487,12 @@ async function fetchCalculatorsInline() {
         e.stopPropagation();
         const calcId = btn.closest('.calc-item').getAttribute('data-id');
         if (!calcId) return;
-        if (!confirm('Are you sure you want to delete this calculator? This cannot be undone.')) return;
-        btn.disabled = true;
-        btn.innerHTML = '<span style="font-size:1.1em;">...</span>';
-        // Delete calculator and cascade
-        await supabase.from('calculators').delete().eq('id', calcId);
-        fetchCalculatorsInline();
+        showDeleteModal(async () => {
+          btn.disabled = true;
+          btn.innerHTML = '<span style="font-size:1.1em;">...</span>';
+          await supabase.from('calculators').delete().eq('id', calcId);
+          fetchCalculatorsInline();
+        });
       };
     });
     document.querySelectorAll('.calc-item').forEach(item => {
@@ -824,4 +824,41 @@ document.addEventListener('DOMContentLoaded', () => {
     fields = [];
     renderOptions();
   };
-}); 
+});
+
+// Add modal logic at the end of the file
+function showDeleteModal(onConfirm) {
+  // Remove any existing modal
+  const old = document.getElementById('modalOverlay');
+  if (old) old.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modalOverlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(24,24,36,0.72)';
+  overlay.style.zIndex = 9999;
+  overlay.style.display = 'flex';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.innerHTML = `
+    <div style="background:#fff;padding:2.2em 2em 1.5em 2em;border-radius:1.3em;box-shadow:0 8px 40px rgba(24,24,36,0.18);max-width:95vw;width:360px;text-align:center;">
+      <div style="font-size:1.18rem;font-weight:700;color:#181824;margin-bottom:1.2em;">Delete Calculator</div>
+      <div style="font-size:1.05rem;color:#232946;margin-bottom:2.1em;">Are you sure you want to delete this calculator? This cannot be undone.</div>
+      <div style="display:flex;gap:1.2em;justify-content:center;">
+        <button id="modalCancelBtn" style="background:#f3f4f6;color:#232946;font-weight:700;padding:0.7em 2.1em;border-radius:0.9em;font-size:1.08rem;border:none;cursor:pointer;">Cancel</button>
+        <button id="modalOkBtn" style="background:#e11d48;color:#fff;font-weight:700;padding:0.7em 2.1em;border-radius:0.9em;font-size:1.08rem;border:none;cursor:pointer;">Delete</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('modalCancelBtn').onclick = () => overlay.remove();
+  document.getElementById('modalOkBtn').onclick = () => {
+    overlay.remove();
+    onConfirm();
+  };
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  setTimeout(() => { document.getElementById('modalCancelBtn').focus(); }, 50);
+} 
