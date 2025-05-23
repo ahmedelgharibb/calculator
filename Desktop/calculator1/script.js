@@ -413,15 +413,27 @@ function renderAbout() {
 }
 
 function renderBrowse() {
-  // Reuse the modal logic, but render inline in the main area
   appContainer.innerHTML = `
     <section style="max-width:700px;margin:0 auto;padding:48px 0 32px 0;">
-      <h1 style="font-size:2.6rem;font-weight:900;color:#181824;margin-bottom:2.2em;text-align:center;letter-spacing:-0.02em;">Browse Calculators</h1>
+      <h1 style="font-size:2.6rem;font-weight:900;color:#181824;margin-bottom:1.2em;text-align:center;letter-spacing:-0.02em;">Browse Calculators</h1>
+      <div style="display:flex;justify-content:center;margin-bottom:2.2em;">
+        <input id="calcSearch" type="text" placeholder="Search calculators..." aria-label="Search calculators" style="width:100%;max-width:420px;padding:0.85em 1.2em;font-size:1.1rem;border-radius:1.1em;border:1.5px solid #e5e7eb;background:#f8fafc;color:#232946;box-shadow:0 2px 8px rgba(60,72,100,0.04);outline:none;transition:border 0.18s;" />
+      </div>
       <div id="calcList" class="calc-list"></div>
       <div id="calcDetail" style="display:none;"></div>
     </section>
   `;
   fetchCalculatorsInline();
+  // Add search logic
+  setTimeout(() => {
+    const searchInput = document.getElementById('calcSearch');
+    if (!searchInput) return;
+    searchInput.addEventListener('input', function() {
+      const query = this.value.trim().toLowerCase();
+      window._calcSearchQuery = query;
+      fetchCalculatorsInline();
+    });
+  }, 0);
 }
 
 async function fetchCalculatorsInline() {
@@ -435,11 +447,20 @@ async function fetchCalculatorsInline() {
       .select('id, title, purpose, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
       .order('created_at', { ascending: false });
     if (error) throw error;
-    if (!calculators.length) {
+    // Filter by search query if present
+    let filtered = calculators;
+    if (window._calcSearchQuery && window._calcSearchQuery.length > 0) {
+      const q = window._calcSearchQuery;
+      filtered = calculators.filter(calc =>
+        (calc.title && calc.title.toLowerCase().includes(q)) ||
+        (calc.purpose && calc.purpose.toLowerCase().includes(q))
+      );
+    }
+    if (!filtered.length) {
       calcList.innerHTML = '<div style="color:#a0aec0;text-align:center;">No calculators found. Create one to get started!</div>';
       return;
     }
-    calcList.innerHTML = calculators.map(calc => {
+    calcList.innerHTML = filtered.map(calc => {
       // Add 3 hours to created_at for Egypt time
       const createdAt = new Date(calc.created_at);
       createdAt.setHours(createdAt.getHours() + 3);
