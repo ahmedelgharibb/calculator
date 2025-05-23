@@ -566,18 +566,37 @@ async function showCalculatorInline(id) {
         <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Quiz Name</h2>
           <form id="nameForm">
-            <input type="text" id="quizUserName" class="glass-input" placeholder="Quiz name" maxlength="64" required style="margin-bottom:1.5rem;" />
+            <input type="text" id="quizUserName" class="glass-input quiz-dark-input" placeholder="Quiz name" maxlength="64" required style="margin-bottom:1.5rem;" />
             <button type="submit" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">Start Quiz</button>
             <button type="button" class="back-btn" id="cancelNameBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
           </form>
         </div>
       `;
+      // Add dark accent border/focus for quiz name input
+      setTimeout(() => {
+        const quizInput = document.getElementById('quizUserName');
+        if (quizInput) {
+          quizInput.style.border = '2.5px solid #232946';
+          quizInput.style.boxShadow = '0 0 0 0.5px #23294633';
+          quizInput.onfocus = function() {
+            this.style.border = '2.5px solid #232946';
+            this.style.boxShadow = '0 0 0 2px #23294633';
+          };
+          quizInput.onblur = function() {
+            this.style.border = '2.5px solid #232946';
+            this.style.boxShadow = '0 0 0 0.5px #23294633';
+          };
+          quizInput.classList.remove('border-red-400');
+        }
+      }, 0);
       document.getElementById('cancelNameBtn').onclick = renderAttemptsList;
       document.getElementById('nameForm').onsubmit = (e) => {
         e.preventDefault();
         const userName = document.getElementById('quizUserName').value.trim();
         if (!userName) {
-          document.getElementById('quizUserName').classList.add('border-red-400');
+          const quizInput = document.getElementById('quizUserName');
+          quizInput.style.border = '2.5px solid #e11d48';
+          quizInput.style.boxShadow = '0 0 0 2px #e11d4833';
           return;
         }
         renderQuizStep(userName);
