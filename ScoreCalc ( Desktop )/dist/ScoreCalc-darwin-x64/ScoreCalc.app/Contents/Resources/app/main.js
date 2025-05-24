@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 let backendProcess = null;
+let mainWindow = null;
 
 function startBackend() {
   if (!backendProcess) {
@@ -21,7 +22,8 @@ function startBackend() {
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
+  if (mainWindow) return;
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 900,
@@ -39,22 +41,24 @@ function createWindow() {
         ? path.join(__dirname, 'icon.ico')
         : path.join(__dirname, 'icon.png'),
   });
-  win.once('ready-to-show', () => win.show());
-  win.loadURL('http://localhost:3001');
+  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.loadURL('http://localhost:3001');
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 }
 
 app.whenReady().then(() => {
   startBackend();
-  // Wait for backend to start, then create the window
   setTimeout(() => {
     createWindow();
   }, 1200);
+});
 
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+app.on('activate', function () {
+  if (mainWindow === null) {
+    createWindow();
+  }
 });
 
 app.on('window-all-closed', function () {
