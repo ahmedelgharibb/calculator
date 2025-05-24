@@ -507,24 +507,24 @@ async function showCalculatorInline(id) {
     const calculator = await res.json();
     if (!calculator || !Array.isArray(calculator.fields)) throw new Error('Calculator not found');
 
-    // --- Persistent quiz attempts using localStorage ---
+    // --- Persistent test attempts using localStorage ---
     function getAttempts() {
       try {
-        return JSON.parse(localStorage.getItem('quiz_attempts_' + id)) || [];
+        return JSON.parse(localStorage.getItem('test_attempts_' + id)) || [];
       } catch {
         return [];
       }
     }
     function saveAttempts(attempts) {
-      localStorage.setItem('quiz_attempts_' + id, JSON.stringify(attempts));
+      localStorage.setItem('test_attempts_' + id, JSON.stringify(attempts));
     }
     let attempts = getAttempts();
 
-    // --- Render previous attempts and New Quiz button ---
+    // --- Render previous attempts and New Test button ---
     function renderAttemptsList() {
       attempts = getAttempts();
       calcDetail.innerHTML = `
-        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+        <div class="test-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
           <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
@@ -536,11 +536,11 @@ async function showCalculatorInline(id) {
               '</tbody></table>'}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
-            <button class="glass-btn" id="startQuizBtn" style="margin-bottom:0;margin-right:1.2rem;background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">New Quiz</button>
+            <button class="glass-btn" id="startTestBtn" style="margin-bottom:0;margin-right:1.2rem;background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">New Test</button>
           </div>
         </div>
       `;
-      document.getElementById('startQuizBtn').onclick = () => renderNamePrompt();
+      document.getElementById('startTestBtn').onclick = () => renderNamePrompt();
       document.getElementById('backBtn').onclick = () => {
         calcDetail.style.display = 'none';
         calcList.style.display = 'block';
@@ -551,63 +551,63 @@ async function showCalculatorInline(id) {
       };
     }
 
-    // --- Prompt for user name before quiz ---
+    // --- Prompt for user name before test ---
     function renderNamePrompt() {
       calcDetail.innerHTML = `
-        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Quiz Name</h2>
+        <div class="test-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Test Name</h2>
           <form id="nameForm">
-            <input type="text" id="quizUserName" class="glass-input quiz-dark-input" placeholder="Quiz name" maxlength="64" required style="margin-bottom:1.5rem;" />
-            <button type="submit" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">Start Quiz</button>
+            <input type="text" id="testUserName" class="glass-input test-dark-input" placeholder="Test name" maxlength="64" required style="margin-bottom:1.5rem;" />
+            <button type="submit" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">Start Test</button>
             <button type="button" class="back-btn" id="cancelNameBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
           </form>
         </div>
       `;
       setTimeout(() => {
-        const quizInput = document.getElementById('quizUserName');
-        if (quizInput) {
-          quizInput.style.border = '2.5px solid #232946';
-          quizInput.style.boxShadow = '0 0 0 0.5px #23294633';
-          quizInput.onfocus = function() {
+        const testInput = document.getElementById('testUserName');
+        if (testInput) {
+          testInput.style.border = '2.5px solid #232946';
+          testInput.style.boxShadow = '0 0 0 0.5px #23294633';
+          testInput.onfocus = function() {
             this.style.border = '2.5px solid #232946';
             this.style.boxShadow = '0 0 0 2px #23294633';
           };
-          quizInput.onblur = function() {
+          testInput.onblur = function() {
             this.style.border = '2.5px solid #232946';
             this.style.boxShadow = '0 0 0 0.5px #23294633';
           };
-          quizInput.classList.remove('border-red-400');
+          testInput.classList.remove('border-red-400');
         }
       }, 0);
       document.getElementById('cancelNameBtn').onclick = renderAttemptsList;
       document.getElementById('nameForm').onsubmit = (e) => {
         e.preventDefault();
-        const userName = document.getElementById('quizUserName').value.trim();
+        const userName = document.getElementById('testUserName').value.trim();
         if (!userName) {
-          const quizInput = document.getElementById('quizUserName');
-          quizInput.style.border = '2.5px solid #e11d48';
-          quizInput.style.boxShadow = '0 0 0 2px #e11d4833';
+          const testInput = document.getElementById('testUserName');
+          testInput.style.border = '2.5px solid #e11d48';
+          testInput.style.boxShadow = '0 0 0 2px #e11d4833';
           return;
         }
-        renderQuizStep(userName);
+        renderTestStep(userName);
       };
     }
 
-    // --- Quiz state ---
-    function renderQuizStep(userName) {
+    // --- Test state ---
+    function renderTestStep(userName) {
       let currentStep = 0;
       const answers = Array(calculator.fields.length).fill(null);
       function showStep() {
         const field = calculator.fields[currentStep];
         const totalSteps = calculator.fields.length;
         calcDetail.innerHTML = `
-          <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+          <div class="test-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
             <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
               <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
             </div>
             <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
             <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${field.name}</div>
-            <form id="quizForm">
+            <form id="testForm">
               <div style="display:flex;flex-direction:column;gap:1.1rem;">
                 ${field.options.map((opt, i) => `
                   <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
@@ -631,7 +631,7 @@ async function showCalculatorInline(id) {
             showStep();
           }
         };
-        document.getElementById('quizForm').onsubmit = (e) => {
+        document.getElementById('testForm').onsubmit = (e) => {
           e.preventDefault();
           const selected = document.querySelector('input[name="option"]:checked');
           if (!selected) return;
@@ -640,7 +640,7 @@ async function showCalculatorInline(id) {
             currentStep++;
             showStep();
           } else {
-            renderQuizResult(userName, answers);
+            renderTestResult(userName, answers);
           }
         };
         document.querySelectorAll('input[name="option"]').forEach((input, i) => {
@@ -678,8 +678,8 @@ async function showCalculatorInline(id) {
       showStep();
     }
 
-    // --- Quiz result and save ---
-    function renderQuizResult(userName, answers) {
+    // --- Test result and save ---
+    function renderTestResult(userName, answers) {
       let total = 0;
       calculator.fields.forEach((f, i) => {
         const answerIdx = answers[i];
