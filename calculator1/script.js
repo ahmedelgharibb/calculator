@@ -83,6 +83,7 @@ function renderStep2() {
             <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
               <div class="flex items-center gap-2 mb-3">
                 <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
+                <input type="number" value="${f.weight !== undefined ? f.weight : ''}" data-idx="${i}" class="field-weight-input border border-gray-200 rounded-lg px-3 py-2 w-28 focus:outline-none focus:ring-2 focus:ring-indigo-400" min="1" required placeholder="Weight" aria-label="Field weight (max points)" />
                 <button type="button" class="remove-field-btn text-red-500 text-sm font-semibold ml-2 transition-colors duration-150 hover:text-red-700" data-idx="${i}">Remove Field</button>
               </div>
               <div class="flex gap-2 mb-2">
@@ -142,15 +143,24 @@ function renderStep2() {
     };
   });
 
-  // Edit field name with validation
+  // Edit field name and weight with validation
   document.querySelectorAll('.field-name-input').forEach(inp => {
     inp.oninput = (e) => {
       const idx = e.target.getAttribute('data-idx');
       calculator.fields[idx].name = e.target.value;
-      // Inline validation: no empty or duplicate names
       inp.classList.remove('border-red-400');
       const names = calculator.fields.map(f => f.name.trim());
       if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim()).length > 1) {
+        inp.classList.add('border-red-400');
+      }
+    };
+  });
+  document.querySelectorAll('.field-weight-input').forEach(inp => {
+    inp.oninput = (e) => {
+      const idx = e.target.getAttribute('data-idx');
+      calculator.fields[idx].weight = e.target.value ? parseFloat(e.target.value) : undefined;
+      inp.classList.remove('border-red-400');
+      if (!e.target.value || isNaN(e.target.value) || parseFloat(e.target.value) < 1) {
         inp.classList.add('border-red-400');
       }
     };
@@ -166,20 +176,24 @@ function renderStep2() {
       const value = valueInput.value.trim();
       labelInput.classList.remove('border-red-400');
       valueInput.classList.remove('border-red-400');
-      // Inline validation: no empty or duplicate labels, value must be a number
       const labels = (calculator.fields[idx].options || []).map(opt => opt.label.trim());
       let hasError = false;
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
       if (!value || isNaN(value)) { valueInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
+      // Enforce max value by field weight
+      const weight = calculator.fields[idx].weight;
+      if (weight !== undefined && value && !isNaN(value) && parseFloat(value) > weight) {
+        valueInput.classList.add('border-red-400');
+        showCustomModal('Option value cannot exceed the field weight (' + weight + ').');
+        hasError = true;
+      }
       if (hasError) return;
       calculator.fields[idx].options = calculator.fields[idx].options || [];
       calculator.fields[idx].options.push({ label, value });
-      // Instead of re-rendering immediately, clear inputs and refocus for smooth UX
       labelInput.value = '';
       valueInput.value = '';
       setTimeout(() => labelInput.focus(), 10);
-      // Only re-render options list, not the whole form
       renderStep2();
     };
   });
