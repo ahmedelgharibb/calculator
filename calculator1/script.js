@@ -156,14 +156,21 @@ function renderStep2() {
     };
   });
   document.querySelectorAll('.field-weight-input').forEach(inp => {
-    inp.oninput = (e) => {
+    // Only update on blur or Enter for smooth multi-digit entry
+    inp.addEventListener('blur', (e) => {
       const idx = e.target.getAttribute('data-idx');
       calculator.fields[idx].weight = e.target.value ? parseFloat(e.target.value) : undefined;
       inp.classList.remove('border-red-400');
       if (!e.target.value || isNaN(e.target.value) || parseFloat(e.target.value) < 1) {
         inp.classList.add('border-red-400');
       }
-    };
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        inp.blur();
+      }
+    });
   });
 
   // Add option logic with validation
