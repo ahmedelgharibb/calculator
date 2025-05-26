@@ -476,8 +476,8 @@ async function showCalculatorInline(id) {
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
             ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
-              `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th><th></th></tr></thead><tbody>` +
-              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;' class='score-cell' data-id='${a.id}'>${a.score}</td><td><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button> <button class='delete-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#fee2e2;color:#b91c1c;font-weight:700;border:none;cursor:pointer;margin-left:4px;'>Delete</button></td></tr>`).join('') +
+              `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th><th style="text-align:right;padding-bottom:6px;"></th></tr></thead><tbody>` +
+              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;' class='score-cell' data-id='${a.id}'>${a.score}</td><td style="text-align:right;padding:4px 0;"><div style='display:flex;gap:8px;justify-content:flex-end;'><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button><button class='delete-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#fee2e2;color:#b91c1c;font-weight:700;border:none;cursor:pointer;'>Delete</button></div></td></tr>`).join('') +
               '</tbody></table>'}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
@@ -513,15 +513,9 @@ async function showCalculatorInline(id) {
         btn.onclick = async () => {
           const attemptId = btn.getAttribute('data-id');
           await supabase.from('quiz_attempts').delete().eq('id', attemptId);
-          // Remove row with animation
+          // Remove row instantly
           const row = btn.closest('tr');
-          if (row) {
-            row.style.transition = 'opacity 0.4s';
-            row.style.opacity = 0;
-            setTimeout(() => row.remove(), 400);
-          }
-          // Optionally refetch attempts
-          setTimeout(renderAttemptsList, 450);
+          if (row) row.remove();
         };
       });
     }
@@ -824,4 +818,9 @@ async function updateAllAttemptScores(calc) {
   window._animateScores = true;
   // Refetch and animate
   if (typeof showCalculatorInline === 'function') showCalculatorInline(calc.id);
-} 
+}
+
+// To use: call updateAllAttemptScores(calc) after quiz is edited
+// Automatically call updateAllAttemptScores after quiz edit (fields/options change)
+window.updateAllAttemptScores = updateAllAttemptScores;
+// Example: after editing calculator fields/options, call window.updateAllAttemptScores(calculator) to update and animate scores. 
