@@ -201,7 +201,8 @@ function renderStep2() {
       labelInput.value = '';
       valueInput.value = '';
       setTimeout(() => labelInput.focus(), 10);
-      renderStep2();
+      // Only update the options list, not the whole form
+      updateOptionsList(idx);
     };
   });
 
@@ -211,9 +212,31 @@ function renderStep2() {
       const idx = btn.getAttribute('data-idx');
       const oidx = btn.getAttribute('data-oidx');
       calculator.fields[idx].options.splice(oidx, 1);
-      renderStep2();
+      // Only update the options list, not the whole form
+      updateOptionsList(idx);
     };
   });
+
+  // Helper to update only the options list for a field
+  function updateOptionsList(idx) {
+    const optionsList = document.getElementById(`optionsList${idx}`);
+    if (!optionsList) return;
+    optionsList.innerHTML = (calculator.fields[idx].options||[]).map((opt, oi) => `
+      <div class="flex gap-2 items-center mb-2">
+        <div class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-800">${opt.label}</div>
+        <div class="w-32 px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 text-center">${opt.value}</div>
+        <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2 transition-colors duration-150 hover:text-red-700" data-idx="${idx}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
+      </div>
+    `).join('');
+    // Re-bind remove buttons
+    optionsList.querySelectorAll('.remove-option-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        const oidx = btn.getAttribute('data-oidx');
+        calculator.fields[idx].options.splice(oidx, 1);
+        updateOptionsList(idx);
+      };
+    });
+  }
 
   // Save Calculator
   document.getElementById('fieldsForm').onsubmit = async (e) => {
