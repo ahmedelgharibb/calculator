@@ -477,7 +477,7 @@ async function showCalculatorInline(id) {
           <div style="margin-bottom:2rem;">
             ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
               `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th><th></th></tr></thead><tbody>` +
-              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;'>${a.score}</td><td><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button></td></tr>`).join('') +
+              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;' class='score-cell' data-id='${a.id}'>${a.score}</td><td><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button> <button class='delete-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#fee2e2;color:#b91c1c;font-weight:700;border:none;cursor:pointer;margin-left:4px;'>Delete</button></td></tr>`).join('') +
               '</tbody></table>'}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
@@ -506,6 +506,22 @@ async function showCalculatorInline(id) {
           if (attemptError || !attemptData) return;
           const prevAnswers = JSON.parse(attemptData.answers || '[]');
           renderQuizStep(attemptData.user_name, prevAnswers, attemptId);
+        };
+      });
+      // Delete attempt logic
+      document.querySelectorAll('.delete-attempt-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const attemptId = btn.getAttribute('data-id');
+          await supabase.from('quiz_attempts').delete().eq('id', attemptId);
+          // Remove row with animation
+          const row = btn.closest('tr');
+          if (row) {
+            row.style.transition = 'opacity 0.4s';
+            row.style.opacity = 0;
+            setTimeout(() => row.remove(), 400);
+          }
+          // Optionally refetch attempts
+          setTimeout(renderAttemptsList, 450);
         };
       });
     }
@@ -648,6 +664,18 @@ async function showCalculatorInline(id) {
           if (!isNaN(val)) total += val;
         }
       });
+      // Ensure unique quiz name
+      if (!editAttemptId) {
+        let baseName = userName;
+        let name = baseName;
+        let counter = 1;
+        const existingNames = attempts.map(a => a.user_name);
+        while (existingNames.includes(name)) {
+          name = `${baseName}(${counter})`;
+          counter++;
+        }
+        userName = name;
+      }
       let saveError;
       if (editAttemptId) {
         // Update existing attempt
@@ -669,6 +697,21 @@ async function showCalculatorInline(id) {
         .order('created_at', { ascending: false });
       attempts.length = 0;
       attempts.push(...(newAttempts || []));
+      // Animate score changes if editing quiz structure
+      if (window._animateScores) {
+        setTimeout(() => {
+          document.querySelectorAll('.score-cell').forEach(cell => {
+            cell.style.transition = 'background 0.7s, color 0.7s';
+            cell.style.background = '#fef08a';
+            cell.style.color = '#b45309';
+            setTimeout(() => {
+              cell.style.background = '';
+              cell.style.color = '';
+            }, 700);
+          });
+          window._animateScores = false;
+        }, 200);
+      }
       renderAttemptsList();
     }
 
@@ -756,4 +799,29 @@ if (typeof showCustomModal !== 'function') {
       }
     });
   }
+}
+
+// Add a function to update all attempts' scores when quiz is edited
+async function updateAllAttemptScores(calc) {
+  const { data: attempts } = await supabase
+    .from('quiz_attempts')
+    .select('id, answers');
+  for (const attempt of attempts) {
+    const answers = JSON.parse(attempt.answers || '[]');
+    let total = 0;
+    calc.fields.forEach((f, i) => {
+      const answerIdx = answers[i];
+      if (answerIdx != null && f.options[answerIdx]) {
+        const val = parseFloat(f.options[answerIdx].value);
+        if (!isNaN(val)) total += val;
+      }
+    });
+    await supabase
+      .from('quiz_attempts')
+      .update({ score: total })
+      .eq('id', attempt.id);
+  }
+  window._animateScores = true;
+  // Refetch and animate
+  if (typeof showCalculatorInline === 'function') showCalculatorInline(calc.id);
 } 
