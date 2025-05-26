@@ -16,7 +16,10 @@ function renderStep1() {
   app.innerHTML = `
     <div class="create-calc-bg">
       <div class="glass-card step animate-fadeIn">
-        <div class="progress-indicator">Step 1 of 3</div>
+        <div class="step-progress-container">
+          <div class="step-progress-bar"><div class="step-progress-bar-inner" style="width:33.3%"></div></div>
+          <div class="progress-indicator step-label">Step 1 of 3</div>
+        </div>
         <h1 class="glass-title">Create Your Score Calculator</h1>
         <form id="setupForm" autocomplete="off">
           <label class="glass-label">Calculator Title</label>
@@ -61,7 +64,10 @@ function renderStep2() {
   app.innerHTML = `
     <div class="flex justify-center items-center min-h-[80vh] w-full">
       <form id="fieldsForm" autocomplete="off" class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-xl border border-gray-100">
-        <div class="progress-indicator mb-4">Step 2 of 3</div>
+        <div class="step-progress-container mb-4">
+          <div class="step-progress-bar"><div class="step-progress-bar-inner" style="width:66.6%"></div></div>
+          <div class="progress-indicator step-label">Step 2 of 3</div>
+        </div>
         <h2 class="text-3xl font-extrabold text-center mb-8 text-gray-800">Configure Fields</h2>
         <div id="fieldsList">
           ${calculator.fields.map((f, i) => `
@@ -146,7 +152,10 @@ function renderStep3() {
   app.innerHTML = `
     <div class="flex justify-center items-center min-h-[80vh] w-full">
       <form id="optionsForm" autocomplete="off" class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-xl border border-gray-100">
-        <div class="progress-indicator mb-4">Step 3 of 3</div>
+        <div class="step-progress-container mb-4">
+          <div class="step-progress-bar"><div class="step-progress-bar-inner" style="width:100%"></div></div>
+          <div class="progress-indicator step-label">Step 3 of 3</div>
+        </div>
         <h2 class="text-3xl font-extrabold text-center mb-8 text-gray-800">Add Options for Each Field</h2>
         <div id="fieldsOptionsList">
           ${calculator.fields.map((f, i) => `

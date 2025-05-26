@@ -575,3 +575,34 @@ footer {
   color: #181824;
   outline: none;
 }
+
+/* Step progress bar styles */
+.step-progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+.step-progress-bar {
+  width: 90%;
+  height: 8px;
+  background: #f1f1f3;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+.step-progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #232946 100%);
+  border-radius: 8px;
+  transition: width 0.35s cubic-bezier(.4,1.4,.6,1);
+}
+.step-label {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: #6366f1;
+  letter-spacing: 0.01em;
+  margin-top: 0.1rem;
+  margin-bottom: 0.2rem;
+}
