@@ -499,12 +499,28 @@ async function showCalculatorInline(id) {
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
             ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
-              `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th><th style="text-align:right;padding-bottom:6px;"></th></tr></thead><tbody>` +
-              attempts.map(a => `<tr><td style='padding:4px 0;'><span class='quiz-name-cell' data-id='${a.id}'>${a.user_name}</span></td><td style='text-align:right;padding:4px 0;' class='score-cell' data-id='${a.id}'>${a.score}</td><td style="text-align:right;padding:4px 0;"><div style='display:flex;gap:8px;justify-content:flex-end;'><button class='rename-quiz-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Rename</button><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button><button class='delete-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#fee2e2;color:#b91c1c;font-weight:700;border:none;cursor:pointer;'>Delete</button></div></td></tr>`).join('') +
-              '</tbody></table>'}
+              attempts.map(a => `
+                <div class="quiz-attempt-row">
+                  <div class="quiz-attempt-info">
+                    <span class="quiz-attempt-name">${a.user_name}</span>
+                    <span class="quiz-attempt-score">Score: ${a.score}</span>
+                  </div>
+                  <div class="quiz-attempt-options">
+                    <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                    </button>
+                    <div class="options-menu" id="optionsMenu${a.id}" role="menu" aria-label="Quiz options">
+                      <button class="options-menu-item" data-action="rename" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg> Rename</button>
+                      <button class="options-menu-item" data-action="edit" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> Edit</button>
+                      <button class="options-menu-item" data-action="duplicate" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="3" y="3" width="13" height="13" rx="2"/></svg> Duplicate</button>
+                      <button class="options-menu-item danger" data-action="delete" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg> Delete</button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
-            <button class="glass-btn" id="startQuizBtn" style="margin-bottom:0;margin-right:1.2rem;background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">New Quiz</button>
+            <button class="glass-btn new-quiz-btn" id="startQuizBtn">New Quiz</button>
           </div>
         </div>
       `;
@@ -559,41 +575,90 @@ async function showCalculatorInline(id) {
       document.getElementById('editCalcBtn').onclick = () => {
         renderEditCalculator(calc);
       };
-      // Rename Quiz logic
-      document.querySelectorAll('.rename-quiz-btn').forEach(btn => {
-        btn.onclick = async () => {
-          const attemptId = btn.getAttribute('data-id');
-          const quizNameCell = document.querySelector(`.quiz-name-cell[data-id='${attemptId}']`);
-          const oldName = quizNameCell ? quizNameCell.textContent : '';
-          const newName = prompt('Enter new quiz name:', oldName);
-          if (!newName || !newName.trim()) return;
-          await supabase.from('quiz_attempts').update({ user_name: newName.trim() }).eq('id', attemptId);
-          if (quizNameCell) quizNameCell.textContent = newName.trim();
-          showCustomModal('Quiz renamed!');
+      // Options menu logic for each row
+      document.querySelectorAll('.options-menu-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-id');
+          const menu = document.getElementById(`optionsMenu${id}`);
+          // Close all other menus
+          document.querySelectorAll('.options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+          if (!expanded) {
+            menu.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+            // Focus first item
+            setTimeout(() => { const first = menu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
+          } else {
+            menu.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
         };
       });
-      // Edit attempt logic
-      document.querySelectorAll('.edit-attempt-btn').forEach(btn => {
-        btn.onclick = async () => {
-          const attemptId = btn.getAttribute('data-id');
-          const { data: attemptData, error: attemptError } = await supabase
-            .from('quiz_attempts')
-            .select('id, user_name, answers')
-            .eq('id', attemptId)
-            .single();
-          if (attemptError || !attemptData) return;
-          const prevAnswers = JSON.parse(attemptData.answers || '[]');
-          renderQuizStep(attemptData.user_name, prevAnswers, attemptId);
+      // Close menu on click outside
+      document.addEventListener('click', function closeMenus(e) {
+        if (!e.target.closest('.quiz-attempt-options')) {
+          document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('open'));
+          document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        }
+      }, { once: true });
+      // Keyboard navigation for menu
+      document.querySelectorAll('.options-menu').forEach(menu => {
+        menu.onkeydown = (e) => {
+          const items = Array.from(menu.querySelectorAll('.options-menu-item'));
+          const idx = items.indexOf(document.activeElement);
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (idx < items.length - 1) items[idx + 1].focus();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (idx > 0) items[idx - 1].focus();
+          } else if (e.key === 'Escape') {
+            menu.classList.remove('open');
+            const btn = menu.parentElement.querySelector('.options-menu-btn');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+            btn && btn.focus();
+          }
         };
       });
-      // Delete attempt logic
-      document.querySelectorAll('.delete-attempt-btn').forEach(btn => {
-        btn.onclick = async () => {
-          const attemptId = btn.getAttribute('data-id');
-          await supabase.from('quiz_attempts').delete().eq('id', attemptId);
-          // Remove row instantly
-          const row = btn.closest('tr');
-          if (row) row.remove();
+      // Menu actions
+      document.querySelectorAll('.options-menu-item').forEach(item => {
+        item.onclick = async (e) => {
+          const action = item.getAttribute('data-action');
+          const attemptId = item.getAttribute('data-id');
+          if (action === 'rename') {
+            const quizNameCell = document.querySelector(`.quiz-attempt-row [data-id='${attemptId}'] .quiz-attempt-name`);
+            const oldName = quizNameCell ? quizNameCell.textContent : '';
+            const newName = prompt('Enter new quiz name:', oldName);
+            if (!newName || !newName.trim()) return;
+            await supabase.from('quiz_attempts').update({ user_name: newName.trim() }).eq('id', attemptId);
+            if (quizNameCell) quizNameCell.textContent = newName.trim();
+            showCustomModal('Quiz renamed!');
+          } else if (action === 'edit') {
+            const { data: attemptData, error: attemptError } = await supabase
+              .from('quiz_attempts')
+              .select('id, user_name, answers')
+              .eq('id', attemptId)
+              .single();
+            if (attemptError || !attemptData) return;
+            const prevAnswers = JSON.parse(attemptData.answers || '[]');
+            renderQuizStep(attemptData.user_name, prevAnswers, attemptId);
+          } else if (action === 'duplicate') {
+            // Duplicate quiz attempt (optional, can be implemented as needed)
+            showCustomModal('Duplicate quiz is not implemented yet.');
+          } else if (action === 'delete') {
+            showDeleteModal(async () => {
+              await supabase.from('quiz_attempts').delete().eq('id', attemptId);
+              // Remove row instantly
+              const row = item.closest('.quiz-attempt-row');
+              if (row) row.remove();
+            });
+          }
+          // Close menu after action
+          item.closest('.options-menu').classList.remove('open');
+          const btn = item.closest('.quiz-attempt-options').querySelector('.options-menu-btn');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
         };
       });
     }

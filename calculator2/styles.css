@@ -654,3 +654,149 @@ footer {
     margin-bottom: 0.3em;
   }
 }
+
+/* Quiz attempts card row redesign */
+.quiz-attempt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(60,72,100,0.07);
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  border: 1.5px solid #f1f1f3;
+  transition: box-shadow 0.18s, border 0.18s;
+  position: relative;
+}
+.quiz-attempt-row:hover {
+  box-shadow: 0 6px 24px rgba(60,72,100,0.13);
+  border: 1.5px solid #6366f1;
+}
+.quiz-attempt-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.quiz-attempt-name {
+  font-size: 1.13rem;
+  font-weight: 700;
+  color: #232946;
+  margin-bottom: 2px;
+}
+.quiz-attempt-score {
+  font-size: 1rem;
+  color: #6366f1;
+  font-weight: 600;
+}
+.quiz-attempt-options {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.options-menu-btn {
+  background: none;
+  border: none;
+  color: #232946;
+  font-size: 1.7rem;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s;
+  outline: none;
+  position: relative;
+}
+.options-menu-btn:focus, .options-menu-btn:hover {
+  background: #f1f1f3;
+  box-shadow: 0 2px 8px #6366f122;
+}
+.options-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(60,72,100,0.18);
+  min-width: 160px;
+  z-index: 10;
+  padding: 8px 0;
+  border: 1.5px solid #e5e7eb;
+  display: none;
+  flex-direction: column;
+}
+.options-menu.open {
+  display: flex;
+}
+.options-menu-btn[aria-expanded="true"] {
+  background: #f1f1f3;
+}
+.options-menu-item {
+  background: none;
+  border: none;
+  color: #232946;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  outline: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+}
+.options-menu-item:hover, .options-menu-item:focus {
+  background: #f3f4f6;
+  color: #6366f1;
+}
+.options-menu-item.danger {
+  color: #ef4444;
+  font-weight: 700;
+}
+.options-menu-item.danger:hover, .options-menu-item.danger:focus {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* New Quiz button */
+#startQuizBtn, .new-quiz-btn {
+  background: #232946;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.18rem;
+  border-radius: 12px;
+  padding: 0.9em 2.2em;
+  box-shadow: 0 4px 24px #23294633;
+  margin: 0 auto;
+  display: block;
+  transition: background 0.18s, box-shadow 0.18s;
+  border: none;
+}
+#startQuizBtn:hover, .new-quiz-btn:hover {
+  background: #181824;
+  box-shadow: 0 8px 32px #23294633;
+}
+
+/* Accessibility: focus states */
+.options-menu-btn:focus-visible, .options-menu-item:focus-visible {
+  outline: 2.5px solid #6366f1;
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .quiz-attempt-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px 10px;
+    gap: 8px;
+  }
+  .quiz-attempt-options {
+    align-self: flex-end;
+  }
+}
