@@ -486,6 +486,10 @@ async function showCalculatorInline(id) {
 
     // --- Render previous attempts and New Quiz button ---
     function renderAttemptsList() {
+      // Sorting state
+      let sortBy = window._quizSortBy || 'date';
+      let sortDir = window._quizSortDir || 'desc';
+      // Sorting controls UI
       calcDetail.innerHTML = `
         <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
           <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
@@ -502,13 +506,29 @@ async function showCalculatorInline(id) {
             </div>
           </div>
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
+          <div style="display:flex;gap:1.2em;align-items:center;justify-content:flex-end;margin-bottom:1.2em;">
+            <label for="sortBySelect" style="font-size:1.02em;color:#6366f1;font-weight:600;">Sort by:</label>
+            <select id="sortBySelect" style="font-size:1.02em;padding:0.3em 1em;border-radius:0.7em;border:1.5px solid #e5e7eb;background:#f9fafb;color:#232946;font-weight:600;">
+              <option value="date">Date</option>
+              <option value="score">Score</option>
+            </select>
+            <button id="sortDirBtn" style="background:none;border:none;color:#6366f1;font-size:1.2em;cursor:pointer;display:flex;align-items:center;" aria-label="Toggle sort direction">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+            </button>
+          </div>
           <div style="margin-bottom:2rem;">
-            ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
-              attempts.map(a => `
+            ${(() => {
+              let sorted = [...attempts];
+              if (sortBy === 'score') sorted.sort((a, b) => sortDir === 'asc' ? a.score - b.score : b.score - a.score);
+              else sorted.sort((a, b) => sortDir === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
+              return sorted.map((a, idx) => `
                 <div class="quiz-attempt-row">
-                  <div class="quiz-attempt-info">
-                    <span class="quiz-attempt-name">${a.user_name}</span>
-                    <span class="quiz-attempt-score">Score: ${a.score}</span>
+                  <div style="display:flex;align-items:center;gap:1.1em;">
+                    <span class="serial-num" style="font-size:1.1em;font-weight:700;color:#6366f1;min-width:2.2em;display:inline-block;text-align:right;">${idx+1}</span>
+                    <div class="quiz-attempt-info">
+                      <span class="quiz-attempt-name">${a.user_name}</span>
+                      <span class="quiz-attempt-score">Score: ${a.score}</span>
+                    </div>
                   </div>
                   <div class="quiz-attempt-options">
                     <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
@@ -522,13 +542,27 @@ async function showCalculatorInline(id) {
                     </div>
                   </div>
                 </div>
-              `).join('')}
+              `).join('');
+            })()}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
             <button class="glass-btn new-quiz-btn" id="startQuizBtn">New Quiz</button>
           </div>
         </div>
       `;
+      // Sorting controls logic
+      document.getElementById('sortBySelect').value = sortBy;
+      document.getElementById('sortDirBtn').innerHTML = sortDir === 'asc'
+        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`
+        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+      document.getElementById('sortBySelect').onchange = (e) => {
+        window._quizSortBy = e.target.value;
+        renderAttemptsList();
+      };
+      document.getElementById('sortDirBtn').onclick = () => {
+        window._quizSortDir = (window._quizSortDir === 'asc' ? 'desc' : 'asc');
+        renderAttemptsList();
+      };
       document.getElementById('startQuizBtn').onclick = () => renderNamePrompt();
       document.getElementById('backBtn').onclick = () => {
         calcDetail.style.display = 'none';
