@@ -522,3 +522,56 @@ footer {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Modern modal styles */
+.modern-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(24, 24, 36, 0.75);
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+.modern-modal-content {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #232946;
+  color: #fff;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 40px rgba(24,24,36,0.18);
+  padding: 2.5rem 2rem 2rem 2rem;
+  min-width: 320px;
+  max-width: 90vw;
+  z-index: 1001;
+  outline: none;
+  animation: pop 0.3s;
+  text-align: center;
+}
+.modern-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #e0e7ff;
+}
+.modern-modal-message {
+  font-size: 1.08rem;
+  margin-bottom: 2rem;
+  color: #f3f3f3;
+}
+.modern-modal-btn {
+  background: #aee3f9;
+  color: #232946;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.7em 2.2em;
+  border-radius: 1.2em;
+  border: none;
+  box-shadow: 0 4px 24px #18182433;
+  transition: background 0.18s, color 0.18s;
+  cursor: pointer;
+}
+.modern-modal-btn:hover, .modern-modal-btn:focus {
+  background: #7ed6f9;
+  color: #181824;
+  outline: none;
+}

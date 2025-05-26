@@ -97,14 +97,21 @@ function renderStep2() {
     };
   });
   document.querySelectorAll('.field-weight-input').forEach(inp => {
-    inp.oninput = (e) => {
+    // Only update on blur or Enter for smooth multi-digit entry
+    inp.addEventListener('blur', (e) => {
       const idx = e.target.getAttribute('data-idx');
       let val = e.target.value;
       if (val === '') val = '';
       else val = Math.max(0, Math.min(100, parseInt(val)));
       calculator.fields[idx].weight = val;
       renderStep2();
-    };
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        inp.blur();
+      }
+    });
   });
   document.getElementById('backBtn2').onclick = () => {
     step = 1;
@@ -183,12 +190,20 @@ function renderStep3() {
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
       if (!value || isNaN(value)) { valueInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
+      // Enforce max value by field weight
+      const weight = calculator.fields[idx].weight;
+      if (weight !== undefined && value && !isNaN(value) && parseFloat(value) > weight) {
+        valueInput.classList.add('border-red-400');
+        showCustomModal('Option value cannot exceed the field weight (' + weight + ').');
+        hasError = true;
+      }
       if (hasError) return;
       calculator.fields[idx].options = calculator.fields[idx].options || [];
       calculator.fields[idx].options.push({ label, value });
       labelInput.value = '';
       valueInput.value = '';
-      renderStep3();
+      setTimeout(() => labelInput.focus(), 10);
+      updateOptionsList(idx);
     };
   });
   document.querySelectorAll('.remove-option-btn').forEach(btn => {
@@ -196,23 +211,28 @@ function renderStep3() {
       const idx = btn.getAttribute('data-idx');
       const oidx = btn.getAttribute('data-oidx');
       calculator.fields[idx].options.splice(oidx, 1);
-      renderStep3();
+      updateOptionsList(idx);
     };
   });
-  document.querySelectorAll('.option-label-input').forEach(inp => {
-    inp.oninput = (e) => {
-      const idx = inp.getAttribute('data-idx');
-      const oidx = inp.getAttribute('data-oidx');
-      calculator.fields[idx].options[oidx].label = inp.value;
-    };
-  });
-  document.querySelectorAll('.option-value-input').forEach(inp => {
-    inp.oninput = (e) => {
-      const idx = inp.getAttribute('data-idx');
-      const oidx = inp.getAttribute('data-oidx');
-      calculator.fields[idx].options[oidx].value = inp.value;
-    };
-  });
+  function updateOptionsList(idx) {
+    const optionsList = document.getElementById(`optionsList${idx}`);
+    if (!optionsList) return;
+    optionsList.innerHTML = (calculator.fields[idx].options||[]).map((opt, oi) => `
+      <div class="flex gap-2 items-center mb-2">
+        <input type="text" value="${opt.label}" data-idx="${idx}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
+        <input type="number" value="${opt.value}" data-idx="${idx}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" />
+        <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${idx}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
+      </div>
+    `).join('');
+    // Re-bind remove buttons
+    optionsList.querySelectorAll('.remove-option-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        const oidx = btn.getAttribute('data-oidx');
+        calculator.fields[idx].options.splice(oidx, 1);
+        updateOptionsList(idx);
+      };
+    });
+  }
   document.getElementById('backBtn3').onclick = () => {
     step = 2;
     renderStep2();
@@ -660,4 +680,37 @@ function showDeleteModal(onConfirm) {
   };
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   setTimeout(() => { document.getElementById('modalCancelBtn').focus(); }, 50);
+}
+
+// Add modern modal utility if not present
+if (typeof showCustomModal !== 'function') {
+  function showCustomModal(message) {
+    if (document.getElementById('customModal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'customModal';
+    modal.innerHTML = `
+      <div class="modern-modal-overlay"></div>
+      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1">
+        <h2 class="modern-modal-title">Notice</h2>
+        <p class="modern-modal-message">${message}</p>
+        <button class="modern-modal-btn" id="closeModalBtn">OK</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => {
+      document.querySelector('.modern-modal-content').focus();
+    }, 10);
+    document.getElementById('closeModalBtn').onclick = () => {
+      modal.remove();
+    };
+    modal.querySelector('.modern-modal-overlay').onclick = () => {
+      modal.remove();
+    };
+    document.addEventListener('keydown', function escListener(e) {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', escListener);
+      }
+    });
+  }
 } 
