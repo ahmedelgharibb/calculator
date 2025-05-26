@@ -491,12 +491,16 @@ async function showCalculatorInline(id) {
           <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <button id="editCalcBtn" class="glass-btn" style="position:absolute;top:18px;right:18px;background:#232946;color:#fff;font-weight:700;font-size:1.05rem;padding:0.5em 1.3em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;z-index:2;">Edit Calculator</button>
+          <div style="position:absolute;top:18px;right:18px;display:flex;gap:0.5em;z-index:2;">
+            <button id="duplicateCalcBtn" class="glass-btn" title="Duplicate Calculator" style="background:#e0e7ff;color:#232946;font-weight:700;font-size:1.05rem;padding:0.5em 1.1em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;">Duplicate</button>
+            <button id="renameCalcBtn" class="glass-btn" title="Rename Calculator" style="background:#fee2e2;color:#b91c1c;font-weight:700;font-size:1.05rem;padding:0.5em 1.1em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;">Rename</button>
+            <button id="editCalcBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.05rem;padding:0.5em 1.1em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;">Edit</button>
+          </div>
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
             ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
               `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th><th style="text-align:right;padding-bottom:6px;"></th></tr></thead><tbody>` +
-              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;' class='score-cell' data-id='${a.id}'>${a.score}</td><td style="text-align:right;padding:4px 0;"><div style='display:flex;gap:8px;justify-content:flex-end;'><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button><button class='delete-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#fee2e2;color:#b91c1c;font-weight:700;border:none;cursor:pointer;'>Delete</button></div></td></tr>`).join('') +
+              attempts.map(a => `<tr><td style='padding:4px 0;'><span class='quiz-name-cell' data-id='${a.id}'>${a.user_name}</span></td><td style='text-align:right;padding:4px 0;' class='score-cell' data-id='${a.id}'>${a.score}</td><td style="text-align:right;padding:4px 0;"><div style='display:flex;gap:8px;justify-content:flex-end;'><button class='rename-quiz-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Rename</button><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button><button class='delete-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#fee2e2;color:#b91c1c;font-weight:700;border:none;cursor:pointer;'>Delete</button></div></td></tr>`).join('') +
               '</tbody></table>'}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
@@ -513,10 +517,61 @@ async function showCalculatorInline(id) {
         if (searchBar) searchBar.style.display = 'flex';
         fetchCalculatorsInline();
       };
+      // Duplicate Calculator logic
+      document.getElementById('duplicateCalcBtn').onclick = async () => {
+        // Get all calculators to check for name
+        const { data: allCalcs } = await supabase.from('calculators').select('title');
+        let baseName = calc.title;
+        let name = baseName + '(1)';
+        let counter = 1;
+        const existingNames = allCalcs.map(c => c.title);
+        while (existingNames.includes(name)) {
+          counter++;
+          name = `${baseName}(${counter})`;
+        }
+        // Duplicate calculator
+        const { data: newCalc, error } = await supabase.from('calculators').insert([{ title: name, purpose: calc.purpose }]).select();
+        if (error || !newCalc || !newCalc[0]) return showCustomModal('Error duplicating calculator.');
+        const newCalcId = newCalc[0].id;
+        // Duplicate fields and options
+        for (let i = 0; i < calc.fields.length; i++) {
+          const f = calc.fields[i];
+          const { data: newField } = await supabase.from('calculator_fields').insert([{ calculator_id: newCalcId, name: f.name, field_order: i, weight: f.weight }]).select();
+          const newFieldId = newField[0].id;
+          for (let oi = 0; oi < (f.options||[]).length; oi++) {
+            const opt = f.options[oi];
+            await supabase.from('calculator_options').insert([{ field_id: newFieldId, label: opt.label, value: opt.value, option_order: oi }]);
+          }
+        }
+        showCustomModal('Calculator duplicated!');
+        fetchCalculatorsInline();
+      };
+      // Rename Calculator logic
+      document.getElementById('renameCalcBtn').onclick = async () => {
+        const newName = prompt('Enter new calculator name:', calc.title);
+        if (!newName || !newName.trim()) return;
+        await supabase.from('calculators').update({ title: newName.trim() }).eq('id', calc.id);
+        showCustomModal('Calculator renamed!');
+        fetchCalculatorsInline();
+        showCalculatorInline(calc.id);
+      };
       // Edit Calculator logic
       document.getElementById('editCalcBtn').onclick = () => {
         renderEditCalculator(calc);
       };
+      // Rename Quiz logic
+      document.querySelectorAll('.rename-quiz-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const attemptId = btn.getAttribute('data-id');
+          const quizNameCell = document.querySelector(`.quiz-name-cell[data-id='${attemptId}']`);
+          const oldName = quizNameCell ? quizNameCell.textContent : '';
+          const newName = prompt('Enter new quiz name:', oldName);
+          if (!newName || !newName.trim()) return;
+          await supabase.from('quiz_attempts').update({ user_name: newName.trim() }).eq('id', attemptId);
+          if (quizNameCell) quizNameCell.textContent = newName.trim();
+          showCustomModal('Quiz renamed!');
+        };
+      });
       // Edit attempt logic
       document.querySelectorAll('.edit-attempt-btn').forEach(btn => {
         btn.onclick = async () => {
