@@ -16,6 +16,7 @@ async function getCalculator(id) {
       id: field.id,
       name: field.name,
       order: field.field_order,
+      weight: field.weight,
       options: optionsRes.rows.map(opt => ({
         id: opt.id,
         label: opt.label,

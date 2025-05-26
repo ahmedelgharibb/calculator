@@ -68,6 +68,12 @@ function renderStep1() {
 
 function renderStep2() {
   const app = document.getElementById('app');
+  let weightError = '';
+  // Calculate total weight
+  const totalWeight = calculator.fields.reduce((sum, f) => sum + (parseFloat(f.weight) || 0), 0);
+  if (calculator.fields.length && totalWeight !== 100) {
+    weightError = 'All weights must add up to 100%.';
+  }
   app.innerHTML = `
     <div class="flex justify-center items-center min-h-[80vh] w-full">
       <form id="fieldsForm" autocomplete="off" class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-xl border border-gray-100">
@@ -83,6 +89,8 @@ function renderStep2() {
             <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
               <div class="flex items-center gap-2 mb-3">
                 <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
+                <input type="number" value="${f.weight || ''}" data-idx="${i}" class="field-weight-input w-24 border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-2" min="0" max="100" step="1" required placeholder="Weight %" aria-label="Weight (%)" />
+                <span class="text-gray-500 text-sm ml-1">%</span>
                 <button type="button" class="remove-field-btn text-red-500 text-sm font-semibold ml-2 transition-colors duration-150 hover:text-red-700" data-idx="${i}">Remove Field</button>
               </div>
               <div class="flex gap-2 mb-2">
@@ -102,8 +110,12 @@ function renderStep2() {
             </div>
           `).join('')}
         </div>
+        <div class="flex items-center justify-between mt-2 mb-4">
+          <div class="text-gray-700 font-semibold">Total Weight: <span id="totalWeight" class="${weightError ? 'text-red-500' : 'text-green-600'}">${totalWeight}%</span></div>
+          <span class="text-red-500 text-sm" id="weightError">${weightError}</span>
+        </div>
         <button type="button" id="addFieldBtn" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-3 text-base transition mb-6">+ Add Field</button>
-        <button type="submit" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-4 text-lg transition">Save Calculator</button>
+        <button type="submit" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl py-4 text-lg transition" ${weightError ? 'disabled' : ''}>Save Calculator</button>
       </form>
     </div>
   `;
@@ -124,9 +136,8 @@ function renderStep2() {
 
   // Add field logic
   document.getElementById('addFieldBtn').onclick = () => {
-    calculator.fields.push({ name: '', options: [] });
+    calculator.fields.push({ name: '', weight: '', options: [] });
     renderStep2();
-    // Focus new field
     setTimeout(() => {
       const lastField = document.querySelectorAll('.field-name-input');
       if (lastField.length) lastField[lastField.length - 1].focus();
@@ -147,12 +158,23 @@ function renderStep2() {
     inp.oninput = (e) => {
       const idx = e.target.getAttribute('data-idx');
       calculator.fields[idx].name = e.target.value;
-      // Inline validation: no empty or duplicate names
       inp.classList.remove('border-red-400');
       const names = calculator.fields.map(f => f.name.trim());
       if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim()).length > 1) {
         inp.classList.add('border-red-400');
       }
+    };
+  });
+
+  // Edit field weight with validation and live update
+  document.querySelectorAll('.field-weight-input').forEach(inp => {
+    inp.oninput = (e) => {
+      const idx = e.target.getAttribute('data-idx');
+      let val = e.target.value;
+      if (val === '') val = '';
+      else val = Math.max(0, Math.min(100, parseInt(val)));
+      calculator.fields[idx].weight = val;
+      renderStep2();
     };
   });
 
@@ -166,7 +188,6 @@ function renderStep2() {
       const value = valueInput.value.trim();
       labelInput.classList.remove('border-red-400');
       valueInput.classList.remove('border-red-400');
-      // Inline validation: no empty or duplicate labels, value must be a number
       const labels = (calculator.fields[idx].options || []).map(opt => opt.label.trim());
       let hasError = false;
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
@@ -177,7 +198,6 @@ function renderStep2() {
       calculator.fields[idx].options.push({ label, value });
       labelInput.value = '';
       valueInput.value = '';
-      // Focus label input for quick entry
       setTimeout(() => labelInput.focus(), 50);
       renderStep2();
     };
@@ -196,18 +216,21 @@ function renderStep2() {
   // Save Calculator
   document.getElementById('fieldsForm').onsubmit = async (e) => {
     e.preventDefault();
-    // Validate title
     if (!calculator.title.trim()) {
       calcTitleInput.classList.add('border-red-400');
       calcTitleInput.focus();
       return;
     }
-    // Validate fields and options
     let hasError = false;
     calculator.fields.forEach((f, i) => {
       const fieldInput = document.querySelector(`.field-name-input[data-idx='${i}']`);
+      const weightInput = document.querySelector(`.field-weight-input[data-idx='${i}']`);
       if (!f.name.trim() || calculator.fields.filter(ff => ff.name.trim() === f.name.trim()).length > 1) {
         fieldInput.classList.add('border-red-400');
+        hasError = true;
+      }
+      if (f.weight === '' || isNaN(f.weight) || f.weight < 0 || f.weight > 100) {
+        weightInput.classList.add('border-red-400');
         hasError = true;
       }
       if (!f.options.length) {
@@ -220,8 +243,8 @@ function renderStep2() {
         }
       });
     });
-    if (!calculator.fields.length || hasError) {
-      alert('Please fill in all fields, avoid duplicates, and add at least one valid option for each field.');
+    if (!calculator.fields.length || hasError || totalWeight !== 100) {
+      alert('Please fill in all fields, avoid duplicates, add at least one valid option for each field, and ensure total weight is 100%.');
       return;
     }
     // Show saving status
@@ -241,7 +264,7 @@ function renderStep2() {
         const field = calculator.fields[i];
         const { data: fieldData, error: fieldError } = await supabase
           .from('calculator_fields')
-          .insert([{ calculator_id: calculatorId, name: field.name, field_order: i }])
+          .insert([{ calculator_id: calculatorId, name: field.name, weight: field.weight, field_order: i }])
           .select('id');
         if (fieldError) throw fieldError;
         const fieldId = fieldData && fieldData[0] && fieldData[0].id;
@@ -337,7 +360,7 @@ function renderStep3() {
         const field = calculator.fields[i];
         const { data: fieldData, error: fieldError } = await supabase
           .from('calculator_fields')
-          .insert([{ calculator_id: calculatorId, name: field.name, field_order: i }])
+          .insert([{ calculator_id: calculatorId, name: field.name, weight: field.weight, field_order: i }])
           .select('id');
         if (fieldError) {
           console.error('[Supabase] Error saving field:', fieldError);
@@ -854,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const field = fields[i];
       const { data: fieldData, error: fieldError } = await supabase
         .from('calculator_fields')
-        .insert([{ calculator_id: calculatorId, name: field.name, field_order: i }])
+        .insert([{ calculator_id: calculatorId, name: field.name, weight: field.weight, field_order: i }])
         .select('id');
       if (fieldError) continue;
       const fieldId = fieldData && fieldData[0] && fieldData[0].id;

@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS calculator_fields (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   calculator_id INTEGER NOT NULL,
   name TEXT NOT NULL,
+  weight INTEGER,
   field_order INTEGER,
   FOREIGN KEY(calculator_id) REFERENCES calculators(id)
 );
@@ -98,8 +99,8 @@ app.post('/calculators', (req, res) => {
         let fieldInsertions = fields.map((field, i) => {
           return new Promise((resolveField, rejectField) => {
             db.run(
-              'INSERT INTO calculator_fields (calculator_id, name, field_order) VALUES (?, ?, ?)',
-              [calculatorId, field.name, i],
+              'INSERT INTO calculator_fields (calculator_id, name, weight, field_order) VALUES (?, ?, ?, ?)',
+              [calculatorId, field.name, field.weight, i],
               function(err) {
                 if (err) return rejectField(err);
                 const fieldId = this.lastID;

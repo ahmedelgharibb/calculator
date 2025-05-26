@@ -16,6 +16,7 @@ async function getCalculator(id) {
       id: field.id,
       name: field.name,
       order: field.field_order,
+      weight: field.weight,
       options: optionsRes.rows.map(opt => ({
         id: opt.id,
         label: opt.label,
@@ -63,8 +64,8 @@ module.exports = async (req, res) => {
       for (let i = 0; i < fields.length; i++) {
         const field = fields[i];
         const fieldRes = await client.query(
-          'INSERT INTO calculator_fields (calculator_id, name, field_order) VALUES ($1, $2, $3) RETURNING id',
-          [calculatorId, field.name, i]
+          'INSERT INTO calculator_fields (calculator_id, name, weight, field_order) VALUES ($1, $2, $3, $4) RETURNING id',
+          [calculatorId, field.name, field.weight, i]
         );
         const fieldId = fieldRes.rows[0].id;
         for (let j = 0; j < (field.options || []).length; j++) {
