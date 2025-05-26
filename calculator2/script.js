@@ -156,7 +156,7 @@ function renderStep3() {
                 ${(f.options||[]).map((opt, oi) => `
                   <div class="flex gap-2 items-center mb-2">
                     <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-                    <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" />
+                    <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" max="${f.weight}" />
                     <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
                   </div>
                 `).join('')}
@@ -182,7 +182,7 @@ function renderStep3() {
       const labelInput = document.getElementById(`optionLabelInput${idx}`);
       const valueInput = document.getElementById(`optionValueInput${idx}`);
       const label = labelInput.value.trim();
-      const value = valueInput.value.trim();
+      let value = valueInput.value.trim();
       labelInput.classList.remove('border-red-400');
       valueInput.classList.remove('border-red-400');
       const labels = (calculator.fields[idx].options || []).map(opt => opt.label.trim());
@@ -190,12 +190,16 @@ function renderStep3() {
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
       if (!value || isNaN(value)) { valueInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
-      // Enforce max value by field weight
+      // Cap value by field weight
       const weight = calculator.fields[idx].weight;
-      if (weight !== undefined && value && !isNaN(value) && parseFloat(value) > weight) {
-        valueInput.classList.add('border-red-400');
-        showCustomModal('Option value cannot exceed the field weight (' + weight + ').');
-        hasError = true;
+      if (weight !== undefined && value && !isNaN(value)) {
+        value = Math.min(parseFloat(value), parseFloat(weight));
+        valueInput.value = value;
+        if (parseFloat(value) > parseFloat(weight)) {
+          valueInput.classList.add('border-red-400');
+          showCustomModal('Option value cannot exceed the field weight (' + weight + ').');
+          hasError = true;
+        }
       }
       if (hasError) return;
       calculator.fields[idx].options = calculator.fields[idx].options || [];
@@ -217,13 +221,21 @@ function renderStep3() {
   function updateOptionsList(idx) {
     const optionsList = document.getElementById(`optionsList${idx}`);
     if (!optionsList) return;
-    optionsList.innerHTML = (calculator.fields[idx].options||[]).map((opt, oi) => `
-      <div class="flex gap-2 items-center mb-2">
-        <input type="text" value="${opt.label}" data-idx="${idx}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-        <input type="number" value="${opt.value}" data-idx="${idx}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" />
-        <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${idx}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
-      </div>
-    `).join('');
+    const weight = parseFloat(calculator.fields[idx].weight) || 0;
+    optionsList.innerHTML = (calculator.fields[idx].options||[]).map((opt, oi) => {
+      let percent = '';
+      if (weight > 0 && !isNaN(opt.value)) {
+        percent = ` <span style='color:#6366f1;font-weight:600;'>(${((parseFloat(opt.value)/weight)*100).toFixed(0)}%)</span>`;
+      }
+      return `
+        <div class="flex gap-2 items-center mb-2">
+          <input type="text" value="${opt.label}" data-idx="${idx}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
+          <input type="number" value="${opt.value}" data-idx="${idx}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" max="${weight}" />
+          ${percent}
+          <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${idx}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
+        </div>
+      `;
+    }).join('');
     // Re-bind remove buttons
     optionsList.querySelectorAll('.remove-option-btn').forEach(btn => {
       btn.onclick = (e) => {
@@ -264,6 +276,15 @@ function renderStep3() {
     calculator = { title: '', purpose: '', numFields: 1, fields: [] };
     step = 1;
   };
+  // In renderStep3, update the add-option row to cap value input by field weight
+  document.querySelectorAll('.add-option-btn').forEach(btn => {
+    const idx = btn.getAttribute('data-idx');
+    const valueInput = document.getElementById(`optionValueInput${idx}`);
+    const weight = calculator.fields[idx].weight;
+    if (valueInput && weight) {
+      valueInput.setAttribute('max', weight);
+    }
+  });
 }
 
 // Initial render
