@@ -596,6 +596,33 @@ async function showCalculatorInline(id) {
           };
         });
       }
+      // Quiz row options menu logic
+      document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-id');
+          const menu = document.getElementById(`optionsMenu${id}`);
+          // Close all other quiz row menus
+          document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+          document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          if (!expanded) {
+            menu.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+            setTimeout(() => { const first = menu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
+          } else {
+            menu.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        };
+      });
+      // Close quiz row menu on click outside (no once:true)
+      document.addEventListener('click', function closeQuizMenus(e) {
+        if (!e.target.closest('.quiz-attempt-options')) {
+          document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => m.classList.remove('open'));
+          document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        }
+      });
     }
 
     // --- Prompt for user name before quiz ---
