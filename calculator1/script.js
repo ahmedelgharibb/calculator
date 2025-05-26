@@ -175,10 +175,11 @@ function renderStep2() {
       if (hasError) return;
       calculator.fields[idx].options = calculator.fields[idx].options || [];
       calculator.fields[idx].options.push({ label, value });
+      // Instead of re-rendering immediately, clear inputs and refocus for smooth UX
       labelInput.value = '';
       valueInput.value = '';
-      // Focus label input for quick entry
-      setTimeout(() => labelInput.focus(), 50);
+      setTimeout(() => labelInput.focus(), 10);
+      // Only re-render options list, not the whole form
       renderStep2();
     };
   });
@@ -221,7 +222,7 @@ function renderStep2() {
       });
     });
     if (!calculator.fields.length || hasError) {
-      alert('Please fill in all fields, avoid duplicates, and add at least one valid option for each field.');
+      showCustomModal('Please fill in all fields, avoid duplicates, and add at least one valid option for each field.');
       return;
     }
     // Show saving status
@@ -911,4 +912,34 @@ function showDeleteModal(onConfirm) {
   };
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   setTimeout(() => { document.getElementById('modalCancelBtn').focus(); }, 50);
+}
+
+function showCustomModal(message) {
+  if (document.getElementById('customModal')) return;
+  const modal = document.createElement('div');
+  modal.id = 'customModal';
+  modal.innerHTML = `
+    <div class="modern-modal-overlay"></div>
+    <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <h2 class="modern-modal-title">Notice</h2>
+      <p class="modern-modal-message">${message}</p>
+      <button class="modern-modal-btn" id="closeModalBtn">OK</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setTimeout(() => {
+    document.querySelector('.modern-modal-content').focus();
+  }, 10);
+  document.getElementById('closeModalBtn').onclick = () => {
+    modal.remove();
+  };
+  modal.querySelector('.modern-modal-overlay').onclick = () => {
+    modal.remove();
+  };
+  document.addEventListener('keydown', function escListener(e) {
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', escListener);
+    }
+  });
 } 
