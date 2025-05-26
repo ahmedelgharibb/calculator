@@ -599,10 +599,26 @@ footer {
   transition: width 0.35s cubic-bezier(.4,1.4,.6,1);
 }
 .step-label {
-  font-size: 1.08rem;
-  font-weight: 600;
+  font-size: 1.13rem;
+  font-weight: 700;
   color: #6366f1;
   letter-spacing: 0.01em;
   margin-top: 0.1rem;
   margin-bottom: 0.2rem;
+  min-height: 1.6em;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: visible;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .step-label {
+    font-size: 1rem;
+    min-height: 1.8em;
+    white-space: normal;
+    word-break: break-word;
+    padding: 0 0.2em;
+  }
 }
