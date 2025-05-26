@@ -622,3 +622,35 @@ footer {
     padding: 0 0.2em;
   }
 }
+
+/* Action button group for calculator detail */
+.action-btn-group {
+  display: flex;
+  gap: 1.1em;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 2;
+}
+.action-btn-group .glass-btn {
+  min-width: 110px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  border-radius: 1.3em;
+  padding: 0.7em 1.5em;
+  box-shadow: 0 2px 8px #23294622;
+  margin: 0;
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .action-btn-group {
+    gap: 0.5em;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .action-btn-group .glass-btn {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 0.3em;
+  }
+}

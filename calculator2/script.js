@@ -491,10 +491,10 @@ async function showCalculatorInline(id) {
           <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <div style="position:absolute;top:18px;right:18px;display:flex;gap:0.5em;z-index:2;">
-            <button id="duplicateCalcBtn" class="glass-btn" title="Duplicate Calculator" style="background:#e0e7ff;color:#232946;font-weight:700;font-size:1.05rem;padding:0.5em 1.1em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;">Duplicate</button>
-            <button id="renameCalcBtn" class="glass-btn" title="Rename Calculator" style="background:#fee2e2;color:#b91c1c;font-weight:700;font-size:1.05rem;padding:0.5em 1.1em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;">Rename</button>
-            <button id="editCalcBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.05rem;padding:0.5em 1.1em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;">Edit</button>
+          <div style="position:absolute;top:18px;right:18px;display:flex;gap:0.5em;z-index:2;" class="action-btn-group">
+            <button id="duplicateCalcBtn" class="glass-btn" title="Duplicate Calculator" style="background:#e0e7ff;color:#232946;font-weight:700;font-size:1.05rem;">Duplicate</button>
+            <button id="renameCalcBtn" class="glass-btn" title="Rename Calculator" style="background:#fee2e2;color:#b91c1c;font-weight:700;font-size:1.05rem;">Rename</button>
+            <button id="editCalcBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.05rem;">Edit</button>
           </div>
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
