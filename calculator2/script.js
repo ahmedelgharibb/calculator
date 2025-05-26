@@ -420,12 +420,21 @@ async function fetchCalculatorsInline() {
     document.querySelectorAll('.delete-calc-btn').forEach((btn, idx) => {
       btn.onclick = async (e) => {
         e.stopPropagation();
-        const calcId = btn.closest('.calc-item').getAttribute('data-id');
+        const calcItem = btn.closest('.calc-item');
+        const calcId = calcItem.getAttribute('data-id');
         if (!calcId) return;
         showDeleteModal(async () => {
-          btn.disabled = true;
-          btn.innerHTML = '<span style="font-size:1.1em;">...</span>';
+          // Remove from DOM instantly
+          if (calcItem) calcItem.remove();
+          // If in detail view, return to list
+          const calcDetail = document.getElementById('calcDetail');
+          if (calcDetail && calcDetail.style.display === 'block') {
+            calcDetail.style.display = 'none';
+            const calcList = document.getElementById('calcList');
+            if (calcList) calcList.style.display = 'block';
+          }
           await supabase.from('calculators').delete().eq('id', calcId);
+          // Optionally, re-fetch to ensure sync
           fetchCalculatorsInline();
         });
       };
