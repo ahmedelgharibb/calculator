@@ -473,6 +473,7 @@ async function showCalculatorInline(id) {
           <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
+          <button id="editCalcBtn" class="glass-btn" style="position:absolute;top:18px;right:18px;background:#232946;color:#fff;font-weight:700;font-size:1.05rem;padding:0.5em 1.3em;border-radius:0.9em;box-shadow:0 2px 8px #23294622;z-index:2;">Edit Calculator</button>
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
             ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
@@ -493,6 +494,10 @@ async function showCalculatorInline(id) {
         const searchBar = document.getElementById('searchBarContainer');
         if (searchBar) searchBar.style.display = 'flex';
         fetchCalculatorsInline();
+      };
+      // Edit Calculator logic
+      document.getElementById('editCalcBtn').onclick = () => {
+        renderEditCalculator(calc);
       };
       // Edit attempt logic
       document.querySelectorAll('.edit-attempt-btn').forEach(btn => {
@@ -823,4 +828,171 @@ async function updateAllAttemptScores(calc) {
 // To use: call updateAllAttemptScores(calc) after quiz is edited
 // Automatically call updateAllAttemptScores after quiz edit (fields/options change)
 window.updateAllAttemptScores = updateAllAttemptScores;
-// Example: after editing calculator fields/options, call window.updateAllAttemptScores(calculator) to update and animate scores. 
+// Example: after editing calculator fields/options, call window.updateAllAttemptScores(calculator) to update and animate scores.
+
+// Add renderEditCalculator function after showCalculatorInline
+function renderEditCalculator(calc) {
+  const calcDetail = document.getElementById('calcDetail');
+  // Deep copy fields/options for editing
+  let fields = JSON.parse(JSON.stringify(calc.fields));
+  let title = calc.title;
+  calcDetail.innerHTML = `
+    <div class="quiz-card" style="max-width:520px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+      <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;text-align:center;">Edit Calculator</h2>
+      <form id="editCalcForm">
+        <label class="glass-label">Title</label>
+        <input type="text" id="editCalcTitle" class="glass-input" maxlength="32" value="${title}" required style="margin-bottom:1.2rem;" />
+        <div id="editFieldsList">
+          ${fields.map((f, i) => `
+            <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
+              <div class="flex items-center gap-2 mb-3">
+                <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
+                <input type="number" value="${f.weight || ''}" data-idx="${i}" class="field-weight-input w-24 border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-2" min="0" max="100" step="1" required placeholder="Weight %" aria-label="Weight (%)" />
+                <span class="text-gray-500 text-sm ml-1">%</span>
+              </div>
+              <div id="editOptionsList${i}">
+                ${(f.options||[]).map((opt, oi) => `
+                  <div class="flex gap-2 items-center mb-2">
+                    <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
+                    <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" max="${f.weight}" />
+                    <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="flex gap-2 mt-2">
+                <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1" placeholder="Option label (A, A+, B, etc.)" maxlength="18" />
+                <input type="number" id="optionValueInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="Value" />
+                <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}">+ Add Option</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="flex gap-4 mt-6">
+          <button type="button" id="cancelEditBtn" class="glass-btn">Cancel</button>
+          <button type="submit" class="glass-btn next-btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  `;
+  // Field/option editing logic
+  document.querySelectorAll('.field-name-input').forEach(inp => {
+    inp.oninput = (e) => {
+      const idx = e.target.getAttribute('data-idx');
+      fields[idx].name = e.target.value;
+      inp.classList.remove('border-red-400');
+      const names = fields.map(f => f.name.trim());
+      if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim()).length > 1) {
+        inp.classList.add('border-red-400');
+      }
+    };
+  });
+  document.querySelectorAll('.field-weight-input').forEach(inp => {
+    inp.addEventListener('blur', (e) => {
+      const idx = e.target.getAttribute('data-idx');
+      let val = e.target.value;
+      if (val === '') val = '';
+      else val = Math.max(0, Math.min(100, parseInt(val)));
+      fields[idx].weight = val;
+      renderEditCalculator({ ...calc, fields });
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        inp.blur();
+      }
+    });
+  });
+  // Option add/remove logic
+  document.querySelectorAll('.add-option-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      const idx = btn.getAttribute('data-idx');
+      const labelInput = document.getElementById(`optionLabelInput${idx}`);
+      const valueInput = document.getElementById(`optionValueInput${idx}`);
+      const label = labelInput.value.trim();
+      let value = valueInput.value.trim();
+      labelInput.classList.remove('border-red-400');
+      valueInput.classList.remove('border-red-400');
+      const labels = (fields[idx].options || []).map(opt => opt.label.trim());
+      let hasError = false;
+      if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
+      if (!value || isNaN(value)) { valueInput.classList.add('border-red-400'); hasError = true; }
+      if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
+      // Cap value by field weight
+      const weight = fields[idx].weight;
+      if (weight !== undefined && value && !isNaN(value)) {
+        value = Math.min(parseFloat(value), parseFloat(weight));
+        valueInput.value = value;
+        if (parseFloat(value) > parseFloat(weight)) {
+          valueInput.classList.add('border-red-400');
+          showCustomModal('Option value cannot exceed the field weight (' + weight + ').');
+          hasError = true;
+        }
+      }
+      if (hasError) return;
+      fields[idx].options = fields[idx].options || [];
+      fields[idx].options.push({ label, value });
+      labelInput.value = '';
+      valueInput.value = '';
+      setTimeout(() => labelInput.focus(), 10);
+      renderEditCalculator({ ...calc, fields });
+    };
+  });
+  document.querySelectorAll('.remove-option-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      const idx = btn.getAttribute('data-idx');
+      const oidx = btn.getAttribute('data-oidx');
+      fields[idx].options.splice(oidx, 1);
+      renderEditCalculator({ ...calc, fields });
+    };
+  });
+  document.getElementById('cancelEditBtn').onclick = () => showCalculatorInline(calc.id);
+  document.getElementById('editCalcForm').onsubmit = async (e) => {
+    e.preventDefault();
+    // Validate
+    let hasError = false;
+    fields.forEach((f, i) => {
+      if (!f.name.trim() || fields.filter(ff => ff.name.trim() === f.name.trim()).length > 1) hasError = true;
+      if (f.weight === '' || isNaN(f.weight) || f.weight < 0 || f.weight > 100) hasError = true;
+      if (!f.options.length) hasError = true;
+      (f.options || []).forEach((opt, oi) => {
+        if (!opt.label.trim() || isNaN(opt.value)) hasError = true;
+      });
+    });
+    const totalWeight = fields.reduce((sum, f) => sum + (parseFloat(f.weight) || 0), 0);
+    if (!fields.length || hasError || totalWeight !== 100) {
+      showCustomModal('Please fill in all fields, avoid duplicates, and ensure total weight is 100%.');
+      return;
+    }
+    // Save to Supabase
+    await supabase.from('calculators').update({ title: document.getElementById('editCalcTitle').value.trim() }).eq('id', calc.id);
+    // Update fields/options
+    for (let i = 0; i < fields.length; i++) {
+      const f = fields[i];
+      // Update or insert field
+      if (f.id) {
+        await supabase.from('calculator_fields').update({ name: f.name, field_order: i, weight: f.weight }).eq('id', f.id);
+      } else {
+        const { data: newField } = await supabase.from('calculator_fields').insert([{ calculator_id: calc.id, name: f.name, field_order: i, weight: f.weight }]).select();
+        f.id = newField[0].id;
+      }
+      // Remove all options and re-insert (for simplicity)
+      await supabase.from('calculator_options').delete().eq('field_id', f.id);
+      for (let oi = 0; oi < f.options.length; oi++) {
+        const opt = f.options[oi];
+        await supabase.from('calculator_options').insert([{ field_id: f.id, label: opt.label, value: opt.value, option_order: oi }]);
+      }
+    }
+    // Remove extra fields
+    const { data: dbFields } = await supabase.from('calculator_fields').select('id').eq('calculator_id', calc.id);
+    const keepIds = fields.map(f => f.id);
+    for (const dbf of dbFields) {
+      if (!keepIds.includes(dbf.id)) {
+        await supabase.from('calculator_fields').delete().eq('id', dbf.id);
+        await supabase.from('calculator_options').delete().eq('field_id', dbf.id);
+      }
+    }
+    // Update all attempts' scores and animate
+    window.updateAllAttemptScores({ ...calc, fields });
+    showCalculatorInline(calc.id);
+  };
+} 
