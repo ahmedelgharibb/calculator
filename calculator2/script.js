@@ -564,12 +564,17 @@ async function showCalculatorInline(id) {
       };
       // Rename Calculator logic
       document.getElementById('renameCalcBtn').onclick = async () => {
-        const newName = prompt('Enter new calculator name:', calc.title);
-        if (!newName || !newName.trim()) return;
-        await supabase.from('calculators').update({ title: newName.trim() }).eq('id', calc.id);
-        showCustomModal('Calculator renamed!');
-        fetchCalculatorsInline();
-        showCalculatorInline(calc.id);
+        showRenameModal({
+          title: 'Rename Calculator',
+          label: 'Enter new calculator name:',
+          initial: calc.title,
+          onSave: async (newName) => {
+            await supabase.from('calculators').update({ title: newName }).eq('id', calc.id);
+            showCustomModal('Calculator renamed!');
+            fetchCalculatorsInline();
+            showCalculatorInline(calc.id);
+          }
+        });
       };
       // Edit Calculator logic
       document.getElementById('editCalcBtn').onclick = () => {
@@ -630,11 +635,16 @@ async function showCalculatorInline(id) {
           if (action === 'rename') {
             const quizNameCell = document.querySelector(`.quiz-attempt-row [data-id='${attemptId}'] .quiz-attempt-name`);
             const oldName = quizNameCell ? quizNameCell.textContent : '';
-            const newName = prompt('Enter new quiz name:', oldName);
-            if (!newName || !newName.trim()) return;
-            await supabase.from('quiz_attempts').update({ user_name: newName.trim() }).eq('id', attemptId);
-            if (quizNameCell) quizNameCell.textContent = newName.trim();
-            showCustomModal('Quiz renamed!');
+            showRenameModal({
+              title: 'Rename Quiz',
+              label: 'Enter new quiz name:',
+              initial: oldName,
+              onSave: async (newName) => {
+                await supabase.from('quiz_attempts').update({ user_name: newName }).eq('id', attemptId);
+                if (quizNameCell) quizNameCell.textContent = newName;
+                showCustomModal('Quiz renamed!');
+              }
+            });
           } else if (action === 'edit') {
             const { data: attemptData, error: attemptError } = await supabase
               .from('quiz_attempts')
@@ -1133,4 +1143,46 @@ function renderEditCalculator(calc) {
     window.updateAllAttemptScores({ ...calc, fields });
     showCalculatorInline(calc.id);
   };
+}
+
+// Add a modern rename modal utility at the end of the file
+if (typeof showRenameModal !== 'function') {
+  function showRenameModal({title, label, initial, onSave}) {
+    if (document.getElementById('renameModal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'renameModal';
+    modal.innerHTML = `
+      <div class="modern-modal-overlay"></div>
+      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1" style="min-width:340px;max-width:95vw;">
+        <h2 class="modern-modal-title">${title || 'Rename'}</h2>
+        <label for="renameInput" class="modern-modal-message" style="margin-bottom:0.7em;display:block;text-align:left;">${label || 'Enter new name:'}</label>
+        <input id="renameInput" class="glass-input" type="text" value="${initial||''}" style="margin-bottom:1.5em;width:100%;font-size:1.1em;" maxlength="64" autocomplete="off" />
+        <div style="display:flex;gap:1.2em;justify-content:center;">
+          <button id="renameCancelBtn" class="modern-modal-btn" style="background:#f3f4f6;color:#232946;">Cancel</button>
+          <button id="renameOkBtn" class="modern-modal-btn" style="background:#6366f1;color:#fff;">Save</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => {
+      document.getElementById('renameInput').focus();
+    }, 10);
+    document.getElementById('renameCancelBtn').onclick = () => modal.remove();
+    document.getElementById('renameOkBtn').onclick = () => {
+      const val = document.getElementById('renameInput').value.trim();
+      if (val) { onSave(val); modal.remove(); }
+      else document.getElementById('renameInput').focus();
+    };
+    document.getElementById('renameInput').onkeydown = (e) => {
+      if (e.key === 'Enter') document.getElementById('renameOkBtn').click();
+      if (e.key === 'Escape') modal.remove();
+    };
+    modal.querySelector('.modern-modal-overlay').onclick = () => modal.remove();
+    document.addEventListener('keydown', function escListener(e) {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', escListener);
+      }
+    });
+  }
 } 
