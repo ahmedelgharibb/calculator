@@ -476,8 +476,8 @@ async function showCalculatorInline(id) {
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
             ${attempts.length === 0 ? '<div style="color:#a0aec0;text-align:center;">No attempts yet.</div>' :
-              `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th></tr></thead><tbody>` +
-              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;'>${a.score}</td></tr>`).join('') +
+              `<table style='width:100%;font-size:1.08rem;'><thead><tr><th style='text-align:left;padding-bottom:6px;'>Name</th><th style='text-align:right;padding-bottom:6px;'>Score</th><th></th></tr></thead><tbody>` +
+              attempts.map(a => `<tr><td style='padding:4px 0;'>${a.user_name}</td><td style='text-align:right;padding:4px 0;'>${a.score}</td><td><button class='edit-attempt-btn' data-id='${a.id}' style='font-size:0.95em;padding:2px 10px;border-radius:0.6em;background:#e0e7ff;color:#232946;font-weight:700;border:none;cursor:pointer;'>Edit</button></td></tr>`).join('') +
               '</tbody></table>'}
           </div>
           <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
@@ -494,6 +494,20 @@ async function showCalculatorInline(id) {
         if (searchBar) searchBar.style.display = 'flex';
         fetchCalculatorsInline();
       };
+      // Edit attempt logic
+      document.querySelectorAll('.edit-attempt-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const attemptId = btn.getAttribute('data-id');
+          const { data: attemptData, error: attemptError } = await supabase
+            .from('quiz_attempts')
+            .select('id, user_name, answers')
+            .eq('id', attemptId)
+            .single();
+          if (attemptError || !attemptData) return;
+          const prevAnswers = JSON.parse(attemptData.answers || '[]');
+          renderQuizStep(attemptData.user_name, prevAnswers, attemptId);
+        };
+      });
     }
 
     // --- Prompt for user name before quiz ---
@@ -540,93 +554,89 @@ async function showCalculatorInline(id) {
     }
 
     // --- Quiz state ---
-    function renderQuizStep(userName) {
+    function renderQuizStep(userName, prevAnswers = [], editAttemptId = null) {
       let currentStep = 0;
-      const answers = Array(calc.fields.length).fill(null);
-      function showStep() {
-        const field = calc.fields[currentStep];
-        const totalSteps = calc.fields.length;
-        calcDetail.innerHTML = `
-          <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-            <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
-              <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
-            </div>
-            <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
-            <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${field.name}</div>
-            <form id="quizForm">
-              <div style="display:flex;flex-direction:column;gap:1.1rem;">
-                ${field.options.map((opt, i) => `
-                  <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
-                    <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
-                    <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
-                  </label>
-                `).join('')}
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
-                <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;opacity:${currentStep===0?'0.55':'1'};pointer-events:${currentStep===0?'none':'auto'};">Previous</button>
-                <button type="submit" id="nextBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;min-width:140px;opacity:0.92;transition:background 0.18s;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
-              </div>
-            </form>
-            <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
+      const answers = prevAnswers.length ? [...prevAnswers] : Array(calc.fields.length).fill(null);
+      const totalSteps = calc.fields.length;
+      calcDetail.innerHTML = `
+        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+          <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
+            <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
           </div>
-        `;
-        document.getElementById('backBtn').onclick = renderAttemptsList;
-        document.getElementById('prevBtn').onclick = () => {
-          if (currentStep > 0) {
-            currentStep--;
-            showStep();
-          }
+          <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
+          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${calc.fields[currentStep].name}</div>
+          <form id="quizForm">
+            <div style="display:flex;flex-direction:column;gap:1.1rem;">
+              ${calc.fields[currentStep].options.map((opt, i) => `
+                <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
+                  <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
+                  <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
+                </label>
+              `).join('')}
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
+              <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;opacity:${currentStep===0?'0.55':'1'};pointer-events:${currentStep===0?'none':'auto'};">Previous</button>
+              <button type="submit" id="nextBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;min-width:140px;opacity:0.92;transition:background 0.18s;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
+            </div>
+          </form>
+          <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
+        </div>
+      `;
+      document.getElementById('backBtn').onclick = renderAttemptsList;
+      document.getElementById('prevBtn').onclick = () => {
+        if (currentStep > 0) {
+          currentStep--;
+          showStep();
+        }
+      };
+      document.getElementById('quizForm').onsubmit = (e) => {
+        e.preventDefault();
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (!selected) return;
+        answers[currentStep] = parseInt(selected.value);
+        if (currentStep < totalSteps - 1) {
+          currentStep++;
+          showStep();
+        } else {
+          renderQuizResult(userName, answers, editAttemptId);
+        }
+      };
+      document.querySelectorAll('input[name="option"]').forEach((input, i) => {
+        input.onchange = () => {
+          answers[currentStep] = parseInt(input.value);
+          showStep();
         };
-        document.getElementById('quizForm').onsubmit = (e) => {
-          e.preventDefault();
-          const selected = document.querySelector('input[name="option"]:checked');
-          if (!selected) return;
-          answers[currentStep] = parseInt(selected.value);
-          if (currentStep < totalSteps - 1) {
-            currentStep++;
-            showStep();
-          } else {
-            renderQuizResult(userName, answers);
-          }
-        };
-        document.querySelectorAll('input[name="option"]').forEach((input, i) => {
-          input.onchange = () => {
-            answers[currentStep] = parseInt(input.value);
-            showStep();
+      });
+      // Add dark hover for Finish/Next button
+      setTimeout(() => {
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn) {
+          nextBtn.onmouseover = function() {
+            this.style.background = '#181824';
+            this.style.opacity = '1';
+            this.style.boxShadow = '0 8px 32px #23294633';
           };
-        });
-        // Add dark hover for Finish/Next button
-        setTimeout(() => {
-          const nextBtn = document.getElementById('nextBtn');
-          if (nextBtn) {
-            nextBtn.onmouseover = function() {
-              this.style.background = '#181824';
-              this.style.opacity = '1';
-              this.style.boxShadow = '0 8px 32px #23294633';
-            };
-            nextBtn.onmouseout = function() {
-              this.style.background = '#232946';
-              this.style.opacity = '0.92';
-              this.style.boxShadow = '0 4px 24px #23294633';
-            };
-            nextBtn.onfocus = function() {
-              this.style.background = '#181824';
-              this.style.opacity = '1';
-              this.style.boxShadow = '0 8px 32px #23294633';
-            };
-            nextBtn.onblur = function() {
-              this.style.background = '#232946';
-              this.style.opacity = '0.92';
-              this.style.boxShadow = '0 4px 24px #23294633';
-            };
-          }
-        }, 0);
-      }
-      showStep();
+          nextBtn.onmouseout = function() {
+            this.style.background = '#232946';
+            this.style.opacity = '0.92';
+            this.style.boxShadow = '0 4px 24px #23294633';
+          };
+          nextBtn.onfocus = function() {
+            this.style.background = '#181824';
+            this.style.opacity = '1';
+            this.style.boxShadow = '0 8px 32px #23294633';
+          };
+          nextBtn.onblur = function() {
+            this.style.background = '#232946';
+            this.style.opacity = '0.92';
+            this.style.boxShadow = '0 4px 24px #23294633';
+          };
+        }
+      }, 0);
     }
 
     // --- Quiz result and save ---
-    async function renderQuizResult(userName, answers) {
+    async function renderQuizResult(userName, answers, editAttemptId = null) {
       let total = 0;
       calc.fields.forEach((f, i) => {
         const answerIdx = answers[i];
@@ -635,10 +645,19 @@ async function showCalculatorInline(id) {
           if (!isNaN(val)) total += val;
         }
       });
-      // Save attempt to DB
-      const { error: saveError } = await supabase
-        .from('quiz_attempts')
-        .insert([{ calculator_id: id, user_name: userName, answers: JSON.stringify(answers), score: total }]);
+      let saveError;
+      if (editAttemptId) {
+        // Update existing attempt
+        ({ error: saveError } = await supabase
+          .from('quiz_attempts')
+          .update({ user_name: userName, answers: JSON.stringify(answers), score: total })
+          .eq('id', editAttemptId));
+      } else {
+        // Insert new attempt
+        ({ error: saveError } = await supabase
+          .from('quiz_attempts')
+          .insert([{ calculator_id: id, user_name: userName, answers: JSON.stringify(answers), score: total }]));
+      }
       // Refetch attempts and show list
       const { data: newAttempts } = await supabase
         .from('quiz_attempts')
