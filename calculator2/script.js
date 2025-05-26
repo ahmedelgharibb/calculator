@@ -538,33 +538,64 @@ async function showCalculatorInline(id) {
         if (searchBar) searchBar.style.display = 'flex';
         fetchCalculatorsInline();
       };
-      // Options menu logic for each row
-      document.querySelectorAll('.options-menu-btn').forEach(btn => {
-        btn.onclick = (e) => {
+      // Calculator options menu logic
+      const calcOptionsBtn = document.getElementById('calcOptionsBtn');
+      const calcOptionsMenu = document.getElementById('calcOptionsMenu');
+      if (calcOptionsBtn && calcOptionsMenu) {
+        calcOptionsBtn.onclick = (e) => {
           e.stopPropagation();
-          const id = btn.getAttribute('data-id');
-          const menu = document.getElementById(`optionsMenu${id}`);
-          // Close all other menus
-          document.querySelectorAll('.options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
-          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          const expanded = calcOptionsBtn.getAttribute('aria-expanded') === 'true';
+          document.querySelectorAll('.options-menu').forEach(m => { if (m !== calcOptionsMenu) m.classList.remove('open'); });
           document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
           if (!expanded) {
-            menu.classList.add('open');
-            btn.setAttribute('aria-expanded', 'true');
-            setTimeout(() => { const first = menu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
+            calcOptionsMenu.classList.add('open');
+            calcOptionsBtn.setAttribute('aria-expanded', 'true');
+            setTimeout(() => { const first = calcOptionsMenu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
           } else {
-            menu.classList.remove('open');
-            btn.setAttribute('aria-expanded', 'false');
+            calcOptionsMenu.classList.remove('open');
+            calcOptionsBtn.setAttribute('aria-expanded', 'false');
           }
         };
-      });
-      // Close menu on click outside (no once:true)
-      document.addEventListener('click', function closeMenus(e) {
-        if (!e.target.closest('.quiz-attempt-options')) {
-          document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('open'));
-          document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
-        }
-      });
+        // Close menu on click outside (no once:true)
+        document.addEventListener('click', function closeCalcMenu(e) {
+          if (!e.target.closest('.action-btn-group')) {
+            calcOptionsMenu.classList.remove('open');
+            calcOptionsBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        // Keyboard navigation for menu
+        calcOptionsMenu.onkeydown = (e) => {
+          const items = Array.from(calcOptionsMenu.querySelectorAll('.options-menu-item'));
+          const idx = items.indexOf(document.activeElement);
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (idx < items.length - 1) items[idx + 1].focus();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (idx > 0) items[idx - 1].focus();
+          } else if (e.key === 'Escape') {
+            calcOptionsMenu.classList.remove('open');
+            calcOptionsBtn.setAttribute('aria-expanded', 'false');
+            calcOptionsBtn.focus();
+          }
+        };
+        // Menu actions
+        calcOptionsMenu.querySelectorAll('.options-menu-item').forEach(item => {
+          item.onclick = async (e) => {
+            const action = item.getAttribute('data-action');
+            if (action === 'duplicate') {
+              // ... duplicate logic ...
+              document.getElementById('duplicateCalcBtn').onclick();
+            } else if (action === 'rename') {
+              document.getElementById('renameCalcBtn').onclick();
+            } else if (action === 'edit') {
+              document.getElementById('editCalcBtn').onclick();
+            }
+            calcOptionsMenu.classList.remove('open');
+            calcOptionsBtn.setAttribute('aria-expanded', 'false');
+          };
+        });
+      }
     }
 
     // --- Prompt for user name before quiz ---
