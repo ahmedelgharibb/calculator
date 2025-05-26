@@ -491,10 +491,15 @@ async function showCalculatorInline(id) {
           <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <div style="position:absolute;top:18px;right:18px;display:flex;gap:0.5em;z-index:2;" class="action-btn-group">
-            <button id="duplicateCalcBtn" class="glass-btn" title="Duplicate Calculator" style="background:#e0e7ff;color:#232946;font-weight:700;font-size:1.05rem;">Duplicate</button>
-            <button id="renameCalcBtn" class="glass-btn" title="Rename Calculator" style="background:#fee2e2;color:#b91c1c;font-weight:700;font-size:1.05rem;">Rename</button>
-            <button id="editCalcBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.05rem;">Edit</button>
+          <div style="position:absolute;top:18px;right:18px;z-index:2;" class="action-btn-group">
+            <button class="options-menu-btn" id="calcOptionsBtn" aria-label="Calculator Options" aria-haspopup="true" aria-expanded="false">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+            </button>
+            <div class="options-menu" id="calcOptionsMenu" role="menu" aria-label="Calculator options">
+              <button class="options-menu-item" data-action="duplicate" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="3" y="3" width="13" height="13" rx="2"/></svg> Duplicate</button>
+              <button class="options-menu-item" data-action="rename" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg> Rename</button>
+              <button class="options-menu-item" data-action="edit" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#232946" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8"/></svg> Edit</button>
+            </div>
           </div>
           <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
           <div style="margin-bottom:2rem;">
@@ -533,102 +538,48 @@ async function showCalculatorInline(id) {
         if (searchBar) searchBar.style.display = 'flex';
         fetchCalculatorsInline();
       };
-      // Duplicate Calculator logic
-      document.getElementById('duplicateCalcBtn').onclick = async () => {
-        // Get all calculators to check for name
-        const { data: allCalcs } = await supabase.from('calculators').select('title');
-        let baseName = calc.title;
-        let name = baseName + '(1)';
-        let counter = 1;
-        const existingNames = allCalcs.map(c => c.title);
-        while (existingNames.includes(name)) {
-          counter++;
-          name = `${baseName}(${counter})`;
+      // Calculator options menu logic
+      const calcOptionsBtn = document.getElementById('calcOptionsBtn');
+      const calcOptionsMenu = document.getElementById('calcOptionsMenu');
+      calcOptionsBtn.onclick = (e) => {
+        e.stopPropagation();
+        const expanded = calcOptionsBtn.getAttribute('aria-expanded') === 'true';
+        document.querySelectorAll('.options-menu').forEach(m => { if (m !== calcOptionsMenu) m.classList.remove('open'); });
+        document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        if (!expanded) {
+          calcOptionsMenu.classList.add('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'true');
+          setTimeout(() => { const first = calcOptionsMenu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
+        } else {
+          calcOptionsMenu.classList.remove('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'false');
         }
-        // Duplicate calculator
-        const { data: newCalc, error } = await supabase.from('calculators').insert([{ title: name, purpose: calc.purpose }]).select();
-        if (error || !newCalc || !newCalc[0]) return showCustomModal('Error duplicating calculator.');
-        const newCalcId = newCalc[0].id;
-        // Duplicate fields and options
-        for (let i = 0; i < calc.fields.length; i++) {
-          const f = calc.fields[i];
-          const { data: newField } = await supabase.from('calculator_fields').insert([{ calculator_id: newCalcId, name: f.name, field_order: i, weight: f.weight }]).select();
-          const newFieldId = newField[0].id;
-          for (let oi = 0; oi < (f.options||[]).length; oi++) {
-            const opt = f.options[oi];
-            await supabase.from('calculator_options').insert([{ field_id: newFieldId, label: opt.label, value: opt.value, option_order: oi }]);
-          }
-        }
-        showCustomModal('Calculator duplicated!');
-        fetchCalculatorsInline();
       };
-      // Rename Calculator logic
-      document.getElementById('renameCalcBtn').onclick = async () => {
-        showRenameModal({
-          title: 'Rename Calculator',
-          label: 'Enter new calculator name:',
-          initial: calc.title,
-          onSave: async (newName) => {
-            await supabase.from('calculators').update({ title: newName }).eq('id', calc.id);
-            showCustomModal('Calculator renamed!');
-            fetchCalculatorsInline();
-            showCalculatorInline(calc.id);
-          }
-        });
-      };
-      // Edit Calculator logic
-      document.getElementById('editCalcBtn').onclick = () => {
-        renderEditCalculator(calc);
-      };
-      // Options menu logic for each row
-      document.querySelectorAll('.options-menu-btn').forEach(btn => {
-        btn.onclick = (e) => {
-          e.stopPropagation();
-          const id = btn.getAttribute('data-id');
-          const menu = document.getElementById(`optionsMenu${id}`);
-          // Close all other menus
-          document.querySelectorAll('.options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
-          const expanded = btn.getAttribute('aria-expanded') === 'true';
-          document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
-          if (!expanded) {
-            menu.classList.add('open');
-            btn.setAttribute('aria-expanded', 'true');
-            // Focus first item
-            setTimeout(() => { const first = menu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
-          } else {
-            menu.classList.remove('open');
-            btn.setAttribute('aria-expanded', 'false');
-          }
-        };
-      });
       // Close menu on click outside
-      document.addEventListener('click', function closeMenus(e) {
-        if (!e.target.closest('.quiz-attempt-options')) {
-          document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('open'));
-          document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+      document.addEventListener('click', function closeCalcMenu(e) {
+        if (!e.target.closest('.action-btn-group')) {
+          calcOptionsMenu.classList.remove('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'false');
         }
       }, { once: true });
       // Keyboard navigation for menu
-      document.querySelectorAll('.options-menu').forEach(menu => {
-        menu.onkeydown = (e) => {
-          const items = Array.from(menu.querySelectorAll('.options-menu-item'));
-          const idx = items.indexOf(document.activeElement);
-          if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (idx < items.length - 1) items[idx + 1].focus();
-          } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (idx > 0) items[idx - 1].focus();
-          } else if (e.key === 'Escape') {
-            menu.classList.remove('open');
-            const btn = menu.parentElement.querySelector('.options-menu-btn');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
-            btn && btn.focus();
-          }
-        };
-      });
+      calcOptionsMenu.onkeydown = (e) => {
+        const items = Array.from(calcOptionsMenu.querySelectorAll('.options-menu-item'));
+        const idx = items.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (idx < items.length - 1) items[idx + 1].focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (idx > 0) items[idx - 1].focus();
+        } else if (e.key === 'Escape') {
+          calcOptionsMenu.classList.remove('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'false');
+          calcOptionsBtn.focus();
+        }
+      };
       // Menu actions
-      document.querySelectorAll('.options-menu-item').forEach(item => {
+      calcOptionsMenu.querySelectorAll('.options-menu-item').forEach(item => {
         item.onclick = async (e) => {
           const action = item.getAttribute('data-action');
           const attemptId = item.getAttribute('data-id');
@@ -665,10 +616,8 @@ async function showCalculatorInline(id) {
               if (row) row.remove();
             });
           }
-          // Close menu after action
-          item.closest('.options-menu').classList.remove('open');
-          const btn = item.closest('.quiz-attempt-options').querySelector('.options-menu-btn');
-          if (btn) btn.setAttribute('aria-expanded', 'false');
+          calcOptionsMenu.classList.remove('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'false');
         };
       });
     }
