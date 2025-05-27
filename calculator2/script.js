@@ -745,21 +745,19 @@ async function showCalculatorInline(id) {
             let newAttempts = [newAttempt, ...attempts];
             saveQuizAttempts(newAttempts);
             showCustomModal('Quiz duplicated!');
+            renderAttemptsList();
             setTimeout(() => {
-              renderAttemptsList();
-              setTimeout(() => {
-                const rows = document.querySelectorAll('.quiz-attempt-row');
-                if (rows && rows[0]) {
-                  rows[0].style.transition = 'background 0.7s, box-shadow 0.7s';
-                  rows[0].style.background = '#fef08a';
-                  rows[0].style.boxShadow = '0 0 0 4px #fde68a';
-                  setTimeout(() => {
-                    rows[0].style.background = '';
-                    rows[0].style.boxShadow = '';
-                  }, 700);
-                }
-              }, 100);
-            }, 400);
+              const rows = document.querySelectorAll('.quiz-attempt-row');
+              if (rows && rows[0]) {
+                rows[0].style.transition = 'background 0.7s, box-shadow 0.7s';
+                rows[0].style.background = '#fef08a';
+                rows[0].style.boxShadow = '0 0 0 4px #fde68a';
+                setTimeout(() => {
+                  rows[0].style.background = '';
+                  rows[0].style.boxShadow = '';
+                }, 700);
+              }
+            }, 100);
           } else if (action === 'delete') {
             showDeleteModal(() => {
               let attempts = getQuizAttempts();
