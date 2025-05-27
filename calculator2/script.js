@@ -1000,35 +1000,40 @@ if (typeof showCustomModal !== 'function') {
   }
 }
 
-// Add a function to update all attempts' scores when quiz is edited
-async function updateAllAttemptScores(calc) {
-  const { data: attempts } = await supabase
-    .from('quiz_attempts')
-    .select('id, answers');
-  for (const attempt of attempts) {
-    const answers = JSON.parse(attempt.answers || '[]');
+// Add a function to update all attempts' scores when calculator is edited (local version)
+function updateAllAttemptScoresLocal(calc) {
+  let attempts = getQuizAttempts();
+  let changedIds = [];
+  for (let i = 0; i < attempts.length; i++) {
+    const a = attempts[i];
+    if (a.calculator_id !== calc.id) continue;
     let total = 0;
-    calc.fields.forEach((f, i) => {
-      const answerIdx = answers[i];
+    (calc.fields || []).forEach((f, idx) => {
+      const answerIdx = a.answers[idx];
       if (answerIdx != null && f.options[answerIdx]) {
         const val = parseFloat(f.options[answerIdx].value);
         if (!isNaN(val)) total += val;
       }
     });
-    await supabase
-      .from('quiz_attempts')
-      .update({ score: total })
-      .eq('id', attempt.id);
+    if (a.score !== total) {
+      attempts[i].score = total;
+      changedIds.push(a.id);
+    }
   }
-  window._animateScores = true;
-  // Refetch and animate
-  if (typeof showCalculatorInline === 'function') showCalculatorInline(calc.id);
+  saveQuizAttempts(attempts);
+  // Animate score changes in UI
+  setTimeout(() => {
+    document.querySelectorAll('.quiz-attempt-score').forEach(cell => {
+      cell.style.transition = 'background 0.7s, color 0.7s';
+      cell.style.background = '#fef08a';
+      cell.style.color = '#b45309';
+      setTimeout(() => {
+        cell.style.background = '';
+        cell.style.color = '';
+      }, 700);
+    });
+  }, 200);
 }
-
-// To use: call updateAllAttemptScores(calc) after quiz is edited
-// Automatically call updateAllAttemptScores after quiz edit (fields/options change)
-window.updateAllAttemptScores = updateAllAttemptScores;
-// Example: after editing calculator fields/options, call window.updateAllAttemptScores(calculator) to update and animate scores.
 
 // --- Refactor renderEditCalculator to use localStorage ---
 function renderEditCalculator(calc) {
@@ -1174,6 +1179,7 @@ function renderEditCalculator(calc) {
         options: (f.options || []).map(opt => ({ ...opt, value: parseFloat(opt.value) }))
       }));
       saveCalculators(calculators);
+      updateAllAttemptScoresLocal(calculators[idx]);
       showCustomModal('Calculator updated!');
       setTimeout(() => showCalculatorInline(calc.id), 500);
     }
