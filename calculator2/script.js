@@ -1,6 +1,34 @@
-const SUPABASE_URL = 'https://jckwvrzcjuggnfcbogrr.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impja3d2cnpjanVnZ25mY2JvZ3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTIwMTYsImV4cCI6MjA1NjI2ODAxNn0.p2a0om1X40AJVhldUdtaU-at0SSPz6hLbrAg-ELHcnY';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// --- Local Storage Utilities ---
+function getLocal(key, fallback) {
+  try {
+    const val = localStorage.getItem(key);
+    return val ? JSON.parse(val) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function setLocal(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+// --- Data Model ---
+// calculators: [{id, title, purpose, created_at, fields: [{id, name, weight, options: [{id, label, value}]}]}]
+// quiz_attempts: [{id, calculator_id, user_name, answers, score, created_at}]
+function generateId() { return '_' + Math.random().toString(36).slice(2, 10) + Date.now(); }
+
+// --- CRUD for Calculators ---
+function getCalculators() {
+  return getLocal('calculators', []);
+}
+function saveCalculators(calcs) {
+  setLocal('calculators', calcs);
+}
+function getQuizAttempts() {
+  return getLocal('quiz_attempts', []);
+}
+function saveQuizAttempts(attempts) {
+  setLocal('quiz_attempts', attempts);
+}
 
 // --- 3-step calculator creation flow ---
 let calculator = {
@@ -273,36 +301,30 @@ function renderStep3() {
       alert('Please add at least one valid option for each field.');
       return;
     }
-    // Save to Supabase
-    try {
-      // Insert calculator
-      const { data: calcData, error: calcError } = await supabase.from('calculators').insert([{ title: calculator.title, purpose: calculator.purpose }]).select();
-      if (calcError || !calcData || !calcData[0]) throw new Error('Failed to save calculator');
-      const calcId = calcData[0].id;
-      // Insert fields and options
-      for (let i = 0; i < calculator.fields.length; i++) {
-        const f = calculator.fields[i];
-        const { data: fieldData, error: fieldError } = await supabase.from('calculator_fields').insert([{ calculator_id: calcId, name: f.name, weight: f.weight, field_order: i }]).select();
-        if (fieldError || !fieldData || !fieldData[0]) throw new Error('Failed to save field');
-        const fieldId = fieldData[0].id;
-        for (let oi = 0; oi < (f.options || []).length; oi++) {
-          const opt = f.options[oi];
-          const { error: optError } = await supabase.from('calculator_options').insert([{ field_id: fieldId, label: opt.label, value: opt.value, option_order: oi }]);
-          if (optError) throw new Error('Failed to save option');
-        }
-      }
-      // Success UI
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="main-glass" style="padding:3rem 2rem;text-align:center;max-width:480px;margin:60px auto 0 auto;background:#23263a;color:#fff;box-shadow:0 8px 40px rgba(24,24,36,0.13);">
-        <h2 style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:1.5rem;">Calculator Saved!</h2>
-        <p style="font-size:1.15rem;color:#fff;margin-bottom:2.5rem;">Your calculator has been saved. You can access it from <b style='color:#fff;'>Browse Calculators</b>.</p>
-        <button class="glass-btn" style="background:#181824;color:#fff;font-weight:700;font-size:1.2rem;padding:1.1em 2.2em;border-radius:1.2em;box-shadow:0 4px 24px #18182433;transition:background 0.18s;" onclick="window.location.hash='#browse'">Go to Browse Calculators</button>
-      </div>`;
-      calculator = { title: '', purpose: '', numFields: 1, fields: [] };
-      step = 1;
-    } catch (err) {
-      showCustomModal('Error saving calculator: ' + (err.message || err));
-    }
+    // Save locally
+    const calculators = getCalculators();
+    const newCalc = {
+      id: generateId(),
+      title: calculator.title,
+      purpose: calculator.purpose,
+      created_at: new Date().toISOString(),
+      fields: calculator.fields.map((f, i) => ({
+        id: generateId(),
+        name: f.name,
+        weight: parseInt(f.weight, 10),
+        options: (f.options || []).map(opt => ({ id: generateId(), label: opt.label, value: parseFloat(opt.value) }))
+      }))
+    };
+    calculators.unshift(newCalc);
+    saveCalculators(calculators);
+    const app = document.getElementById('app');
+    app.innerHTML = `<div class="main-glass" style="padding:3rem 2rem;text-align:center;max-width:480px;margin:60px auto 0 auto;background:#23263a;color:#fff;box-shadow:0 8px 40px rgba(24,24,36,0.13);">
+      <h2 style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:1.5rem;">Calculator Saved!</h2>
+      <p style="font-size:1.15rem;color:#fff;margin-bottom:2.5rem;">Your calculator has been saved. You can access it from <b style='color:#fff;'>Browse Calculators</b>.</p>
+      <button class="glass-btn" style="background:#181824;color:#fff;font-weight:700;font-size:1.2rem;padding:1.1em 2.2em;border-radius:1.2em;box-shadow:0 4px 24px #18182433;transition:background 0.18s;" onclick="window.location.hash='#browse'">Go to Browse Calculators</button>
+    </div>`;
+    calculator = { title: '', purpose: '', numFields: 1, fields: [] };
+    step = 1;
   };
   // In renderStep3, update the add-option row to cap value input by field weight
   document.querySelectorAll('.add-option-btn').forEach(btn => {
@@ -404,78 +426,75 @@ async function fetchCalculatorsInline() {
   const calcDetail = document.getElementById('calcDetail');
   calcList.innerHTML = `<div class="loader-container"><div class="loader"></div></div>`;
   calcDetail.style.display = 'none';
-  try {
-    const { data: calculators, error } = await supabase
-      .from('calculators')
-      .select('id, title, purpose, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    // Filter by search query if present
-    let filtered = calculators;
-    if (window._calcSearchQuery && window._calcSearchQuery.length > 0) {
-      const q = window._calcSearchQuery;
-      filtered = calculators.filter(calc =>
-        (calc.title && calc.title.toLowerCase().includes(q)) ||
-        (calc.purpose && calc.purpose.toLowerCase().includes(q))
-      );
-    }
-    if (!filtered.length) {
-      calcList.innerHTML = '<div style="color:#a0aec0;text-align:center;">No calculators found. Create one to get started!</div>';
-      return;
-    }
-    calcList.innerHTML = filtered.map(calc => {
-      // Add 3 hours to created_at for Egypt time
-      const createdAt = new Date(calc.created_at);
-      createdAt.setHours(createdAt.getHours() + 3);
-      // Format as '9:14 pm' (12-hour, lowercase)
-      const hour = createdAt.getHours();
-      const hour12 = hour % 12 === 0 ? 12 : hour % 12;
-      const minutes = createdAt.getMinutes().toString().padStart(2, '0');
-      const ampm = hour < 12 ? 'am' : 'pm';
-      const formattedTime = `${hour12}:${minutes} ${ampm}`;
-      return `
-        <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:22px;padding:38px 32px 32px 32px;margin-bottom:36px;box-shadow:0 2px 12px rgba(60,72,100,0.09);cursor:pointer;transition:box-shadow 0.2s;display:flex;flex-direction:column;align-items:center;min-height:180px;max-width:420px;width:100%;margin-left:auto;margin-right:auto;position:relative;">
-          <button class="delete-calc-btn" title="Delete calculator" aria-label="Delete calculator" style="position:absolute;top:18px;right:18px;background:none;border:none;color:#e11d48;font-size:1.3rem;cursor:pointer;z-index:2;transition:color 0.18s;"><span aria-hidden="true">&times;</span></button>
-          <div style="font-size:1.55rem;font-weight:900;color:#181824;letter-spacing:-0.01em;text-align:center;width:100%;">${calc.title}</div>
-          <div style="font-size:1.08rem;color:#8b95a1;font-weight:500;margin-top:10px;margin-bottom:10px;min-height:1.2em;text-align:center;width:100%;">
-            ${calc.purpose && calc.purpose.trim() ? calc.purpose : '<span style=\'color:#cbd5e1;font-style:italic;\'>No purpose provided</span>'}
-          </div>
-          <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:auto;text-align:center;width:100%;">${formattedTime}</div>
-        </div>
-      `;
-    }).join('');
-    // Add delete logic
-    document.querySelectorAll('.delete-calc-btn').forEach((btn, idx) => {
-      btn.onclick = async (e) => {
-        e.stopPropagation();
-        const calcItem = btn.closest('.calc-item');
-        const calcId = calcItem.getAttribute('data-id');
-        if (!calcId) return;
-        showDeleteModal(async () => {
-          // Remove from DOM instantly
-          if (calcItem) calcItem.remove();
-          // If in detail view, return to list
-          const calcDetail = document.getElementById('calcDetail');
-          if (calcDetail && calcDetail.style.display === 'block') {
-            calcDetail.style.display = 'none';
-            const calcList = document.getElementById('calcList');
-            if (calcList) calcList.style.display = 'block';
-          }
-          await supabase.from('calculators').delete().eq('id', calcId);
-          // Optionally, re-fetch to ensure sync
-          fetchCalculatorsInline();
-        });
-      };
-    });
-    document.querySelectorAll('.calc-item').forEach(item => {
-      item.onclick = () => showCalculatorInline(item.getAttribute('data-id'));
-      item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') item.click(); };
-    });
-  } catch (err) {
-    calcList.innerHTML = `<div style='color:#f87171;'>Error loading calculators.<br>${err.message}</div>`;
+  let calculators = getCalculators();
+  // Filter by search query if present
+  let filtered = calculators;
+  if (window._calcSearchQuery && window._calcSearchQuery.length > 0) {
+    const q = window._calcSearchQuery;
+    filtered = calculators.filter(calc =>
+      (calc.title && calc.title.toLowerCase().includes(q)) ||
+      (calc.purpose && calc.purpose.toLowerCase().includes(q))
+    );
   }
+  if (!filtered.length) {
+    calcList.innerHTML = '<div style="color:#a0aec0;text-align:center;">No calculators found. Create one to get started!</div>';
+    return;
+  }
+  calcList.innerHTML = filtered.map(calc => {
+    const createdAt = new Date(calc.created_at);
+    createdAt.setHours(createdAt.getHours() + 3);
+    const hour = createdAt.getHours();
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+    const minutes = createdAt.getMinutes().toString().padStart(2, '0');
+    const ampm = hour < 12 ? 'am' : 'pm';
+    const formattedTime = `${hour12}:${minutes} ${ampm}`;
+    return `
+      <div class="calc-item" data-id="${calc.id}" tabindex="0" role="button" aria-label="${calc.title}" style="background:#fff;border-radius:22px;padding:38px 32px 32px 32px;margin-bottom:36px;box-shadow:0 2px 12px rgba(60,72,100,0.09);cursor:pointer;transition:box-shadow 0.2s;display:flex;flex-direction:column;align-items:center;min-height:180px;max-width:420px;width:100%;margin-left:auto;margin-right:auto;position:relative;">
+        <button class="delete-calc-btn" title="Delete calculator" aria-label="Delete calculator" style="position:absolute;top:18px;right:18px;background:none;border:none;color:#e11d48;font-size:1.3rem;cursor:pointer;z-index:2;transition:color 0.18s;"><span aria-hidden="true">&times;</span></button>
+        <div style="font-size:1.55rem;font-weight:900;color:#181824;letter-spacing:-0.01em;text-align:center;width:100%;">${calc.title}</div>
+        <div style="font-size:1.08rem;color:#8b95a1;font-weight:500;margin-top:10px;margin-bottom:10px;min-height:1.2em;text-align:center;width:100%;">
+          ${calc.purpose && calc.purpose.trim() ? calc.purpose : '<span style=\'color:#cbd5e1;font-style:italic;\'>No purpose provided</span>'}
+        </div>
+        <div style="font-size:1.05em;color:#6b7280;font-weight:500;margin-top:auto;text-align:center;width:100%;">${formattedTime}</div>
+      </div>
+    `;
+  }).join('');
+  // Add delete logic
+  document.querySelectorAll('.delete-calc-btn').forEach((btn, idx) => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      const calcItem = btn.closest('.calc-item');
+      const calcId = calcItem.getAttribute('data-id');
+      if (!calcId) return;
+      showDeleteModal(async () => {
+        // Remove from DOM instantly
+        if (calcItem) calcItem.remove();
+        // Remove from localStorage
+        let calculators = getCalculators();
+        calculators = calculators.filter(c => c.id !== calcId);
+        saveCalculators(calculators);
+        // Remove related quiz attempts
+        let attempts = getQuizAttempts();
+        attempts = attempts.filter(a => a.calculator_id !== calcId);
+        saveQuizAttempts(attempts);
+        // If in detail view, return to list
+        const calcDetail = document.getElementById('calcDetail');
+        if (calcDetail && calcDetail.style.display === 'block') {
+          calcDetail.style.display = 'none';
+          const calcList = document.getElementById('calcList');
+          if (calcList) calcList.style.display = 'block';
+        }
+        fetchCalculatorsInline();
+      });
+    };
+  });
+  document.querySelectorAll('.calc-item').forEach(item => {
+    item.onclick = () => showCalculatorInline(item.getAttribute('data-id'));
+    item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') item.click(); };
+  });
 }
 
+// --- Replace showCalculatorInline and all quiz/attempt logic to use localStorage ---
 async function showCalculatorInline(id) {
   const calcList = document.getElementById('calcList');
   const calcDetail = document.getElementById('calcDetail');
@@ -485,476 +504,421 @@ async function showCalculatorInline(id) {
   calcList.style.display = 'none';
   calcDetail.style.display = 'block';
   calcDetail.innerHTML = 'Loading...';
-  try {
-    const { data: calculators, error } = await supabase
-      .from('calculators')
-      .select('id, title, created_at, fields:calculator_fields(id, name, field_order, options:calculator_options(id, label, value, option_order))')
-      .eq('id', id)
-      .limit(1);
-    if (error) throw error;
-    const calc = calculators && calculators[0];
-    if (!calc) throw new Error('Calculator not found');
+  // Fetch calculator and attempts from localStorage
+  const calculators = getCalculators();
+  const calc = calculators.find(c => c.id === id);
+  if (!calc) {
+    calcDetail.innerHTML = `<div style='color:#f87171;'>Calculator not found.</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
+    return;
+  }
+  const attempts = getQuizAttempts().filter(a => a.calculator_id === id);
 
-    // --- Fetch previous attempts ---
-    const { data: attempts, error: attemptsError } = await supabase
-      .from('quiz_attempts')
-      .select('id, user_name, score, created_at')
-      .eq('calculator_id', id)
-      .order('created_at', { ascending: false });
-    if (attemptsError) throw attemptsError;
-
-    // --- Render previous attempts and New Quiz button ---
-    function renderAttemptsList() {
-      // Sorting state
-      let sortBy = window._quizSortBy || 'date';
-      let sortDir = window._quizSortDir || 'desc';
-      // Sorting controls UI
-      calcDetail.innerHTML = `
-        <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-          <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  // --- Render previous attempts and New Quiz button ---
+  function renderAttemptsList() {
+    // Sorting state
+    let sortBy = window._quizSortBy || 'date';
+    let sortDir = window._quizSortDir || 'desc';
+    // Sorting controls UI
+    calcDetail.innerHTML = `
+      <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+        <button id="backBtn" aria-label="Back to List" style="position:absolute;top:18px;left:18px;background:none;border:none;cursor:pointer;padding:0;margin:0;display:flex;align-items:center;z-index:2;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div style="position:absolute;top:18px;right:18px;z-index:2;" class="action-btn-group">
+          <button class="options-menu-btn" id="calcOptionsBtn" aria-label="Calculator Options" aria-haspopup="true" aria-expanded="false">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
           </button>
-          <div style="position:absolute;top:18px;right:18px;z-index:2;" class="action-btn-group">
-            <button class="options-menu-btn" id="calcOptionsBtn" aria-label="Calculator Options" aria-haspopup="true" aria-expanded="false">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
-            </button>
-            <div class="options-menu" id="calcOptionsMenu" role="menu" aria-label="Calculator options">
-              <button class="options-menu-item" data-action="duplicate" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="3" y="3" width="13" height="13" rx="2"/></svg> Duplicate</button>
-              <button class="options-menu-item" data-action="rename" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg> Rename</button>
-              <button class="options-menu-item" data-action="edit" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#232946" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8"/></svg> Edit</button>
-            </div>
-          </div>
-          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
-          <div style="display:flex;gap:1.2em;align-items:center;justify-content:flex-end;margin-bottom:1.2em;">
-            <label for="sortBySelect" style="font-size:1.02em;color:#6366f1;font-weight:600;">Sort by:</label>
-            <select id="sortBySelect" style="font-size:1.02em;padding:0.3em 1em;border-radius:0.7em;border:1.5px solid #e5e7eb;background:#f9fafb;color:#232946;font-weight:600;">
-              <option value="date">Date</option>
-              <option value="score">Score</option>
-            </select>
-            <button id="sortDirBtn" style="background:none;border:none;color:#6366f1;font-size:1.2em;cursor:pointer;display:flex;align-items:center;" aria-label="Toggle sort direction">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
-            </button>
-          </div>
-          <div style="margin-bottom:2rem;">
-            ${(() => {
-              let sorted = [...attempts];
-              if (sortBy === 'score') sorted.sort((a, b) => sortDir === 'asc' ? a.score - b.score : b.score - a.score);
-              else sorted.sort((a, b) => sortDir === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
-              return sorted.map((a, idx) => `
-                <div class="quiz-attempt-row">
-                  <div style="display:flex;align-items:center;gap:1.1em;">
-                    <span class="serial-num" style="font-size:1.1em;font-weight:700;color:#6366f1;min-width:2.2em;display:inline-block;text-align:right;">${idx+1}</span>
-                    <div class="quiz-attempt-info">
-                      <span class="quiz-attempt-name">${a.user_name}</span>
-                      <span class="quiz-attempt-score">Score: ${a.score}</span>
-                    </div>
-                  </div>
-                  <div class="quiz-attempt-options">
-                    <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
-                    </button>
-                    <div class="options-menu" id="optionsMenu${a.id}" role="menu" aria-label="Quiz options">
-                      <button class="options-menu-item" data-action="rename" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg> Rename</button>
-                      <button class="options-menu-item" data-action="edit" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> Edit</button>
-                      <button class="options-menu-item" data-action="duplicate" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="3" y="3" width="13" height="13" rx="2"/></svg> Duplicate</button>
-                      <button class="options-menu-item danger" data-action="delete" data-id="${a.id}" role="menuitem" tabindex="-1"><svg width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg> Delete</button>
-                    </div>
-                  </div>
-                </div>
-              `).join('');
-            })()}
-          </div>
-          <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
-            <button class="glass-btn new-quiz-btn" id="startQuizBtn">New Quiz</button>
+          <div class="options-menu" id="calcOptionsMenu" role="menu" aria-label="Calculator options">
+            <button class="options-menu-item" data-action="duplicate" role="menuitem" tabindex="-1">Duplicate</button>
+            <button class="options-menu-item" data-action="rename" role="menuitem" tabindex="-1">Rename</button>
+            <button class="options-menu-item" data-action="edit" role="menuitem" tabindex="-1">Edit</button>
           </div>
         </div>
-      `;
-      // Sorting controls logic
-      document.getElementById('sortBySelect').value = sortBy;
-      document.getElementById('sortDirBtn').innerHTML = sortDir === 'asc'
-        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`
-        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
-      document.getElementById('sortBySelect').onchange = (e) => {
-        window._quizSortBy = e.target.value;
-        renderAttemptsList();
+        <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;margin-top:0.2rem;text-align:center;">Previous Attempts</h2>
+        <div style="display:flex;gap:1.2em;align-items:center;justify-content:flex-end;margin-bottom:1.2em;">
+          <label for="sortBySelect" style="font-size:1.02em;color:#6366f1;font-weight:600;">Sort by:</label>
+          <select id="sortBySelect" style="font-size:1.02em;padding:0.3em 1em;border-radius:0.7em;border:1.5px solid #e5e7eb;background:#f9fafb;color:#232946;font-weight:600;">
+            <option value="date">Date</option>
+            <option value="score">Score</option>
+          </select>
+          <button id="sortDirBtn" style="background:none;border:none;color:#6366f1;font-size:1.2em;cursor:pointer;display:flex;align-items:center;" aria-label="Toggle sort direction">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+          </button>
+        </div>
+        <div style="margin-bottom:2rem;">
+          ${(() => {
+            let sorted = [...attempts];
+            if (sortBy === 'score') sorted.sort((a, b) => sortDir === 'asc' ? a.score - b.score : b.score - a.score);
+            else sorted.sort((a, b) => sortDir === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
+            return sorted.map((a, idx) => `
+              <div class="quiz-attempt-row">
+                <div style="display:flex;align-items:center;gap:1.1em;">
+                  <span class="serial-num" style="font-size:1.1em;font-weight:700;color:#6366f1;min-width:2.2em;display:inline-block;text-align:right;">${idx+1}</span>
+                  <div class="quiz-attempt-info">
+                    <span class="quiz-attempt-name">${a.user_name}</span>
+                    <span class="quiz-attempt-score">Score: ${a.score}</span>
+                  </div>
+                </div>
+                <div class="quiz-attempt-options">
+                  <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
+                  <div class="options-menu" id="optionsMenu${a.id}" role="menu" aria-label="Quiz options">
+                    <button class="options-menu-item" data-action="rename" data-id="${a.id}" role="menuitem" tabindex="-1">Rename</button>
+                    <button class="options-menu-item" data-action="edit" data-id="${a.id}" role="menuitem" tabindex="-1">Edit</button>
+                    <button class="options-menu-item" data-action="duplicate" data-id="${a.id}" role="menuitem" tabindex="-1">Duplicate</button>
+                    <button class="options-menu-item danger" data-action="delete" data-id="${a.id}" role="menuitem" tabindex="-1">Delete</button>
+                  </div>
+                </div>
+              </div>
+            `).join('');
+          })()}
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center;margin-top:1.5rem;">
+          <button class="glass-btn new-quiz-btn" id="startQuizBtn">New Quiz</button>
+        </div>
+      </div>
+    `;
+    // Sorting controls logic
+    document.getElementById('sortBySelect').value = sortBy;
+    document.getElementById('sortDirBtn').innerHTML = sortDir === 'asc'
+      ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`
+      : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+    document.getElementById('sortBySelect').onchange = (e) => {
+      window._quizSortBy = e.target.value;
+      renderAttemptsList();
+    };
+    document.getElementById('sortDirBtn').onclick = () => {
+      window._quizSortDir = (window._quizSortDir === 'asc' ? 'desc' : 'asc');
+      renderAttemptsList();
+    };
+    document.getElementById('startQuizBtn').onclick = () => renderNamePrompt();
+    document.getElementById('backBtn').onclick = () => {
+      calcDetail.style.display = 'none';
+      calcList.style.display = 'block';
+      // Show search bar again
+      const searchBar = document.getElementById('searchBarContainer');
+      if (searchBar) searchBar.style.display = 'flex';
+      fetchCalculatorsInline();
+    };
+    // Calculator options menu logic
+    const calcOptionsBtn = document.getElementById('calcOptionsBtn');
+    const calcOptionsMenu = document.getElementById('calcOptionsMenu');
+    if (calcOptionsBtn && calcOptionsMenu) {
+      calcOptionsBtn.onclick = (e) => {
+        e.stopPropagation();
+        const expanded = calcOptionsBtn.getAttribute('aria-expanded') === 'true';
+        document.querySelectorAll('.options-menu').forEach(m => { if (m !== calcOptionsMenu) m.classList.remove('open'); });
+        document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        if (!expanded) {
+          calcOptionsMenu.classList.add('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'true');
+          setTimeout(() => { const first = calcOptionsMenu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
+        } else {
+          calcOptionsMenu.classList.remove('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'false');
+        }
       };
-      document.getElementById('sortDirBtn').onclick = () => {
-        window._quizSortDir = (window._quizSortDir === 'asc' ? 'desc' : 'asc');
-        renderAttemptsList();
-      };
-      document.getElementById('startQuizBtn').onclick = () => renderNamePrompt();
-      document.getElementById('backBtn').onclick = () => {
-        calcDetail.style.display = 'none';
-        calcList.style.display = 'block';
-        // Show search bar again
-        const searchBar = document.getElementById('searchBarContainer');
-        if (searchBar) searchBar.style.display = 'flex';
-        fetchCalculatorsInline();
-      };
-      // Calculator options menu logic
-      const calcOptionsBtn = document.getElementById('calcOptionsBtn');
-      const calcOptionsMenu = document.getElementById('calcOptionsMenu');
-      if (calcOptionsBtn && calcOptionsMenu) {
-        calcOptionsBtn.onclick = (e) => {
-          e.stopPropagation();
-          const expanded = calcOptionsBtn.getAttribute('aria-expanded') === 'true';
-          document.querySelectorAll('.options-menu').forEach(m => { if (m !== calcOptionsMenu) m.classList.remove('open'); });
-          document.querySelectorAll('.options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
-          if (!expanded) {
-            calcOptionsMenu.classList.add('open');
-            calcOptionsBtn.setAttribute('aria-expanded', 'true');
-            setTimeout(() => { const first = calcOptionsMenu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
-          } else {
-            calcOptionsMenu.classList.remove('open');
-            calcOptionsBtn.setAttribute('aria-expanded', 'false');
-          }
-        };
-        // Close menu on click outside (no once:true)
-        document.addEventListener('click', function closeCalcMenu(e) {
-          if (!e.target.closest('.action-btn-group')) {
-            calcOptionsMenu.classList.remove('open');
-            calcOptionsBtn.setAttribute('aria-expanded', 'false');
-          }
-        });
-        // Keyboard navigation for menu
-        calcOptionsMenu.onkeydown = (e) => {
-          const items = Array.from(calcOptionsMenu.querySelectorAll('.options-menu-item'));
-          const idx = items.indexOf(document.activeElement);
-          if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (idx < items.length - 1) items[idx + 1].focus();
-          } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (idx > 0) items[idx - 1].focus();
-          } else if (e.key === 'Escape') {
-            calcOptionsMenu.classList.remove('open');
-            calcOptionsBtn.setAttribute('aria-expanded', 'false');
-            calcOptionsBtn.focus();
-          }
-        };
-        // Menu actions
-        calcOptionsMenu.querySelectorAll('.options-menu-item').forEach(item => {
-          item.onclick = async (e) => {
-            const action = item.getAttribute('data-action');
-            if (action === 'duplicate') {
-              // Duplicate calculator logic
-              let baseName = calc.title + ' (Copy)';
-              let name = baseName;
-              let counter = 1;
-              // Fetch all calculators to ensure unique name
-              const { data: allCalcs } = await supabase.from('calculators').select('title');
-              const titles = (allCalcs || []).map(c => c.title);
-              while (titles.includes(name)) {
-                name = `${baseName} ${counter}`;
-                counter++;
-              }
-              // Insert new calculator
-              const { data: newCalcData, error: newCalcError } = await supabase.from('calculators').insert([{ title: name, purpose: calc.purpose }]).select();
-              if (newCalcError || !newCalcData || !newCalcData[0]) {
-                showCustomModal('Error duplicating calculator.');
-                return;
-              }
-              const newCalcId = newCalcData[0].id;
-              // Duplicate fields and options
-              for (let i = 0; i < (calc.fields || []).length; i++) {
-                const f = calc.fields[i];
-                const { data: newFieldData } = await supabase.from('calculator_fields').insert([{ calculator_id: newCalcId, name: f.name, field_order: i, weight: f.weight }]).select();
-                const newFieldId = newFieldData[0].id;
-                for (let oi = 0; oi < (f.options || []).length; oi++) {
-                  const opt = f.options[oi];
-                  await supabase.from('calculator_options').insert([{ field_id: newFieldId, label: opt.label, value: opt.value, option_order: oi }]);
-                }
-              }
-              showCustomModal('Calculator duplicated!');
-              // Show the new calculator detail after short delay
-              setTimeout(() => showCalculatorInline(newCalcId), 500);
-            } else if (action === 'rename') {
-              showRenameModal({
-                title: 'Rename Calculator',
-                label: 'Enter new calculator name:',
-                initial: calc.title,
-                onSave: async (newName) => {
-                  await supabase.from('calculators').update({ title: newName }).eq('id', calc.id);
+      // Menu actions
+      calcOptionsMenu.querySelectorAll('.options-menu-item').forEach(item => {
+        item.onclick = async (e) => {
+          const action = item.getAttribute('data-action');
+          if (action === 'duplicate') {
+            // Duplicate calculator logic
+            let baseName = calc.title + ' (Copy)';
+            let name = baseName;
+            let counter = 1;
+            const calculators = getCalculators();
+            const titles = calculators.map(c => c.title);
+            while (titles.includes(name)) {
+              name = `${baseName} ${counter}`;
+              counter++;
+            }
+            const newCalc = JSON.parse(JSON.stringify(calc));
+            newCalc.id = generateId();
+            newCalc.title = name;
+            newCalc.created_at = new Date().toISOString();
+            newCalc.fields = newCalc.fields.map(f => ({ ...f, id: generateId(), options: f.options.map(opt => ({ ...opt, id: generateId() })) }));
+            calculators.unshift(newCalc);
+            saveCalculators(calculators);
+            showCustomModal('Calculator duplicated!');
+            setTimeout(() => showCalculatorInline(newCalc.id), 500);
+          } else if (action === 'rename') {
+            showRenameModal({
+              title: 'Rename Calculator',
+              label: 'Enter new calculator name:',
+              initial: calc.title,
+              onSave: (newName) => {
+                const calculators = getCalculators();
+                const idx = calculators.findIndex(c => c.id === calc.id);
+                if (idx !== -1) {
+                  calculators[idx].title = newName;
+                  saveCalculators(calculators);
                   showCustomModal('Calculator renamed!');
-                  // Re-render detail
                   setTimeout(() => showCalculatorInline(calc.id), 500);
                 }
-              });
-            } else if (action === 'edit') {
-              renderEditCalculator(calc);
-            }
-            calcOptionsMenu.classList.remove('open');
-            calcOptionsBtn.setAttribute('aria-expanded', 'false');
-          };
-        });
-      }
-      // Quiz row options menu logic
-      document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(btn => {
-        btn.onclick = (e) => {
-          e.stopPropagation();
-          const id = btn.getAttribute('data-id');
-          const menu = document.getElementById(`optionsMenu${id}`);
-          // Close all other quiz row menus
-          document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
-          document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
-          const expanded = btn.getAttribute('aria-expanded') === 'true';
-          if (!expanded) {
-            menu.classList.add('open');
-            btn.setAttribute('aria-expanded', 'true');
-            setTimeout(() => { const first = menu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
-          } else {
-            menu.classList.remove('open');
-            btn.setAttribute('aria-expanded', 'false');
+              }
+            });
+          } else if (action === 'edit') {
+            renderEditCalculator(calc);
           }
+          calcOptionsMenu.classList.remove('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'false');
         };
       });
-      // Close quiz row menu on click outside (no once:true)
-      document.addEventListener('click', function closeQuizMenus(e) {
-        if (!e.target.closest('.quiz-attempt-options')) {
-          document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => m.classList.remove('open'));
-          document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    }
+    // Quiz row options menu logic
+    document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        const menu = document.getElementById(`optionsMenu${id}`);
+        document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+        document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        if (!expanded) {
+          menu.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          setTimeout(() => { const first = menu.querySelector('.options-menu-item'); if (first) first.focus(); }, 10);
+        } else {
+          menu.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
         }
-      });
-      // Quiz row menu actions
-      document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(menu => {
-        menu.querySelectorAll('.options-menu-item').forEach(item => {
-          item.onclick = async (e) => {
-            const action = item.getAttribute('data-action');
-            const attemptId = item.getAttribute('data-id');
-            if (action === 'rename') {
-              const quizNameCell = item.closest('.quiz-attempt-row').querySelector('.quiz-attempt-name');
-              const oldName = quizNameCell ? quizNameCell.textContent : '';
-              showRenameModal({
-                title: 'Rename Quiz',
-                label: 'Enter new quiz name:',
-                initial: oldName,
-                onSave: async (newName) => {
-                  await supabase.from('quiz_attempts').update({ user_name: newName }).eq('id', attemptId);
+      };
+    });
+    document.addEventListener('click', function closeQuizMenus(e) {
+      if (!e.target.closest('.quiz-attempt-options')) {
+        document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => m.classList.remove('open'));
+        document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+      }
+    });
+    document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(menu => {
+      menu.querySelectorAll('.options-menu-item').forEach(item => {
+        item.onclick = async (e) => {
+          const action = item.getAttribute('data-action');
+          const attemptId = item.getAttribute('data-id');
+          if (action === 'rename') {
+            const quizNameCell = item.closest('.quiz-attempt-row').querySelector('.quiz-attempt-name');
+            const oldName = quizNameCell ? quizNameCell.textContent : '';
+            showRenameModal({
+              title: 'Rename Quiz',
+              label: 'Enter new quiz name:',
+              initial: oldName,
+              onSave: (newName) => {
+                let attempts = getQuizAttempts();
+                const idx = attempts.findIndex(a => a.id === attemptId);
+                if (idx !== -1) {
+                  attempts[idx].user_name = newName;
+                  saveQuizAttempts(attempts);
                   if (quizNameCell) quizNameCell.textContent = newName;
                   showCustomModal('Quiz renamed!');
                 }
-              });
-            } else if (action === 'edit') {
-              const { data: attemptData, error: attemptError } = await supabase
-                .from('quiz_attempts')
-                .select('id, user_name, answers')
-                .eq('id', attemptId)
-                .single();
-              if (attemptError || !attemptData) return;
-              const prevAnswers = JSON.parse(attemptData.answers || '[]');
-              renderQuizStep(attemptData.user_name, prevAnswers, attemptId);
-            } else if (action === 'duplicate') {
-              showCustomModal('Duplicate quiz is not implemented yet.');
-            } else if (action === 'delete') {
-              showDeleteModal(async () => {
-                await supabase.from('quiz_attempts').delete().eq('id', attemptId);
-                // Remove row instantly
-                const row = item.closest('.quiz-attempt-row');
-                if (row) row.remove();
-              });
-            }
-            menu.classList.remove('open');
-            const btn = menu.parentElement.querySelector('.options-menu-btn');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
-          };
-        });
+              }
+            });
+          } else if (action === 'edit') {
+            const attempts = getQuizAttempts();
+            const attempt = attempts.find(a => a.id === attemptId);
+            if (!attempt) return;
+            const prevAnswers = attempt.answers;
+            renderQuizStep(attempt.user_name, prevAnswers, attemptId);
+          } else if (action === 'duplicate') {
+            showCustomModal('Duplicate quiz is not implemented yet.');
+          } else if (action === 'delete') {
+            showDeleteModal(() => {
+              let attempts = getQuizAttempts();
+              attempts = attempts.filter(a => a.id !== attemptId);
+              saveQuizAttempts(attempts);
+              // Remove row instantly
+              const row = item.closest('.quiz-attempt-row');
+              if (row) row.remove();
+            });
+          }
+          menu.classList.remove('open');
+          const btn = menu.parentElement.querySelector('.options-menu-btn');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        };
       });
-    }
+    });
+  }
 
-    // --- Prompt for user name before quiz ---
-    function renderNamePrompt() {
+  // --- Prompt for user name before quiz ---
+  function renderNamePrompt() {
+    calcDetail.innerHTML = `
+      <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+        <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Quiz Name</h2>
+        <form id="nameForm">
+          <input type="text" id="quizUserName" class="glass-input quiz-dark-input" placeholder="Quiz name" maxlength="64" required style="margin-bottom:1.5rem;" />
+          <button type="submit" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">Start Quiz</button>
+          <button type="button" class="back-btn" id="cancelNameBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
+        </form>
+      </div>
+    `;
+    setTimeout(() => {
+      const quizInput = document.getElementById('quizUserName');
+      if (quizInput) {
+        quizInput.style.border = '2.5px solid #232946';
+        quizInput.style.boxShadow = '0 0 0 0.5px #23294633';
+        quizInput.onfocus = function() {
+          this.style.border = '2.5px solid #232946';
+          this.style.boxShadow = '0 0 0 2px #23294633';
+        };
+        quizInput.onblur = function() {
+          this.style.border = '2.5px solid #232946';
+          this.style.boxShadow = '0 0 0 0.5px #23294633';
+        };
+        quizInput.classList.remove('border-red-400');
+      }
+    }, 0);
+    document.getElementById('cancelNameBtn').onclick = renderAttemptsList;
+    document.getElementById('nameForm').onsubmit = (e) => {
+      e.preventDefault();
+      const userName = document.getElementById('quizUserName').value.trim();
+      if (!userName) {
+        const quizInput = document.getElementById('quizUserName');
+        quizInput.style.border = '2.5px solid #e11d48';
+        quizInput.style.boxShadow = '0 0 0 2px #e11d4833';
+        return;
+      }
+      renderQuizStep(userName);
+    };
+  }
+
+  // --- Quiz state ---
+  function renderQuizStep(userName, prevAnswers = [], editAttemptId = null) {
+    let currentStep = 0;
+    const answers = prevAnswers.length ? [...prevAnswers] : Array(calc.fields.length).fill(null);
+    const totalSteps = calc.fields.length;
+    function showStep() {
       calcDetail.innerHTML = `
         <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;">Enter Quiz Name</h2>
-          <form id="nameForm">
-            <input type="text" id="quizUserName" class="glass-input quiz-dark-input" placeholder="Quiz name" maxlength="64" required style="margin-bottom:1.5rem;" />
-            <button type="submit" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;font-size:1.15rem;box-shadow:0 4px 24px rgba(35,41,70,0.10);">Start Quiz</button>
-            <button type="button" class="back-btn" id="cancelNameBtn" style="margin-left:1.2rem;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
+          <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
+            <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
+          </div>
+          <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
+          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${calc.fields[currentStep].name}</div>
+          <form id="quizForm">
+            <div style="display:flex;flex-direction:column;gap:1.1rem;">
+              ${calc.fields[currentStep].options.map((opt, i) => `
+                <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
+                  <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
+                  <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
+                </label>
+              `).join('')}
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
+              <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;opacity:${currentStep===0?'0.55':'1'};pointer-events:${currentStep===0?'none':'auto'};">Previous</button>
+              <button type="submit" id="nextBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;min-width:140px;opacity:0.92;transition:background 0.18s;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
+            </div>
           </form>
+          <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
         </div>
       `;
-      // Add dark accent border/focus for quiz name input
+      document.getElementById('backBtn').onclick = renderAttemptsList;
+      document.getElementById('prevBtn').onclick = () => {
+        if (currentStep > 0) {
+          currentStep--;
+          showStep();
+        }
+      };
+      document.getElementById('quizForm').onsubmit = (e) => {
+        e.preventDefault();
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (!selected) return;
+        answers[currentStep] = parseInt(selected.value);
+        if (currentStep < totalSteps - 1) {
+          currentStep++;
+          showStep();
+        } else {
+          renderQuizResult(userName, answers, editAttemptId);
+        }
+      };
+      document.querySelectorAll('input[name="option"]').forEach((input, i) => {
+        input.onchange = () => {
+          answers[currentStep] = parseInt(input.value);
+          showStep();
+        };
+      });
       setTimeout(() => {
-        const quizInput = document.getElementById('quizUserName');
-        if (quizInput) {
-          quizInput.style.border = '2.5px solid #232946';
-          quizInput.style.boxShadow = '0 0 0 0.5px #23294633';
-          quizInput.onfocus = function() {
-            this.style.border = '2.5px solid #232946';
-            this.style.boxShadow = '0 0 0 2px #23294633';
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn) {
+          nextBtn.onmouseover = function() {
+            this.style.background = '#181824';
+            this.style.opacity = '1';
+            this.style.boxShadow = '0 8px 32px #23294633';
           };
-          quizInput.onblur = function() {
-            this.style.border = '2.5px solid #232946';
-            this.style.boxShadow = '0 0 0 0.5px #23294633';
+          nextBtn.onmouseout = function() {
+            this.style.background = '#232946';
+            this.style.opacity = '0.92';
+            this.style.boxShadow = '0 4px 24px #23294633';
           };
-          quizInput.classList.remove('border-red-400');
+          nextBtn.onfocus = function() {
+            this.style.background = '#181824';
+            this.style.opacity = '1';
+            this.style.boxShadow = '0 8px 32px #23294633';
+          };
+          nextBtn.onblur = function() {
+            this.style.background = '#232946';
+            this.style.opacity = '0.92';
+            this.style.boxShadow = '0 4px 24px #23294633';
+          };
         }
       }, 0);
-      document.getElementById('cancelNameBtn').onclick = renderAttemptsList;
-      document.getElementById('nameForm').onsubmit = (e) => {
-        e.preventDefault();
-        const userName = document.getElementById('quizUserName').value.trim();
-        if (!userName) {
-          const quizInput = document.getElementById('quizUserName');
-          quizInput.style.border = '2.5px solid #e11d48';
-          quizInput.style.boxShadow = '0 0 0 2px #e11d4833';
-          return;
-        }
-        renderQuizStep(userName);
-      };
     }
-
-    // --- Quiz state ---
-    function renderQuizStep(userName, prevAnswers = [], editAttemptId = null) {
-      let currentStep = 0;
-      const answers = prevAnswers.length ? [...prevAnswers] : Array(calc.fields.length).fill(null);
-      const totalSteps = calc.fields.length;
-      function showStep() {
-        calcDetail.innerHTML = `
-          <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
-            <div style="height:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
-              <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
-            </div>
-            <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
-            <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${calc.fields[currentStep].name}</div>
-            <form id="quizForm">
-              <div style="display:flex;flex-direction:column;gap:1.1rem;">
-                ${calc.fields[currentStep].options.map((opt, i) => `
-                  <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
-                    <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
-                    <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
-                  </label>
-                `).join('')}
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;">
-                <button type="button" id="prevBtn" class="glass-btn" style="background:#f3f4f6;color:#9ca3af;font-weight:700;box-shadow:none;opacity:${currentStep===0?'0.55':'1'};pointer-events:${currentStep===0?'none':'auto'};">Previous</button>
-                <button type="submit" id="nextBtn" class="glass-btn" style="background:#232946;color:#fff;font-weight:700;min-width:140px;opacity:0.92;transition:background 0.18s;">${currentStep===totalSteps-1?'Finish':'Next'}</button>
-              </div>
-            </form>
-            <button class="back-btn" id="backBtn" style="position:absolute;top:18px;right:18px;background:none;color:#6b7280;font-size:1.1rem;font-weight:600;">Cancel</button>
-          </div>
-        `;
-        document.getElementById('backBtn').onclick = renderAttemptsList;
-        document.getElementById('prevBtn').onclick = () => {
-          if (currentStep > 0) {
-            currentStep--;
-            showStep();
-          }
-        };
-        document.getElementById('quizForm').onsubmit = (e) => {
-          e.preventDefault();
-          const selected = document.querySelector('input[name="option"]:checked');
-          if (!selected) return;
-          answers[currentStep] = parseInt(selected.value);
-          if (currentStep < totalSteps - 1) {
-            currentStep++;
-            showStep();
-          } else {
-            renderQuizResult(userName, answers, editAttemptId);
-          }
-        };
-        document.querySelectorAll('input[name="option"]').forEach((input, i) => {
-          input.onchange = () => {
-            answers[currentStep] = parseInt(input.value);
-            showStep();
-          };
-        });
-        // Add dark hover for Finish/Next button
-        setTimeout(() => {
-          const nextBtn = document.getElementById('nextBtn');
-          if (nextBtn) {
-            nextBtn.onmouseover = function() {
-              this.style.background = '#181824';
-              this.style.opacity = '1';
-              this.style.boxShadow = '0 8px 32px #23294633';
-            };
-            nextBtn.onmouseout = function() {
-              this.style.background = '#232946';
-              this.style.opacity = '0.92';
-              this.style.boxShadow = '0 4px 24px #23294633';
-            };
-            nextBtn.onfocus = function() {
-              this.style.background = '#181824';
-              this.style.opacity = '1';
-              this.style.boxShadow = '0 8px 32px #23294633';
-            };
-            nextBtn.onblur = function() {
-              this.style.background = '#232946';
-              this.style.opacity = '0.92';
-              this.style.boxShadow = '0 4px 24px #23294633';
-            };
-          }
-        }, 0);
-      }
-      showStep();
-    }
-
-    // --- Quiz result and save ---
-    async function renderQuizResult(userName, answers, editAttemptId = null) {
-      let total = 0;
-      calc.fields.forEach((f, i) => {
-        const answerIdx = answers[i];
-        if (answerIdx != null && f.options[answerIdx]) {
-          const val = parseFloat(f.options[answerIdx].value);
-          if (!isNaN(val)) total += val;
-        }
-      });
-      // Ensure unique quiz name
-      if (!editAttemptId) {
-        let baseName = userName;
-        let name = baseName;
-        let counter = 1;
-        const existingNames = attempts.map(a => a.user_name);
-        while (existingNames.includes(name)) {
-          name = `${baseName}(${counter})`;
-          counter++;
-        }
-        userName = name;
-      }
-      let saveError;
-      if (editAttemptId) {
-        // Update existing attempt
-        ({ error: saveError } = await supabase
-          .from('quiz_attempts')
-          .update({ user_name: userName, answers: JSON.stringify(answers), score: total })
-          .eq('id', editAttemptId));
-      } else {
-        // Insert new attempt
-        ({ error: saveError } = await supabase
-          .from('quiz_attempts')
-          .insert([{ calculator_id: id, user_name: userName, answers: JSON.stringify(answers), score: total }]));
-      }
-      // Refetch attempts and show list
-      const { data: newAttempts } = await supabase
-        .from('quiz_attempts')
-        .select('id, user_name, score, created_at')
-        .eq('calculator_id', id)
-        .order('created_at', { ascending: false });
-      attempts.length = 0;
-      attempts.push(...(newAttempts || []));
-      // Animate score changes if editing quiz structure
-      if (window._animateScores) {
-        setTimeout(() => {
-          document.querySelectorAll('.score-cell').forEach(cell => {
-            cell.style.transition = 'background 0.7s, color 0.7s';
-            cell.style.background = '#fef08a';
-            cell.style.color = '#b45309';
-            setTimeout(() => {
-              cell.style.background = '';
-              cell.style.color = '';
-            }, 700);
-          });
-          window._animateScores = false;
-        }, 200);
-      }
-      renderAttemptsList();
-    }
-
-    // Initial render
-    renderAttemptsList();
-  } catch (err) {
-    calcDetail.innerHTML = `<div style='color:#f87171;'>Error loading calculator.<br>${err.message}</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
+    showStep();
   }
+
+  // --- Quiz result and save ---
+  function renderQuizResult(userName, answers, editAttemptId = null) {
+    let total = 0;
+    calc.fields.forEach((f, i) => {
+      const answerIdx = answers[i];
+      if (answerIdx != null && f.options[answerIdx]) {
+        const val = parseFloat(f.options[answerIdx].value);
+        if (!isNaN(val)) total += val;
+      }
+    });
+    // Ensure unique quiz name
+    if (!editAttemptId) {
+      let baseName = userName;
+      let name = baseName;
+      let counter = 1;
+      const existingNames = attempts.map(a => a.user_name);
+      while (existingNames.includes(name)) {
+        name = `${baseName}(${counter})`;
+        counter++;
+      }
+      userName = name;
+    }
+    let quizAttempts = getQuizAttempts();
+    if (editAttemptId) {
+      // Update existing attempt
+      const idx = quizAttempts.findIndex(a => a.id === editAttemptId);
+      if (idx !== -1) {
+        quizAttempts[idx].user_name = userName;
+        quizAttempts[idx].answers = answers;
+        quizAttempts[idx].score = total;
+        saveQuizAttempts(quizAttempts);
+      }
+    } else {
+      // Insert new attempt
+      quizAttempts.unshift({
+        id: generateId(),
+        calculator_id: id,
+        user_name: userName,
+        answers,
+        score: total,
+        created_at: new Date().toISOString()
+      });
+      saveQuizAttempts(quizAttempts);
+    }
+    // Refetch attempts and show list
+    attempts.length = 0;
+    attempts.push(...(getQuizAttempts().filter(a => a.calculator_id === id)));
+    renderAttemptsList();
+  }
+
+  // Initial render
+  renderAttemptsList();
 }
 
 // Navigation logic
@@ -1066,7 +1030,7 @@ async function updateAllAttemptScores(calc) {
 window.updateAllAttemptScores = updateAllAttemptScores;
 // Example: after editing calculator fields/options, call window.updateAllAttemptScores(calculator) to update and animate scores.
 
-// Add renderEditCalculator function after showCalculatorInline
+// --- Refactor renderEditCalculator to use localStorage ---
 function renderEditCalculator(calc) {
   const calcDetail = document.getElementById('calcDetail');
   // Deep copy fields/options for editing
@@ -1166,7 +1130,7 @@ function renderEditCalculator(calc) {
       }
       if (hasError) return;
       fields[idx].options = fields[idx].options || [];
-      fields[idx].options.push({ label, value });
+      fields[idx].options.push({ id: generateId(), label, value });
       labelInput.value = '';
       valueInput.value = '';
       setTimeout(() => labelInput.focus(), 10);
@@ -1182,7 +1146,7 @@ function renderEditCalculator(calc) {
     };
   });
   document.getElementById('cancelEditBtn').onclick = () => showCalculatorInline(calc.id);
-  document.getElementById('editCalcForm').onsubmit = async (e) => {
+  document.getElementById('editCalcForm').onsubmit = (e) => {
     e.preventDefault();
     // Validate
     let hasError = false;
@@ -1199,37 +1163,20 @@ function renderEditCalculator(calc) {
       showCustomModal('Please fill in all fields, avoid duplicates, and ensure total weight is 100%.');
       return;
     }
-    // Save to Supabase
-    await supabase.from('calculators').update({ title: document.getElementById('editCalcTitle').value.trim() }).eq('id', calc.id);
-    // Update fields/options
-    for (let i = 0; i < fields.length; i++) {
-      const f = fields[i];
-      // Update or insert field
-      if (f.id) {
-        await supabase.from('calculator_fields').update({ name: f.name, field_order: i, weight: f.weight }).eq('id', f.id);
-      } else {
-        const { data: newField } = await supabase.from('calculator_fields').insert([{ calculator_id: calc.id, name: f.name, field_order: i, weight: f.weight }]).select();
-        f.id = newField[0].id;
-      }
-      // Remove all options and re-insert (for simplicity)
-      await supabase.from('calculator_options').delete().eq('field_id', f.id);
-      for (let oi = 0; oi < f.options.length; oi++) {
-        const opt = f.options[oi];
-        await supabase.from('calculator_options').insert([{ field_id: f.id, label: opt.label, value: opt.value, option_order: oi }]);
-      }
+    // Save to localStorage
+    const calculators = getCalculators();
+    const idx = calculators.findIndex(c => c.id === calc.id);
+    if (idx !== -1) {
+      calculators[idx].title = document.getElementById('editCalcTitle').value.trim();
+      calculators[idx].fields = fields.map(f => ({
+        ...f,
+        weight: parseInt(f.weight, 10),
+        options: (f.options || []).map(opt => ({ ...opt, value: parseFloat(opt.value) }))
+      }));
+      saveCalculators(calculators);
+      showCustomModal('Calculator updated!');
+      setTimeout(() => showCalculatorInline(calc.id), 500);
     }
-    // Remove extra fields
-    const { data: dbFields } = await supabase.from('calculator_fields').select('id').eq('calculator_id', calc.id);
-    const keepIds = fields.map(f => f.id);
-    for (const dbf of dbFields) {
-      if (!keepIds.includes(dbf.id)) {
-        await supabase.from('calculator_fields').delete().eq('id', dbf.id);
-        await supabase.from('calculator_options').delete().eq('field_id', dbf.id);
-      }
-    }
-    // Update all attempts' scores and animate
-    window.updateAllAttemptScores({ ...calc, fields });
-    showCalculatorInline(calc.id);
   };
 }
 
