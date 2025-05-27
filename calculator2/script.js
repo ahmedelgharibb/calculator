@@ -301,9 +301,9 @@ function renderStep3() {
   if (backBtn3) backBtn3.onclick = () => { step = 2; renderStep2(); };
   document.getElementById('optionsForm').onsubmit = async (e) => {
     e.preventDefault();
+    // Remove the requirement for at least one valid option per field
     let hasError = false;
     calculator.fields.forEach((f, i) => {
-      if (!f.options.length) hasError = true;
       (f.options || []).forEach((opt, oi) => {
         if (!opt.label.trim() || isNaN(opt.value)) {
           hasError = true;
@@ -311,7 +311,7 @@ function renderStep3() {
       });
     });
     if (!calculator.fields.length || hasError) {
-      alert('Please add at least one valid option for each field.');
+      alert('Please fix all option errors.');
       return;
     }
     // Save locally
@@ -804,9 +804,11 @@ async function showCalculatorInline(id) {
 
   // --- Quiz state ---
   function renderQuizStep(userName, prevAnswers = [], editAttemptId = null) {
+    // Only include fields with options
+    const quizFields = calc.fields.filter(f => (f.options && f.options.length > 0));
     let currentStep = 0;
-    const answers = prevAnswers.length ? [...prevAnswers] : Array(calc.fields.length).fill(null);
-    const totalSteps = calc.fields.length;
+    const answers = prevAnswers.length ? [...prevAnswers] : Array(quizFields.length).fill(null);
+    const totalSteps = quizFields.length;
     function showStep() {
       calcDetail.innerHTML = `
         <div class="quiz-card" style="max-width:480px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
@@ -814,10 +816,10 @@ async function showCalculatorInline(id) {
             <div style="height:100%;width:${((currentStep+1)/totalSteps)*100}%;background:#181824;transition:width 0.3s;"></div>
           </div>
           <div style="text-align:center;margin-bottom:0.7rem;font-size:1.1rem;font-weight:600;color:#6b7280;">Question ${currentStep+1} of ${totalSteps}</div>
-          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${calc.fields[currentStep].name}</div>
+          <div style="text-align:center;font-size:2rem;font-weight:800;color:#181824;margin-bottom:2rem;">${quizFields[currentStep].name}</div>
           <form id="quizForm">
             <div style="display:flex;flex-direction:column;gap:1.1rem;">
-              ${calc.fields[currentStep].options.map((opt, i) => `
+              ${quizFields[currentStep].options.map((opt, i) => `
                 <label style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.2rem;border-radius:1rem;border:1.5px solid #e5e7eb;background:${answers[currentStep]==i?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
                   <input type="radio" name="option" value="${i}" ${answers[currentStep]==i?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
                   <span style="font-size:1.15rem;font-weight:500;color:#181824;">${opt.label}</span>
