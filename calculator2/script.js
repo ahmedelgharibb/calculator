@@ -131,13 +131,12 @@ function renderStep2() {
     };
   });
   document.querySelectorAll('.field-weight-input').forEach(inp => {
-    // Only update on blur or Enter for smooth multi-digit entry
     inp.addEventListener('blur', (e) => {
       const idx = e.target.getAttribute('data-idx');
       let val = e.target.value;
       if (val === '') val = '';
       else val = Math.max(0, Math.min(100, parseInt(val)));
-      calculator.fields[idx].weight = val;
+      calculator.fields[idx].weight = (val === 0) ? '0' : val;
       renderStep2();
     });
     inp.addEventListener('keydown', (e) => {
@@ -1058,7 +1057,7 @@ function renderEditCalculator(calc) {
       let val = e.target.value;
       if (val === '') val = '';
       else val = Math.max(0, Math.min(100, parseInt(val)));
-      fields[idx].weight = val;
+      fields[idx].weight = (val === 0) ? '0' : val;
       renderEditCalculator({ ...calc, fields });
     });
     inp.addEventListener('keydown', (e) => {
