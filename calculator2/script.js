@@ -260,10 +260,31 @@ function renderStep3() {
       renderStep3();
     };
   });
-  document.getElementById('backBtn3').onclick = () => {
-    step = 2;
-    renderStep2();
-  };
+  // Make existing options editable
+  calculator.fields.forEach((f, i) => {
+    // Label editing
+    document.querySelectorAll(`#optionsList${i} .option-label-input`).forEach((inp, oi) => {
+      inp.addEventListener('input', (e) => {
+        calculator.fields[i].options[oi].label = inp.value;
+      });
+    });
+    // Percent editing
+    document.querySelectorAll(`#optionsList${i} .option-percent-input`).forEach((inp, oi) => {
+      inp.addEventListener('input', (e) => {
+        let percent = parseFloat(inp.value);
+        if (isNaN(percent) || percent < 0) percent = 0;
+        if (percent > 100) percent = 100;
+        const points = Math.round((percent / 100) * f.weight * 100) / 100;
+        calculator.fields[i].options[oi].value = points;
+        // Update the points display
+        const pointsSpan = inp.parentElement.querySelector('.text-indigo-600');
+        if (pointsSpan) pointsSpan.textContent = `${points}/${f.weight}`;
+      });
+    });
+  });
+  // Ensure cancel button always works
+  const backBtn3 = document.getElementById('backBtn3');
+  if (backBtn3) backBtn3.onclick = () => { step = 2; renderStep2(); };
   document.getElementById('optionsForm').onsubmit = async (e) => {
     e.preventDefault();
     let hasError = false;
