@@ -1101,7 +1101,7 @@ function renderEditCalculator(calc) {
     });
     document.querySelectorAll('.field-weight-input').forEach(inp => {
       const idx = inp.getAttribute('data-idx');
-      fields[idx].weight = inp.value;
+      fields[idx].weight = parseFloat(inp.value);
     });
     document.querySelectorAll('.option-label-input').forEach(inp => {
       const idx = inp.getAttribute('data-idx');
@@ -1114,7 +1114,7 @@ function renderEditCalculator(calc) {
       const idx = inp.getAttribute('data-idx');
       const oidx = inp.getAttribute('data-oidx');
       if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
-        fields[idx].options[oidx].value = inp.value;
+        fields[idx].options[oidx].value = parseFloat(inp.value) * fields[idx].weight / 100;
       }
     });
     // Validate
