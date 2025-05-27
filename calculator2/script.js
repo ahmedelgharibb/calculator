@@ -1044,6 +1044,8 @@ function renderEditCalculator(calc) {
       <form id="editCalcForm">
         <label class="glass-label">Title</label>
         <input type="text" id="editCalcTitle" class="glass-input" maxlength="32" value="${title}" required style="margin-bottom:1.2rem;" />
+        <label class="glass-label">Purpose</label>
+        <input type="text" id="editCalcPurpose" class="glass-input" maxlength="80" value="${calc.purpose || ''}" required style="margin-bottom:1.2rem;" />
         <div id="editFieldsList">
           ${fields.map((f, i) => `
             <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
@@ -1199,6 +1201,7 @@ function renderEditCalculator(calc) {
     const idx = calculators.findIndex(c => c.id === calc.id);
     if (idx !== -1) {
       calculators[idx].title = document.getElementById('editCalcTitle').value.trim();
+      calculators[idx].purpose = document.getElementById('editCalcPurpose').value.trim();
       calculators[idx].fields = fields.map(f => ({
         ...f,
         weight: parseInt(f.weight, 10),
