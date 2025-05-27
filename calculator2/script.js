@@ -1060,7 +1060,6 @@ function renderEditCalculator(calc) {
                   <div class="flex gap-2 items-center mb-2">
                     <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
                     <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" max="${f.weight}" />
-                    <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
                   </div>
                 `).join('')}
               </div>
@@ -1139,14 +1138,6 @@ function renderEditCalculator(calc) {
       labelInput.value = '';
       valueInput.value = '';
       setTimeout(() => labelInput.focus(), 10);
-      renderEditCalculator({ ...calc, fields });
-    };
-  });
-  document.querySelectorAll('.remove-option-btn').forEach(btn => {
-    btn.onclick = (e) => {
-      const idx = btn.getAttribute('data-idx');
-      const oidx = btn.getAttribute('data-oidx');
-      fields[idx].options.splice(oidx, 1);
       renderEditCalculator({ ...calc, fields });
     };
   });
