@@ -245,10 +245,9 @@ function renderStep3() {
       const labels = (calculator.fields[idx].options || []).map(opt => opt.label.trim());
       let hasError = false;
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
-      if (!percent || isNaN(percent)) { percentInput.classList.add('border-red-400'); hasError = true; }
+      if (percent === '' || isNaN(percent)) { percentInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
       percent = Math.max(0, Math.min(100, parseFloat(percent)));
-      // Calculate points
       const weight = calculator.fields[idx].weight;
       const points = Math.round((percent / 100) * weight * 100) / 100;
       if (hasError) return;
@@ -1040,10 +1039,9 @@ function renderEditCalculator(calc) {
       const labels = (fields[idx].options || []).map(opt => opt.label.trim());
       let hasError = false;
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
-      if (!percent || isNaN(percent)) { percentInput.classList.add('border-red-400'); hasError = true; }
+      if (percent === '' || isNaN(percent)) { percentInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
       percent = Math.max(0, Math.min(100, parseFloat(percent)));
-      // Calculate points
       const weight = fields[idx].weight;
       const points = Math.round((percent / 100) * weight * 100) / 100;
       if (hasError) return;
