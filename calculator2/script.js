@@ -931,74 +931,20 @@ function setActiveNav(hash) {
   });
 }
 
-// Add modal logic at the end of the file
-function showDeleteModal(onConfirm) {
-  // Remove any existing modal
-  const old = document.getElementById('modalOverlay');
-  if (old) old.remove();
-  const overlay = document.createElement('div');
-  overlay.id = 'modalOverlay';
-  overlay.style.position = 'fixed';
-  overlay.style.top = 0;
-  overlay.style.left = 0;
-  overlay.style.width = '100vw';
-  overlay.style.height = '100vh';
-  overlay.style.background = 'rgba(24,24,36,0.72)';
-  overlay.style.zIndex = 9999;
-  overlay.style.display = 'flex';
-  overlay.style.justifyContent = 'center';
-  overlay.style.alignItems = 'center';
-  overlay.innerHTML = `
-    <div style="background:#fff;padding:2.2em 2em 1.5em 2em;border-radius:1.3em;box-shadow:0 8px 40px rgba(24,24,36,0.18);max-width:95vw;width:360px;text-align:center;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:10001;">
-      <div style="font-size:1.18rem;font-weight:700;color:#181824;margin-bottom:1.2em;">Delete Calculator</div>
-      <div style="font-size:1.05rem;color:#232946;margin-bottom:2.1em;">Are you sure you want to delete this calculator? This cannot be undone.</div>
-      <div style="display:flex;gap:1.2em;justify-content:center;">
-        <button id="modalCancelBtn" style="background:#f3f4f6;color:#232946;font-weight:700;padding:0.7em 2.1em;border-radius:0.9em;font-size:1.08rem;border:none;cursor:pointer;">Cancel</button>
-        <button id="modalOkBtn" style="background:#e11d48;color:#fff;font-weight:700;padding:0.7em 2.1em;border-radius:0.9em;font-size:1.08rem;border:none;cursor:pointer;">Delete</button>
-      </div>
-    </div>
+// Add scale-in animation to modal content for all modals
+if (!document.getElementById('modalAnimStyle')) {
+  const style = document.createElement('style');
+  style.id = 'modalAnimStyle';
+  style.innerHTML = `
+    .modern-modal-content, .delete-modal-content {
+      animation: modalPopIn 0.18s cubic-bezier(.4,1.4,.6,1) both;
+    }
+    @keyframes modalPopIn {
+      0% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+      100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    }
   `;
-  document.body.appendChild(overlay);
-  document.getElementById('modalCancelBtn').onclick = () => overlay.remove();
-  document.getElementById('modalOkBtn').onclick = () => {
-    overlay.remove();
-    onConfirm();
-  };
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-  setTimeout(() => { document.getElementById('modalCancelBtn').focus(); }, 50);
-}
-
-// Add modern modal utility if not present
-if (typeof showCustomModal !== 'function') {
-  function showCustomModal(message) {
-    if (document.getElementById('customModal')) return;
-    const modal = document.createElement('div');
-    modal.id = 'customModal';
-    modal.innerHTML = `
-      <div class="modern-modal-overlay"></div>
-      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:10001;min-width:340px;max-width:95vw;">
-        <h2 class="modern-modal-title">Notice</h2>
-        <p class="modern-modal-message">${message}</p>
-        <button class="modern-modal-btn" id="closeModalBtn">OK</button>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    setTimeout(() => {
-      document.querySelector('.modern-modal-content').focus();
-    }, 10);
-    document.getElementById('closeModalBtn').onclick = () => {
-      modal.remove();
-    };
-    modal.querySelector('.modern-modal-overlay').onclick = () => {
-      modal.remove();
-    };
-    document.addEventListener('keydown', function escListener(e) {
-      if (e.key === 'Escape') {
-        modal.remove();
-        document.removeEventListener('keydown', escListener);
-      }
-    });
-  }
+  document.head.appendChild(style);
 }
 
 // Add a function to update all attempts' scores when calculator is edited (local version)
@@ -1245,5 +1191,44 @@ if (typeof showRenameModal !== 'function') {
         document.removeEventListener('keydown', escListener);
       }
     });
+  }
+}
+
+// Add a modern delete modal utility at the end of the file
+if (typeof showDeleteModal !== 'function') {
+  function showDeleteModal(onConfirm) {
+    // Remove any existing modal
+    const old = document.getElementById('modalOverlay');
+    if (old) old.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'modalOverlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.background = 'rgba(24,24,36,0.72)';
+    overlay.style.zIndex = 9999;
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.innerHTML = `
+      <div class="delete-modal-content" style="background:#fff;padding:2.2em 2em 1.5em 2em;border-radius:1.3em;box-shadow:0 8px 40px rgba(24,24,36,0.18);max-width:95vw;width:360px;text-align:center;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:10001;">
+        <div style="font-size:1.18rem;font-weight:700;color:#181824;margin-bottom:1.2em;">Delete Calculator</div>
+        <div style="font-size:1.05rem;color:#232946;margin-bottom:2.1em;">Are you sure you want to delete this calculator? This cannot be undone.</div>
+        <div style="display:flex;gap:1.2em;justify-content:center;">
+          <button id="modalCancelBtn" style="background:#f3f4f6;color:#232946;font-weight:700;padding:0.7em 2.1em;border-radius:0.9em;font-size:1.08rem;border:none;cursor:pointer;">Cancel</button>
+          <button id="modalOkBtn" style="background:#e11d48;color:#fff;font-weight:700;padding:0.7em 2.1em;border-radius:0.9em;font-size:1.08rem;border:none;cursor:pointer;">Delete</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('modalCancelBtn').onclick = () => overlay.remove();
+    document.getElementById('modalOkBtn').onclick = () => {
+      overlay.remove();
+      onConfirm();
+    };
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    setTimeout(() => { document.getElementById('modalCancelBtn').focus(); }, 50);
   }
 } 
