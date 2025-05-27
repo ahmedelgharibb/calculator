@@ -516,6 +516,9 @@ async function showCalculatorInline(id) {
 
   // --- Render previous attempts and New Quiz button ---
   function renderAttemptsList() {
+    // Always fetch latest attempts from localStorage
+    let allAttempts = getQuizAttempts();
+    let attempts = allAttempts.filter(a => a.calculator_id === id);
     // Sorting state
     let sortBy = window._quizSortBy || 'date';
     let sortDir = window._quizSortDir || 'desc';
