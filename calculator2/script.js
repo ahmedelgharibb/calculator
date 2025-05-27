@@ -723,7 +723,29 @@ async function showCalculatorInline(id) {
             const prevAnswers = attempt.answers;
             renderQuizStep(attempt.user_name, prevAnswers, attemptId);
           } else if (action === 'duplicate') {
-            showCustomModal('Duplicate quiz is not implemented yet.');
+            // --- Quiz duplication logic ---
+            let attempts = getQuizAttempts();
+            const attempt = attempts.find(a => a.id === attemptId);
+            if (!attempt) return;
+            // Generate unique name
+            let baseName = attempt.user_name.replace(/\(\d+\)$/, '').trim();
+            let name = baseName;
+            let counter = 1;
+            const names = attempts.map(a => a.user_name);
+            while (names.includes(name)) {
+              name = `${baseName}(${counter})`;
+              counter++;
+            }
+            const newAttempt = {
+              ...attempt,
+              id: generateId(),
+              user_name: name,
+              created_at: new Date().toISOString()
+            };
+            attempts.unshift(newAttempt);
+            saveQuizAttempts(attempts);
+            showCustomModal('Quiz duplicated!');
+            setTimeout(() => renderAttemptsList(), 400);
           } else if (action === 'delete') {
             showDeleteModal(() => {
               let attempts = getQuizAttempts();
@@ -1081,7 +1103,7 @@ function renderEditCalculator(calc) {
       }
       if (hasError) return;
       fields[idx].options = fields[idx].options || [];
-      fields[idx].options.push({ id: generateId(), label, value });
+      fields[idx].options.push({ label, value });
       labelInput.value = '';
       valueInput.value = '';
       setTimeout(() => labelInput.focus(), 10);
