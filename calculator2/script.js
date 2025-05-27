@@ -190,17 +190,22 @@ function renderStep3() {
             <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
               <div class="font-semibold text-base mb-2">${f.name} <span class="text-gray-500">(${f.weight}%)</span></div>
               <div id="optionsList${i}">
-                ${(f.options||[]).map((opt, oi) => `
-                  <div class="flex gap-2 items-center mb-2">
-                    <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-                    <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" max="${f.weight}" />
-                    <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
-                  </div>
-                `).join('')}
+                ${(f.options||[]).map((opt, oi) => {
+                  const percent = f.weight > 0 && !isNaN(opt.value) ? ((parseFloat(opt.value)/f.weight)*100).toFixed(0) : '';
+                  return `
+                    <div class="flex gap-2 items-center mb-2">
+                      <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
+                      <input type="number" value="${percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="%" min="0" max="100" />
+                      <span class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;">${opt.value}/${f.weight}</span>
+                      <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
+                    </div>
+                  `;
+                }).join('')}
               </div>
               <div class="flex gap-2 mt-2">
                 <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1" placeholder="Option label (A, A+, B, etc.)" maxlength="18" />
-                <input type="number" id="optionValueInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="Value" />
+                <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" />
+                <span id="optionPointsPreview${i}" class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;"></span>
                 <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}">+ Add Option</button>
               </div>
             </div>
@@ -213,75 +218,49 @@ function renderStep3() {
       </form>
     </div>
   `;
+  // Live update points preview for add-option row
+  calculator.fields.forEach((f, i) => {
+    const percentInput = document.getElementById(`optionPercentInput${i}`);
+    const pointsPreview = document.getElementById(`optionPointsPreview${i}`);
+    if (percentInput && pointsPreview) {
+      percentInput.addEventListener('input', () => {
+        let percent = parseFloat(percentInput.value);
+        if (isNaN(percent) || percent < 0) percent = 0;
+        if (percent > 100) percent = 100;
+        const points = Math.round((percent / 100) * f.weight * 100) / 100;
+        pointsPreview.textContent = `${points}/${f.weight}`;
+      });
+    }
+  });
+  // Add option logic: store points, not percent
   document.querySelectorAll('.add-option-btn').forEach(btn => {
     btn.onclick = (e) => {
       const idx = btn.getAttribute('data-idx');
       const labelInput = document.getElementById(`optionLabelInput${idx}`);
-      const valueInput = document.getElementById(`optionValueInput${idx}`);
+      const percentInput = document.getElementById(`optionPercentInput${idx}`);
       const label = labelInput.value.trim();
-      let value = valueInput.value.trim();
+      let percent = percentInput.value.trim();
       labelInput.classList.remove('border-red-400');
-      valueInput.classList.remove('border-red-400');
+      percentInput.classList.remove('border-red-400');
       const labels = (calculator.fields[idx].options || []).map(opt => opt.label.trim());
       let hasError = false;
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
-      if (!value || isNaN(value)) { valueInput.classList.add('border-red-400'); hasError = true; }
+      if (!percent || isNaN(percent)) { percentInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
-      // Cap value by field weight
+      percent = Math.max(0, Math.min(100, parseFloat(percent)));
+      // Calculate points
       const weight = calculator.fields[idx].weight;
-      if (weight !== undefined && value && !isNaN(value)) {
-        value = Math.min(parseFloat(value), parseFloat(weight));
-        valueInput.value = value;
-        if (parseFloat(value) > parseFloat(weight)) {
-          valueInput.classList.add('border-red-400');
-          showCustomModal('Option value cannot exceed the field weight (' + weight + ').');
-          hasError = true;
-        }
-      }
+      const points = Math.round((percent / 100) * weight * 100) / 100;
       if (hasError) return;
       calculator.fields[idx].options = calculator.fields[idx].options || [];
-      calculator.fields[idx].options.push({ label, value });
+      calculator.fields[idx].options.push({ label, value: points });
       labelInput.value = '';
-      valueInput.value = '';
+      percentInput.value = '';
+      document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       setTimeout(() => labelInput.focus(), 10);
       updateOptionsList(idx);
     };
   });
-  document.querySelectorAll('.remove-option-btn').forEach(btn => {
-    btn.onclick = (e) => {
-      const idx = btn.getAttribute('data-idx');
-      const oidx = btn.getAttribute('data-oidx');
-      calculator.fields[idx].options.splice(oidx, 1);
-      updateOptionsList(idx);
-    };
-  });
-  function updateOptionsList(idx) {
-    const optionsList = document.getElementById(`optionsList${idx}`);
-    if (!optionsList) return;
-    const weight = parseFloat(calculator.fields[idx].weight) || 0;
-    optionsList.innerHTML = (calculator.fields[idx].options||[]).map((opt, oi) => {
-      let percent = '';
-      if (weight > 0 && !isNaN(opt.value)) {
-        percent = ` <span style='color:#6366f1;font-weight:600;'>(${((parseFloat(opt.value)/weight)*100).toFixed(0)}%)</span>`;
-      }
-      return `
-        <div class="flex gap-2 items-center mb-2">
-          <input type="text" value="${opt.label}" data-idx="${idx}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-          <input type="number" value="${opt.value}" data-idx="${idx}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" max="${weight}" />
-          ${percent}
-          <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${idx}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
-        </div>
-      `;
-    }).join('');
-    // Re-bind remove buttons
-    optionsList.querySelectorAll('.remove-option-btn').forEach(btn => {
-      btn.onclick = (e) => {
-        const oidx = btn.getAttribute('data-oidx');
-        calculator.fields[idx].options.splice(oidx, 1);
-        updateOptionsList(idx);
-      };
-    });
-  }
   document.getElementById('backBtn3').onclick = () => {
     step = 2;
     renderStep2();
@@ -326,15 +305,6 @@ function renderStep3() {
     calculator = { title: '', purpose: '', numFields: 1, fields: [] };
     step = 1;
   };
-  // In renderStep3, update the add-option row to cap value input by field weight
-  document.querySelectorAll('.add-option-btn').forEach(btn => {
-    const idx = btn.getAttribute('data-idx');
-    const valueInput = document.getElementById(`optionValueInput${idx}`);
-    const weight = calculator.fields[idx].weight;
-    if (valueInput && weight) {
-      valueInput.setAttribute('max', weight);
-    }
-  });
 }
 
 // Initial render
@@ -996,10 +966,9 @@ function updateAllAttemptScoresLocal(calc) {
   }, 200);
 }
 
-// --- Refactor renderEditCalculator to use localStorage ---
+// --- Refactor renderEditCalculator to use percent input and live points preview ---
 function renderEditCalculator(calc) {
   const calcDetail = document.getElementById('calcDetail');
-  // Deep copy fields/options for editing
   let fields = JSON.parse(JSON.stringify(calc.fields));
   let title = calc.title;
   calcDetail.innerHTML = `
@@ -1017,16 +986,21 @@ function renderEditCalculator(calc) {
                 <span class="text-gray-500 text-sm ml-1">%</span>
               </div>
               <div id="editOptionsList${i}">
-                ${(f.options||[]).map((opt, oi) => `
-                  <div class="flex gap-2 items-center mb-2">
-                    <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-                    <input type="number" value="${opt.value}" data-idx="${i}" data-oidx="${oi}" class="option-value-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="Value" max="${f.weight}" />
-                  </div>
-                `).join('')}
+                ${(f.options||[]).map((opt, oi) => {
+                  const percent = f.weight > 0 && !isNaN(opt.value) ? ((parseFloat(opt.value)/f.weight)*100).toFixed(0) : '';
+                  return `
+                    <div class="flex gap-2 items-center mb-2">
+                      <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
+                      <input type="number" value="${percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="%" min="0" max="100" />
+                      <span class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;">${opt.value}/${f.weight}</span>
+                    </div>
+                  `;
+                }).join('')}
               </div>
               <div class="flex gap-2 mt-2">
                 <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1" placeholder="Option label (A, A+, B, etc.)" maxlength="18" />
-                <input type="number" id="optionValueInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="Value" />
+                <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" />
+                <span id="optionPointsPreview${i}" class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;"></span>
                 <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}">+ Add Option</button>
               </div>
             </div>
@@ -1039,66 +1013,45 @@ function renderEditCalculator(calc) {
       </form>
     </div>
   `;
-  // Field/option editing logic
-  document.querySelectorAll('.field-name-input').forEach(inp => {
-    inp.oninput = (e) => {
-      const idx = e.target.getAttribute('data-idx');
-      fields[idx].name = e.target.value;
-      inp.classList.remove('border-red-400');
-      const names = fields.map(f => f.name.trim().toLowerCase());
-      if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim().toLowerCase()).length > 1) {
-        inp.classList.add('border-red-400');
-      }
-    };
+  // Live update points preview for add-option row
+  fields.forEach((f, i) => {
+    const percentInput = document.getElementById(`optionPercentInput${i}`);
+    const pointsPreview = document.getElementById(`optionPointsPreview${i}`);
+    if (percentInput && pointsPreview) {
+      percentInput.addEventListener('input', () => {
+        let percent = parseFloat(percentInput.value);
+        if (isNaN(percent) || percent < 0) percent = 0;
+        if (percent > 100) percent = 100;
+        const points = Math.round((percent / 100) * f.weight * 100) / 100;
+        pointsPreview.textContent = `${points}/${f.weight}`;
+      });
+    }
   });
-  document.querySelectorAll('.field-weight-input').forEach(inp => {
-    inp.addEventListener('blur', (e) => {
-      const idx = e.target.getAttribute('data-idx');
-      let val = e.target.value;
-      if (val === '') val = '';
-      else val = Math.max(0, Math.min(100, parseInt(val)));
-      fields[idx].weight = (val === 0) ? '0' : val;
-      renderEditCalculator({ ...calc, fields });
-    });
-    inp.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        inp.blur();
-      }
-    });
-  });
-  // Option add/remove logic
+  // Add option logic: store points, not percent
   document.querySelectorAll('.add-option-btn').forEach(btn => {
     btn.onclick = (e) => {
       const idx = btn.getAttribute('data-idx');
       const labelInput = document.getElementById(`optionLabelInput${idx}`);
-      const valueInput = document.getElementById(`optionValueInput${idx}`);
+      const percentInput = document.getElementById(`optionPercentInput${idx}`);
       const label = labelInput.value.trim();
-      let value = valueInput.value.trim();
+      let percent = percentInput.value.trim();
       labelInput.classList.remove('border-red-400');
-      valueInput.classList.remove('border-red-400');
+      percentInput.classList.remove('border-red-400');
       const labels = (fields[idx].options || []).map(opt => opt.label.trim());
       let hasError = false;
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
-      if (!value || isNaN(value)) { valueInput.classList.add('border-red-400'); hasError = true; }
+      if (!percent || isNaN(percent)) { percentInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
-      // Cap value by field weight
+      percent = Math.max(0, Math.min(100, parseFloat(percent)));
+      // Calculate points
       const weight = fields[idx].weight;
-      if (weight !== undefined && value && !isNaN(value)) {
-        value = Math.min(parseFloat(value), parseFloat(weight));
-        valueInput.value = value;
-        if (parseFloat(value) > parseFloat(weight)) {
-          valueInput.classList.add('border-red-400');
-          showCustomModal('Option value cannot exceed the field weight (' + weight + ').');
-          hasError = true;
-        }
-      }
+      const points = Math.round((percent / 100) * weight * 100) / 100;
       if (hasError) return;
       fields[idx].options = fields[idx].options || [];
-      fields[idx].options.push({ label, value });
+      fields[idx].options.push({ label, value: points });
       labelInput.value = '';
-      valueInput.value = '';
-      setTimeout(() => labelInput.focus(), 10);
+      percentInput.value = '';
+      document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       renderEditCalculator({ ...calc, fields });
     };
   });
@@ -1121,7 +1074,7 @@ function renderEditCalculator(calc) {
         fields[idx].options[oidx].label = inp.value;
       }
     });
-    document.querySelectorAll('.option-value-input').forEach(inp => {
+    document.querySelectorAll('.option-percent-input').forEach(inp => {
       const idx = inp.getAttribute('data-idx');
       const oidx = inp.getAttribute('data-oidx');
       if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
