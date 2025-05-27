@@ -657,6 +657,50 @@ async function showCalculatorInline(id) {
           document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
         }
       });
+      // Quiz row menu actions
+      document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(menu => {
+        menu.querySelectorAll('.options-menu-item').forEach(item => {
+          item.onclick = async (e) => {
+            const action = item.getAttribute('data-action');
+            const attemptId = item.getAttribute('data-id');
+            if (action === 'rename') {
+              const quizNameCell = item.closest('.quiz-attempt-row').querySelector('.quiz-attempt-name');
+              const oldName = quizNameCell ? quizNameCell.textContent : '';
+              showRenameModal({
+                title: 'Rename Quiz',
+                label: 'Enter new quiz name:',
+                initial: oldName,
+                onSave: async (newName) => {
+                  await supabase.from('quiz_attempts').update({ user_name: newName }).eq('id', attemptId);
+                  if (quizNameCell) quizNameCell.textContent = newName;
+                  showCustomModal('Quiz renamed!');
+                }
+              });
+            } else if (action === 'edit') {
+              const { data: attemptData, error: attemptError } = await supabase
+                .from('quiz_attempts')
+                .select('id, user_name, answers')
+                .eq('id', attemptId)
+                .single();
+              if (attemptError || !attemptData) return;
+              const prevAnswers = JSON.parse(attemptData.answers || '[]');
+              renderQuizStep(attemptData.user_name, prevAnswers, attemptId);
+            } else if (action === 'duplicate') {
+              showCustomModal('Duplicate quiz is not implemented yet.');
+            } else if (action === 'delete') {
+              showDeleteModal(async () => {
+                await supabase.from('quiz_attempts').delete().eq('id', attemptId);
+                // Remove row instantly
+                const row = item.closest('.quiz-attempt-row');
+                if (row) row.remove();
+              });
+            }
+            menu.classList.remove('open');
+            const btn = menu.parentElement.querySelector('.options-menu-btn');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+          };
+        });
+      });
     }
 
     // --- Prompt for user name before quiz ---
