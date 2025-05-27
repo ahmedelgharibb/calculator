@@ -1130,7 +1130,7 @@ function renderEditCalculator(calc) {
         const fieldInput = document.querySelector(`.field-name-input[data-idx='${i}']`);
         if (fieldInput) fieldInput.classList.add('border-red-400');
       }
-      if (f.weight === '' || isNaN(f.weight) || f.weight < 0 || f.weight > 100) hasError = true;
+      if (f.weight !== '' && (f.weight < 0 || f.weight > 100)) hasError = true;
       if (!f.options.length) hasError = true;
       (f.options || []).forEach((opt, oi) => {
         if (!opt.label.trim() || isNaN(opt.value)) hasError = true;
