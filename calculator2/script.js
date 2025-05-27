@@ -570,7 +570,6 @@ async function showCalculatorInline(id) {
                   <div class="options-menu" id="optionsMenu${a.id}" role="menu" aria-label="Quiz options">
                     <button class="options-menu-item" data-action="rename" data-id="${a.id}" role="menuitem" tabindex="-1">Rename</button>
                     <button class="options-menu-item" data-action="edit" data-id="${a.id}" role="menuitem" tabindex="-1">Edit</button>
-                    <button class="options-menu-item" data-action="duplicate" data-id="${a.id}" role="menuitem" tabindex="-1">Duplicate</button>
                     <button class="options-menu-item danger" data-action="delete" data-id="${a.id}" role="menuitem" tabindex="-1">Delete</button>
                   </div>
                 </div>
@@ -725,42 +724,6 @@ async function showCalculatorInline(id) {
             if (!attempt) return;
             const prevAnswers = attempt.answers;
             renderQuizStep(attempt.user_name, prevAnswers, attemptId);
-          } else if (action === 'duplicate') {
-            // --- Quiz duplication logic ---
-            let attempts = getQuizAttempts();
-            const attempt = attempts.find(a => a.id === attemptId);
-            if (!attempt) return;
-            // Generate unique name
-            let baseName = attempt.user_name.replace(/\(\d+\)$/, '').trim();
-            let name = baseName;
-            let counter = 1;
-            const names = attempts.map(a => a.user_name);
-            while (names.includes(name)) {
-              name = `${baseName}(${counter})`;
-              counter++;
-            }
-            const newAttempt = {
-              ...attempt,
-              id: generateId(),
-              user_name: name,
-              created_at: new Date().toISOString()
-            };
-            let newAttempts = [newAttempt, ...attempts];
-            saveQuizAttempts(newAttempts);
-            showCustomModal('Quiz duplicated!');
-            renderAttemptsList();
-            setTimeout(() => {
-              const rows = document.querySelectorAll('.quiz-attempt-row');
-              if (rows && rows[0]) {
-                rows[0].style.transition = 'background 0.7s, box-shadow 0.7s';
-                rows[0].style.background = '#fef08a';
-                rows[0].style.boxShadow = '0 0 0 4px #fde68a';
-                setTimeout(() => {
-                  rows[0].style.background = '';
-                  rows[0].style.boxShadow = '';
-                }, 700);
-              }
-            }, 100);
           } else if (action === 'delete') {
             showDeleteModal(() => {
               let attempts = getQuizAttempts();
