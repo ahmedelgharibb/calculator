@@ -1153,6 +1153,29 @@ function renderEditCalculator(calc) {
   document.getElementById('cancelEditBtn').onclick = () => showCalculatorInline(calc.id);
   document.getElementById('editCalcForm').onsubmit = (e) => {
     e.preventDefault();
+    // Before validation, update fields/options from DOM inputs
+    document.querySelectorAll('.field-name-input').forEach(inp => {
+      const idx = inp.getAttribute('data-idx');
+      fields[idx].name = inp.value;
+    });
+    document.querySelectorAll('.field-weight-input').forEach(inp => {
+      const idx = inp.getAttribute('data-idx');
+      fields[idx].weight = inp.value;
+    });
+    document.querySelectorAll('.option-label-input').forEach(inp => {
+      const idx = inp.getAttribute('data-idx');
+      const oidx = inp.getAttribute('data-oidx');
+      if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
+        fields[idx].options[oidx].label = inp.value;
+      }
+    });
+    document.querySelectorAll('.option-value-input').forEach(inp => {
+      const idx = inp.getAttribute('data-idx');
+      const oidx = inp.getAttribute('data-oidx');
+      if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
+        fields[idx].options[oidx].value = inp.value;
+      }
+    });
     // Validate
     let hasError = false;
     fields.forEach((f, i) => {
