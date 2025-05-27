@@ -195,7 +195,7 @@ function renderStep3() {
                   return `
                     <div class="flex gap-2 items-center mb-2">
                       <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-                      <input type="number" value="${f.weight == 0 ? 0 : percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled' : 'required'} />
+                      <input type="number" value="${f.weight == 0 ? 0 : percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled' : 'required'}" />
                       <span class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;">${opt.value}/${f.weight}</span>
                       <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
                     </div>
@@ -260,8 +260,13 @@ function renderStep3() {
       renderStep3();
     };
   });
-  // Make existing options editable
+  // Prevent Enter from submitting form on option label/percent inputs
   calculator.fields.forEach((f, i) => {
+    document.querySelectorAll(`#optionsList${i} .option-label-input, #optionsList${i} .option-percent-input`).forEach(inp => {
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') e.preventDefault();
+      });
+    });
     // Label editing
     document.querySelectorAll(`#optionsList${i} .option-label-input`).forEach((inp, oi) => {
       inp.addEventListener('input', (e) => {
