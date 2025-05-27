@@ -833,6 +833,47 @@ async function showCalculatorInline(id) {
   function renderQuizStep(userName, prevAnswers = [], editAttemptId = null) {
     // Only include fields with options
     const quizFields = calc.fields.filter(f => (f.options && f.options.length > 0));
+    // If editing, show all questions at once
+    if (editAttemptId) {
+      // Render all questions and options in a single form
+      calcDetail.innerHTML = `
+        <div class="quiz-card" style="max-width:520px;margin:40px auto 0 auto;padding:2.5rem 2rem 2rem 2rem;background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(60,72,100,0.10);border:2px solid #e5e7eb;position:relative;">
+          <h2 style="font-size:1.5rem;font-weight:800;color:#181824;margin-bottom:1.5rem;text-align:center;">Edit Quiz Answers</h2>
+          <form id="editQuizForm">
+            <div style="display:flex;flex-direction:column;gap:2.2rem;">
+              ${quizFields.map((field, qIdx) => `
+                <div style="background:#f9fafb;border-radius:1.1em;padding:1.2em 1em 1.2em 1em;border:1.5px solid #e5e7eb;">
+                  <div style="font-size:1.18rem;font-weight:700;color:#232946;margin-bottom:1.1em;">${field.name}</div>
+                  <div style="display:flex;flex-direction:column;gap:0.7em;">
+                    ${field.options.map((opt, oIdx) => `
+                      <label style="display:flex;align-items:center;gap:1rem;padding:0.9rem 1.1rem;border-radius:0.9rem;border:1.5px solid #e5e7eb;background:${prevAnswers[qIdx]==oIdx?'#f3f4f6':'#fff'};cursor:pointer;transition:background 0.18s;">
+                        <input type="radio" name="q${qIdx}" value="${oIdx}" ${prevAnswers[qIdx]==oIdx?'checked':''} style="accent-color:#181824;width:1.2em;height:1.2em;"/>
+                        <span style="font-size:1.08rem;font-weight:500;color:#181824;">${opt.label}</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;margin-top:2.5rem;">
+              <button type="submit" class="glass-btn next-btn" style="min-width:160px;font-size:1.13rem;">Save</button>
+              <button type="button" class="glass-btn" id="cancelEditQuizBtn" style="margin-left:1.2rem;background:#f3f4f6;color:#232946;">Cancel</button>
+            </div>
+          </form>
+        </div>
+      `;
+      document.getElementById('cancelEditQuizBtn').onclick = renderAttemptsList;
+      document.getElementById('editQuizForm').onsubmit = (e) => {
+        e.preventDefault();
+        // Gather answers from all questions
+        const newAnswers = quizFields.map((field, qIdx) => {
+          const selected = document.querySelector(`input[name='q${qIdx}']:checked`);
+          return selected ? parseInt(selected.value) : null;
+        });
+        renderQuizResult(userName, newAnswers, editAttemptId);
+      };
+      return;
+    }
     let currentStep = 0;
     const answers = prevAnswers.length ? [...prevAnswers] : Array(quizFields.length).fill(null);
     const totalSteps = quizFields.length;
