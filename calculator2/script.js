@@ -533,7 +533,6 @@ async function showCalculatorInline(id) {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
           </button>
           <div class="options-menu" id="calcOptionsMenu" role="menu" aria-label="Calculator options">
-            <button class="options-menu-item" data-action="duplicate" role="menuitem" tabindex="-1">Duplicate</button>
             <button class="options-menu-item" data-action="rename" role="menuitem" tabindex="-1">Rename</button>
             <button class="options-menu-item" data-action="edit" role="menuitem" tabindex="-1">Edit</button>
           </div>
@@ -555,7 +554,7 @@ async function showCalculatorInline(id) {
             if (sortBy === 'score') sorted.sort((a, b) => sortDir === 'asc' ? a.score - b.score : b.score - a.score);
             else sorted.sort((a, b) => sortDir === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
             return sorted.map((a, idx) => `
-              <div class="quiz-attempt-row">
+              <div class="quiz-attempt-row" data-id="${a.id}">
                 <div style="display:flex;align-items:center;gap:1.1em;">
                   <span class="serial-num" style="font-size:1.1em;font-weight:700;color:#6366f1;min-width:2.2em;display:inline-block;text-align:right;">${idx+1}</span>
                   <div class="quiz-attempt-info">
@@ -627,81 +626,27 @@ async function showCalculatorInline(id) {
       calcOptionsMenu.querySelectorAll('.options-menu-item').forEach(item => {
         item.onclick = async (e) => {
           const action = item.getAttribute('data-action');
-          if (action === 'duplicate') {
-            let attempts = getQuizAttempts();
-            const attempt = attempts.find(a => a.id === attemptId);
-            if (!attempt) return;
-            // Generate unique name
-            let baseName = attempt.user_name.replace(/\(\d+\)$/, '').trim();
-            let name = baseName;
-            let counter = 1;
-            const names = attempts.map(a => a.user_name);
-            while (names.includes(name)) {
-              name = `${baseName}(${counter})`;
-              counter++;
-            }
-            const newAttempt = {
-              ...attempt,
-              id: generateId(),
-              user_name: name,
-              created_at: new Date().toISOString()
-            };
-            let newAttempts = [newAttempt, ...attempts];
-            saveQuizAttempts(newAttempts);
-            renderAttemptsList();
-            setTimeout(() => {
-              const rows = document.querySelectorAll('.quiz-attempt-row');
-              if (rows && rows[0]) {
-                rows[0].style.transition = 'background 0.7s, box-shadow 0.7s';
-                rows[0].style.background = '#fef08a';
-                rows[0].style.boxShadow = '0 0 0 4px #fde68a';
-                setTimeout(() => {
-                  rows[0].style.background = '';
-                  rows[0].style.boxShadow = '';
-                }, 700);
-              }
-            }, 100);
-          } else if (action === 'rename') {
+          if (action === 'rename') {
             showRenameModal({
-              title: 'Rename Quiz',
-              label: 'Enter new quiz name:',
-              initial: attempt.user_name,
+              title: 'Rename Calculator',
+              label: 'Enter new calculator name:',
+              initial: calc.title,
               onSave: (newName) => {
-                let attempts = getQuizAttempts();
-                const idx = attempts.findIndex(a => a.id === attempt.id);
+                const calculators = getCalculators();
+                const idx = calculators.findIndex(c => c.id === calc.id);
                 if (idx !== -1) {
-                  attempts[idx].user_name = newName;
-                  saveQuizAttempts(attempts);
-                  if (attempt.user_name !== newName) {
-                    const row = document.querySelector(`.quiz-attempt-row[data-id='${attempt.id}']`);
-                    if (row) {
-                      const nameCell = row.querySelector('.quiz-attempt-name');
-                      if (nameCell) nameCell.textContent = newName;
-                    }
-                  }
-                  showCustomModal('Quiz renamed!');
+                  calculators[idx].title = newName;
+                  saveCalculators(calculators);
+                  showCustomModal('Calculator renamed!');
+                  setTimeout(() => showCalculatorInline(calc.id), 500);
                 }
               }
             });
           } else if (action === 'edit') {
-            const attempts = getQuizAttempts();
-            const attempt = attempts.find(a => a.id === attemptId);
-            if (!attempt) return;
-            const prevAnswers = attempt.answers;
-            renderQuizStep(attempt.user_name, prevAnswers, attemptId);
-          } else if (action === 'delete') {
-            showDeleteModal(() => {
-              let attempts = getQuizAttempts();
-              attempts = attempts.filter(a => a.id !== attemptId);
-              saveQuizAttempts(attempts);
-              // Remove row instantly
-              const row = item.closest('.quiz-attempt-row');
-              if (row) row.remove();
-            });
+            renderEditCalculator(calc);
           }
-          menu.classList.remove('open');
-          const btn = menu.parentElement.querySelector('.options-menu-btn');
-          if (btn) btn.setAttribute('aria-expanded', 'false');
+          calcOptionsMenu.classList.remove('open');
+          calcOptionsBtn.setAttribute('aria-expanded', 'false');
         };
       });
     }
@@ -768,6 +713,41 @@ async function showCalculatorInline(id) {
               const row = item.closest('.quiz-attempt-row');
               if (row) row.remove();
             });
+          } else if (action === 'duplicate') {
+            let attempts = getQuizAttempts();
+            const attempt = attempts.find(a => a.id === attemptId);
+            if (!attempt) return;
+            // Generate unique name
+            let baseName = attempt.user_name.replace(/\(\d+\)$/, '').trim();
+            let name = baseName;
+            let counter = 1;
+            const names = attempts.map(a => a.user_name);
+            while (names.includes(name)) {
+              name = `${baseName}(${counter})`;
+              counter++;
+            }
+            const newAttempt = {
+              ...attempt,
+              id: generateId(),
+              user_name: name,
+              created_at: new Date().toISOString()
+            };
+            let newAttempts = [newAttempt, ...attempts];
+            saveQuizAttempts(newAttempts);
+            renderAttemptsList();
+            setTimeout(() => {
+              const rows = document.querySelectorAll('.quiz-attempt-row');
+              if (rows && rows[0]) {
+                rows[0].style.transition = 'background 0.7s, box-shadow 0.7s';
+                rows[0].style.background = '#fef08a';
+                rows[0].style.boxShadow = '0 0 0 4px #fde68a';
+                setTimeout(() => {
+                  rows[0].style.background = '';
+                  rows[0].style.boxShadow = '';
+                }, 700);
+              }
+            }, 100);
+            return;
           }
           menu.classList.remove('open');
           const btn = menu.parentElement.querySelector('.options-menu-btn');
