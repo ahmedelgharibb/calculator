@@ -949,7 +949,7 @@ function showDeleteModal(onConfirm) {
   overlay.style.justifyContent = 'center';
   overlay.style.alignItems = 'center';
   overlay.innerHTML = `
-    <div style="background:#fff;padding:2.2em 2em 1.5em 2em;border-radius:1.3em;box-shadow:0 8px 40px rgba(24,24,36,0.18);max-width:95vw;width:360px;text-align:center;">
+    <div style="background:#fff;padding:2.2em 2em 1.5em 2em;border-radius:1.3em;box-shadow:0 8px 40px rgba(24,24,36,0.18);max-width:95vw;width:360px;text-align:center;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:10001;">
       <div style="font-size:1.18rem;font-weight:700;color:#181824;margin-bottom:1.2em;">Delete Calculator</div>
       <div style="font-size:1.05rem;color:#232946;margin-bottom:2.1em;">Are you sure you want to delete this calculator? This cannot be undone.</div>
       <div style="display:flex;gap:1.2em;justify-content:center;">
@@ -976,7 +976,7 @@ if (typeof showCustomModal !== 'function') {
     modal.id = 'customModal';
     modal.innerHTML = `
       <div class="modern-modal-overlay"></div>
-      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:10001;min-width:340px;max-width:95vw;">
         <h2 class="modern-modal-title">Notice</h2>
         <p class="modern-modal-message">${message}</p>
         <button class="modern-modal-btn" id="closeModalBtn">OK</button>
@@ -1214,7 +1214,7 @@ if (typeof showRenameModal !== 'function') {
     modal.id = 'renameModal';
     modal.innerHTML = `
       <div class="modern-modal-overlay"></div>
-      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1" style="min-width:340px;max-width:95vw;">
+      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:10001;min-width:340px;max-width:95vw;">
         <h2 class="modern-modal-title">${title || 'Rename'}</h2>
         <label for="renameInput" class="modern-modal-message" style="margin-bottom:0.7em;display:block;text-align:left;">${label || 'Enter new name:'}</label>
         <input id="renameInput" class="glass-input" type="text" value="${initial||''}" style="margin-bottom:1.5em;width:100%;font-size:1.1em;" maxlength="64" autocomplete="off" />
