@@ -618,12 +618,51 @@ async function showCalculatorInline(id) {
           item.onclick = async (e) => {
             const action = item.getAttribute('data-action');
             if (action === 'duplicate') {
-              // ... duplicate logic ...
-              document.getElementById('duplicateCalcBtn').onclick();
+              // Duplicate calculator logic
+              let baseName = calc.title + ' (Copy)';
+              let name = baseName;
+              let counter = 1;
+              // Fetch all calculators to ensure unique name
+              const { data: allCalcs } = await supabase.from('calculators').select('title');
+              const titles = (allCalcs || []).map(c => c.title);
+              while (titles.includes(name)) {
+                name = `${baseName} ${counter}`;
+                counter++;
+              }
+              // Insert new calculator
+              const { data: newCalcData, error: newCalcError } = await supabase.from('calculators').insert([{ title: name, purpose: calc.purpose }]).select();
+              if (newCalcError || !newCalcData || !newCalcData[0]) {
+                showCustomModal('Error duplicating calculator.');
+                return;
+              }
+              const newCalcId = newCalcData[0].id;
+              // Duplicate fields and options
+              for (let i = 0; i < (calc.fields || []).length; i++) {
+                const f = calc.fields[i];
+                const { data: newFieldData } = await supabase.from('calculator_fields').insert([{ calculator_id: newCalcId, name: f.name, field_order: i, weight: f.weight }]).select();
+                const newFieldId = newFieldData[0].id;
+                for (let oi = 0; oi < (f.options || []).length; oi++) {
+                  const opt = f.options[oi];
+                  await supabase.from('calculator_options').insert([{ field_id: newFieldId, label: opt.label, value: opt.value, option_order: oi }]);
+                }
+              }
+              showCustomModal('Calculator duplicated!');
+              // Show the new calculator detail after short delay
+              setTimeout(() => showCalculatorInline(newCalcId), 500);
             } else if (action === 'rename') {
-              document.getElementById('renameCalcBtn').onclick();
+              showRenameModal({
+                title: 'Rename Calculator',
+                label: 'Enter new calculator name:',
+                initial: calc.title,
+                onSave: async (newName) => {
+                  await supabase.from('calculators').update({ title: newName }).eq('id', calc.id);
+                  showCustomModal('Calculator renamed!');
+                  // Re-render detail
+                  setTimeout(() => showCalculatorInline(calc.id), 500);
+                }
+              });
             } else if (action === 'edit') {
-              document.getElementById('editCalcBtn').onclick();
+              renderEditCalculator(calc);
             }
             calcOptionsMenu.classList.remove('open');
             calcOptionsBtn.setAttribute('aria-expanded', 'false');
