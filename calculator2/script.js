@@ -918,7 +918,9 @@ async function showCalculatorInline(id) {
   // --- Quiz result and save ---
   function renderQuizResult(userName, answers, editAttemptId = null) {
     let total = 0;
-    calc.fields.forEach((f, i) => {
+    // Only consider fields with options, and map answers accordingly
+    const quizFields = calc.fields.filter(f => (f.options && f.options.length > 0));
+    quizFields.forEach((f, i) => {
       const answerIdx = answers[i];
       if (answerIdx != null && f.options[answerIdx]) {
         const val = parseFloat(f.options[answerIdx].value);
@@ -998,11 +1000,13 @@ if (!document.getElementById('modalAnimStyle')) {
 function updateAllAttemptScoresLocal(calc) {
   let attempts = getQuizAttempts();
   let changedIds = [];
+  // Only consider fields with options for score calculation
+  const quizFields = (calc.fields || []).filter(f => (f.options && f.options.length > 0));
   for (let i = 0; i < attempts.length; i++) {
     const a = attempts[i];
     if (a.calculator_id !== calc.id) continue;
     let total = 0;
-    (calc.fields || []).forEach((f, idx) => {
+    quizFields.forEach((f, idx) => {
       const answerIdx = a.answers[idx];
       if (answerIdx != null && f.options[answerIdx]) {
         const val = parseFloat(f.options[answerIdx].value);
