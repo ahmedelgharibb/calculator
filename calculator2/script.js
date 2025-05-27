@@ -1131,7 +1131,6 @@ function renderEditCalculator(calc) {
         if (fieldInput) fieldInput.classList.add('border-red-400');
       }
       if (f.weight !== '' && (f.weight < 0 || f.weight > 100)) hasError = true;
-      if (!f.options.length) hasError = true;
       (f.options || []).forEach((opt, oi) => {
         if (!opt.label.trim() || isNaN(opt.value)) hasError = true;
       });
