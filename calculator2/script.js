@@ -1238,4 +1238,37 @@ if (typeof showDeleteModal !== 'function') {
     overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
     setTimeout(() => { document.getElementById('modalCancelBtn').focus(); }, 50);
   }
+}
+
+// Add a modern custom modal utility at the end of the file if not defined
+if (typeof showCustomModal !== 'function') {
+  function showCustomModal(message) {
+    if (document.getElementById('customModal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'customModal';
+    modal.innerHTML = `
+      <div class="modern-modal-overlay"></div>
+      <div class="modern-modal-content" role="dialog" aria-modal="true" tabindex="-1">
+        <h2 class="modern-modal-title">Notice</h2>
+        <p class="modern-modal-message">${message}</p>
+        <button class="modern-modal-btn" id="closeModalBtn">OK</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => {
+      document.querySelector('.modern-modal-content').focus();
+    }, 10);
+    document.getElementById('closeModalBtn').onclick = () => {
+      modal.remove();
+    };
+    modal.querySelector('.modern-modal-overlay').onclick = () => {
+      modal.remove();
+    };
+    document.addEventListener('keydown', function escListener(e) {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', escListener);
+      }
+    });
+  }
 } 
