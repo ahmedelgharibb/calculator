@@ -257,7 +257,7 @@ function renderStep3() {
       percentInput.value = '';
       document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       setTimeout(() => labelInput.focus(), 10);
-      updateOptionsList(idx);
+      renderStep3();
     };
   });
   document.getElementById('backBtn3').onclick = () => {
@@ -1050,7 +1050,8 @@ function renderEditCalculator(calc) {
       labelInput.value = '';
       percentInput.value = '';
       document.getElementById(`optionPointsPreview${idx}`).textContent = '';
-      renderEditCalculator({ ...calc, fields });
+      setTimeout(() => labelInput.focus(), 10);
+      renderStep3();
     };
   });
   document.getElementById('cancelEditBtn').onclick = () => showCalculatorInline(calc.id);
