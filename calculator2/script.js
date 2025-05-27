@@ -102,7 +102,7 @@ function renderStep2() {
             <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
               <div class="flex items-center gap-2 mb-3">
                 <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
-                <input type="number" value="${f.weight || ''}" data-idx="${i}" class="field-weight-input w-24 border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-2" min="0" max="100" step="1" required placeholder="Weight %" aria-label="Weight (%)" />
+                <input type="number" value="${f.weight === 0 ? 0 : (f.weight || '')}" data-idx="${i}" class="field-weight-input w-24 border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-2" min="0" max="100" step="1" required placeholder="Weight %" aria-label="Weight (%)" />
                 <span class="text-gray-500 text-sm ml-1">%</span>
               </div>
             </div>
@@ -1020,7 +1020,7 @@ function renderEditCalculator(calc) {
             <div class="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-200 relative">
               <div class="flex items-center gap-2 mb-3">
                 <input type="text" value="${f.name}" data-idx="${i}" class="field-name-input font-semibold text-base border border-gray-200 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" maxlength="24" required placeholder="Field label (e.g. Homework, Quiz)" aria-label="Field label (e.g. Homework, Quiz)" />
-                <input type="number" value="${f.weight || ''}" data-idx="${i}" class="field-weight-input w-24 border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-2" min="0" max="100" step="1" required placeholder="Weight %" aria-label="Weight (%)" />
+                <input type="number" value="${f.weight === 0 ? 0 : (f.weight || '')}" data-idx="${i}" class="field-weight-input w-24 border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-2" min="0" max="100" step="1" required placeholder="Weight %" aria-label="Weight (%)" />
                 <span class="text-gray-500 text-sm ml-1">%</span>
               </div>
               <div id="editOptionsList${i}">
