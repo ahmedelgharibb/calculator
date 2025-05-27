@@ -282,6 +282,15 @@ function renderStep3() {
       });
     });
   });
+  // Attach remove-option-btn handlers after rendering
+  calculator.fields.forEach((f, i) => {
+    document.querySelectorAll(`#optionsList${i} .remove-option-btn`).forEach((btn, oi) => {
+      btn.onclick = (e) => {
+        calculator.fields[i].options.splice(oi, 1);
+        renderStep3();
+      };
+    });
+  });
   // Ensure cancel button always works
   const backBtn3 = document.getElementById('backBtn3');
   if (backBtn3) backBtn3.onclick = () => { step = 2; renderStep2(); };
