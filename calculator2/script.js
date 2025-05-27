@@ -244,6 +244,21 @@ function renderStep3() {
         const idx = inp.getAttribute('data-idx');
         fields[idx].weight = parseFloat(inp.value);
       });
+      // Also update all option label and percent values from DOM
+      document.querySelectorAll('.option-label-input').forEach(inp => {
+        const idx = inp.getAttribute('data-idx');
+        const oidx = inp.getAttribute('data-oidx');
+        if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
+          fields[idx].options[oidx].label = inp.value;
+        }
+      });
+      document.querySelectorAll('.option-percent-input').forEach(inp => {
+        const idx = inp.getAttribute('data-idx');
+        const oidx = inp.getAttribute('data-oidx');
+        if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
+          fields[idx].options[oidx].value = parseFloat(inp.value) * fields[idx].weight / 100;
+        }
+      });
       // Now add the option as before
       const idx = btn.getAttribute('data-idx');
       const labelInput = document.getElementById(`optionLabelInput${idx}`);
@@ -1086,6 +1101,21 @@ function renderEditCalculator(calc) {
       document.querySelectorAll('.field-weight-input').forEach(inp => {
         const idx = inp.getAttribute('data-idx');
         fields[idx].weight = parseFloat(inp.value);
+      });
+      // Also update all option label and percent values from DOM
+      document.querySelectorAll('.option-label-input').forEach(inp => {
+        const idx = inp.getAttribute('data-idx');
+        const oidx = inp.getAttribute('data-oidx');
+        if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
+          fields[idx].options[oidx].label = inp.value;
+        }
+      });
+      document.querySelectorAll('.option-percent-input').forEach(inp => {
+        const idx = inp.getAttribute('data-idx');
+        const oidx = inp.getAttribute('data-oidx');
+        if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
+          fields[idx].options[oidx].value = parseFloat(inp.value) * fields[idx].weight / 100;
+        }
       });
       // Now add the option as before
       const idx = btn.getAttribute('data-idx');
