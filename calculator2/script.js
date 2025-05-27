@@ -195,7 +195,7 @@ function renderStep3() {
                   return `
                     <div class="flex gap-2 items-center mb-2">
                       <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-                      <input type="number" value="${percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="%" min="0" max="100" />
+                      <input type="number" value="${f.weight == 0 ? 0 : percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled' : 'required'} />
                       <span class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;">${opt.value}/${f.weight}</span>
                       <button type="button" class="remove-option-btn text-red-500 text-lg font-bold ml-2" data-idx="${i}" data-oidx="${oi}" aria-label="Remove option">&times;</button>
                     </div>
@@ -204,7 +204,7 @@ function renderStep3() {
               </div>
               <div class="flex gap-2 mt-2">
                 <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1" placeholder="Option label (A, A+, B, etc.)" maxlength="18" />
-                <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" />
+                <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled value="0"' : 'required'} />
                 <span id="optionPointsPreview${i}" class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;"></span>
                 <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}">+ Add Option</button>
               </div>
@@ -1020,7 +1020,7 @@ function renderEditCalculator(calc) {
                   return `
                     <div class="flex gap-2 items-center mb-2">
                       <input type="text" value="${opt.label}" data-idx="${i}" data-oidx="${oi}" class="option-label-input border border-gray-200 rounded-lg px-3 py-2 flex-1" maxlength="18" required placeholder="Option label (A, A+, B, etc.)" />
-                      <input type="number" value="${percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" required placeholder="%" min="0" max="100" />
+                      <input type="number" value="${f.weight == 0 ? 0 : percent}" data-idx="${i}" data-oidx="${oi}" class="option-percent-input border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled' : 'required'} />
                       <span class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;">${opt.value}/${f.weight}</span>
                     </div>
                   `;
@@ -1028,7 +1028,7 @@ function renderEditCalculator(calc) {
               </div>
               <div class="flex gap-2 mt-2">
                 <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1" placeholder="Option label (A, A+, B, etc.)" maxlength="18" />
-                <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" />
+                <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled value="0"' : 'required'} />
                 <span id="optionPointsPreview${i}" class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;"></span>
                 <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}">+ Add Option</button>
               </div>
