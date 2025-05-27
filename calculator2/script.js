@@ -257,7 +257,7 @@ function renderStep3() {
       percentInput.value = '';
       document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       setTimeout(() => labelInput.focus(), 10);
-      renderStep3();
+      renderEditCalculator({ ...calculator, fields: calculator.fields });
     };
   });
   // Prevent Enter from submitting form on option label/percent inputs
@@ -1088,7 +1088,7 @@ function renderEditCalculator(calc) {
       percentInput.value = '';
       document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       setTimeout(() => labelInput.focus(), 10);
-      renderStep3();
+      renderEditCalculator({ ...calc, fields });
     };
   });
   document.getElementById('cancelEditBtn').onclick = () => showCalculatorInline(calc.id);
