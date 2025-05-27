@@ -273,17 +273,36 @@ function renderStep3() {
       alert('Please add at least one valid option for each field.');
       return;
     }
-    // Save logic (same as before)
-    const app = document.getElementById('app');
-    app.innerHTML = `<div class="main-glass" style="padding:3rem 2rem;text-align:center;max-width:480px;margin:60px auto 0 auto;background:#23263a;color:#fff;box-shadow:0 8px 40px rgba(24,24,36,0.13);">
-      <h2 style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:1.5rem;">Calculator Saved!</h2>
-      <p style="font-size:1.15rem;color:#fff;margin-bottom:2.5rem;">Your calculator has been saved. You can access it from <b style='color:#fff;'>Browse Calculators</b>.</p>
-      <button class="glass-btn" style="background:#181824;color:#fff;font-weight:700;font-size:1.2rem;padding:1.1em 2.2em;border-radius:1.2em;box-shadow:0 4px 24px #18182433;transition:background 0.18s;" onclick="window.location.hash='#browse'">Go to Browse Calculators</button>
-    </div>`;
-    // Save to Supabase or backend as before
-    // ...
-    calculator = { title: '', purpose: '', numFields: 1, fields: [] };
-    step = 1;
+    // Save to Supabase
+    try {
+      // Insert calculator
+      const { data: calcData, error: calcError } = await supabase.from('calculators').insert([{ title: calculator.title, purpose: calculator.purpose }]).select();
+      if (calcError || !calcData || !calcData[0]) throw new Error('Failed to save calculator');
+      const calcId = calcData[0].id;
+      // Insert fields and options
+      for (let i = 0; i < calculator.fields.length; i++) {
+        const f = calculator.fields[i];
+        const { data: fieldData, error: fieldError } = await supabase.from('calculator_fields').insert([{ calculator_id: calcId, name: f.name, weight: f.weight, field_order: i }]).select();
+        if (fieldError || !fieldData || !fieldData[0]) throw new Error('Failed to save field');
+        const fieldId = fieldData[0].id;
+        for (let oi = 0; oi < (f.options || []).length; oi++) {
+          const opt = f.options[oi];
+          const { error: optError } = await supabase.from('calculator_options').insert([{ field_id: fieldId, label: opt.label, value: opt.value, option_order: oi }]);
+          if (optError) throw new Error('Failed to save option');
+        }
+      }
+      // Success UI
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="main-glass" style="padding:3rem 2rem;text-align:center;max-width:480px;margin:60px auto 0 auto;background:#23263a;color:#fff;box-shadow:0 8px 40px rgba(24,24,36,0.13);">
+        <h2 style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:1.5rem;">Calculator Saved!</h2>
+        <p style="font-size:1.15rem;color:#fff;margin-bottom:2.5rem;">Your calculator has been saved. You can access it from <b style='color:#fff;'>Browse Calculators</b>.</p>
+        <button class="glass-btn" style="background:#181824;color:#fff;font-weight:700;font-size:1.2rem;padding:1.1em 2.2em;border-radius:1.2em;box-shadow:0 4px 24px #18182433;transition:background 0.18s;" onclick="window.location.hash='#browse'">Go to Browse Calculators</button>
+      </div>`;
+      calculator = { title: '', purpose: '', numFields: 1, fields: [] };
+      step = 1;
+    } catch (err) {
+      showCustomModal('Error saving calculator: ' + (err.message || err));
+    }
   };
   // In renderStep3, update the add-option row to cap value input by field weight
   document.querySelectorAll('.add-option-btn').forEach(btn => {
