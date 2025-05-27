@@ -124,8 +124,8 @@ function renderStep2() {
       const idx = e.target.getAttribute('data-idx');
       calculator.fields[idx].name = e.target.value;
       inp.classList.remove('border-red-400');
-      const names = calculator.fields.map(f => f.name.trim());
-      if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim()).length > 1) {
+      const names = calculator.fields.map(f => f.name.trim().toLowerCase());
+      if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim().toLowerCase()).length > 1) {
         inp.classList.add('border-red-400');
       }
     };
@@ -154,10 +154,11 @@ function renderStep2() {
   document.getElementById('fieldsForm').onsubmit = (e) => {
     e.preventDefault();
     let hasError = false;
+    const names = calculator.fields.map(f => f.name.trim().toLowerCase());
     calculator.fields.forEach((f, i) => {
       const fieldInput = document.querySelector(`.field-name-input[data-idx='${i}']`);
       const weightInput = document.querySelector(`.field-weight-input[data-idx='${i}']`);
-      if (!f.name.trim() || calculator.fields.filter(ff => ff.name.trim() === f.name.trim()).length > 1) {
+      if (!f.name.trim() || names.filter(n => n === f.name.trim().toLowerCase()).length > 1) {
         fieldInput.classList.add('border-red-400');
         hasError = true;
       }
@@ -167,7 +168,7 @@ function renderStep2() {
       }
     });
     if (!calculator.fields.length || hasError || totalWeight !== 100) {
-      alert('Please fill in all fields, avoid duplicates, and ensure total weight is 100%.');
+      showCustomModal('Please fill in all fields, avoid duplicates, and ensure total weight is 100%.');
       return;
     }
     step = 3;
@@ -1084,8 +1085,8 @@ function renderEditCalculator(calc) {
       const idx = e.target.getAttribute('data-idx');
       fields[idx].name = e.target.value;
       inp.classList.remove('border-red-400');
-      const names = fields.map(f => f.name.trim());
-      if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim()).length > 1) {
+      const names = fields.map(f => f.name.trim().toLowerCase());
+      if (!e.target.value.trim() || names.filter(n => n === e.target.value.trim().toLowerCase()).length > 1) {
         inp.classList.add('border-red-400');
       }
     };
@@ -1169,8 +1170,13 @@ function renderEditCalculator(calc) {
     });
     // Validate
     let hasError = false;
+    const names = fields.map(f => f.name.trim().toLowerCase());
     fields.forEach((f, i) => {
-      if (!f.name.trim() || fields.filter(ff => ff.name.trim() === f.name.trim()).length > 1) hasError = true;
+      if (!f.name.trim() || names.filter(n => n === f.name.trim().toLowerCase()).length > 1) {
+        hasError = true;
+        const fieldInput = document.querySelector(`.field-name-input[data-idx='${i}']`);
+        if (fieldInput) fieldInput.classList.add('border-red-400');
+      }
       if (f.weight === '' || isNaN(f.weight) || f.weight < 0 || f.weight > 100) hasError = true;
       if (!f.options.length) hasError = true;
       (f.options || []).forEach((opt, oi) => {
