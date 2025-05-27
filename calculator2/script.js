@@ -257,7 +257,9 @@ function renderStep3() {
       percentInput.value = '';
       document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       setTimeout(() => labelInput.focus(), 10);
-      renderEditCalculator({ ...calculator, fields: calculator.fields });
+      // Deep clone fields to avoid reference issues
+      const newFields = JSON.parse(JSON.stringify(calculator.fields));
+      renderEditCalculator({ ...calculator, fields: newFields });
     };
   });
   // Prevent Enter from submitting form on option label/percent inputs
@@ -1088,7 +1090,9 @@ function renderEditCalculator(calc) {
       percentInput.value = '';
       document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       setTimeout(() => labelInput.focus(), 10);
-      renderEditCalculator({ ...calc, fields });
+      // Deep clone fields to avoid reference issues
+      const newFields = JSON.parse(JSON.stringify(fields));
+      renderEditCalculator({ ...calc, fields: newFields });
     };
   });
   document.getElementById('cancelEditBtn').onclick = () => showCalculatorInline(calc.id);
