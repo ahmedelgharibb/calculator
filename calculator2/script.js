@@ -206,7 +206,7 @@ function renderStep3() {
                 <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1" placeholder="Option label (A, A+, B, etc.)" maxlength="18" />
                 <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled value="0"' : ''} />
                 <span id="optionPointsPreview${i}" class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;"></span>
-                <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}">+ Add Option</button>
+                <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}" style="height:44px;margin-left:8px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:1.08rem;">+ Add Option</button>
               </div>
             </div>
           `).join('')}
@@ -1037,7 +1037,7 @@ function renderEditCalculator(calc) {
                 <input type="text" id="optionLabelInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 flex-1" placeholder="Option label (A, A+, B, etc.)" maxlength="18" />
                 <input type="number" id="optionPercentInput${i}" class="border border-gray-200 rounded-lg px-3 py-2 w-24" placeholder="%" min="0" max="100" ${f.weight == 0 ? 'disabled value="0"' : ''} />
                 <span id="optionPointsPreview${i}" class="text-indigo-600 font-semibold" style="min-width:70px;display:inline-block;"></span>
-                <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}">+ Add Option</button>
+                <button type="button" class="add-option-btn bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl px-4 py-2" data-idx="${i}" style="height:44px;margin-left:8px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:1.08rem;">+ Add Option</button>
               </div>
             </div>
           `).join('')}
