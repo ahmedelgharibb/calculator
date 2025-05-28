@@ -447,7 +447,7 @@ function renderStep3() {
       return;
     }
     // Save locally
-    const calculators = getCalculators();
+    const calculators = await getCalculators();
     const newCalc = {
       id: generateId(),
       title: calculator.title,
