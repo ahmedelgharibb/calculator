@@ -649,7 +649,7 @@ async function showCalculatorInline(id) {
     calcDetail.innerHTML = `<div style='color:#f87171;'>Calculator not found.</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
     return;
   }
-  const attempts = getQuizAttempts().filter(a => a.calculator_id === id);
+  const attempts = (await getQuizAttempts()).filter(a => a.calculator_id === id);
 
   // --- Render previous attempts and New Quiz button ---
   function renderAttemptsList() {
