@@ -990,3 +990,19 @@ footer {
     padding-left: 2px;
   }
 }
+
+/* Center total weight and percentage under label in mobile view */
+.total-weight-mobile-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.2em;
+}
+#totalWeight {
+  display: block;
+  text-align: center;
+  margin-top: 2px;
+  font-size: 1.08em;
+  width: 100%;
+}

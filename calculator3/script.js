@@ -200,7 +200,10 @@ function renderStep2() {
           `).join('')}
         </div>
         <div class="flex items-center justify-between mt-2 mb-4">
-          <div class="text-gray-700 font-semibold">Total Weight: <span id="totalWeight" class="${weightError ? 'text-red-500' : 'text-green-600'}">${totalWeight}%</span></div>
+          <div class="total-weight-mobile-stack">
+            <div class="text-gray-700 font-semibold">Total Weight:</div>
+            <span id="totalWeight" class="${weightError ? 'text-red-500' : 'text-green-600'}">${totalWeight}%</span>
+          </div>
           <span class="text-red-500 text-sm" id="weightError">${weightError}</span>
         </div>
         <div class="flex gap-4 mt-6">
