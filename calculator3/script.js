@@ -679,11 +679,11 @@ async function showCalculatorInline(id) {
             else sorted.sort((a, b) => sortDir === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
             return sorted.map((a, idx) => `
               <div class="quiz-attempt-row" data-id="${a.id}">
-                <span class="serial-num">${idx+1}</span>
-                <div class="quiz-attempt-info">
+                <div class="attempt-header-row" style="display:flex;align-items:center;gap:0.7em;">
+                  <span class="serial-num">${idx+1}</span>
                   <span class="quiz-attempt-name">${a.user_name}</span>
-                  <span class="quiz-attempt-score">Score: ${a.score}</span>
                 </div>
+                <span class="quiz-attempt-score">Score: ${a.score}</span>
                 <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
                 </button>
