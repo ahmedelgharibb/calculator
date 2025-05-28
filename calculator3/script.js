@@ -822,8 +822,8 @@ async function showCalculatorInline(id) {
               title: 'Rename Quiz',
               label: 'Enter new quiz name:',
               initial: oldName,
-              onSave: (newName) => {
-                let attempts = getQuizAttempts();
+              onSave: async (newName) => {
+                let attempts = await getQuizAttempts();
                 const idx = attempts.findIndex(a => a.id === attemptId);
                 if (idx !== -1) {
                   attempts[idx].user_name = newName;
@@ -834,14 +834,14 @@ async function showCalculatorInline(id) {
               }
             });
           } else if (action === 'edit') {
-            const attempts = getQuizAttempts();
+            const attempts = await getQuizAttempts();
             const attempt = attempts.find(a => a.id === attemptId);
             if (!attempt) return;
             const prevAnswers = attempt.answers;
             renderQuizStep(attempt.user_name, prevAnswers, attemptId);
           } else if (action === 'delete') {
-            showDeleteModal(() => {
-              let attempts = getQuizAttempts();
+            showDeleteModal(async () => {
+              let attempts = await getQuizAttempts();
               attempts = attempts.filter(a => a.id !== attemptId);
               saveQuizAttempts(attempts);
               // Remove row instantly
@@ -849,7 +849,7 @@ async function showCalculatorInline(id) {
               if (row) row.remove();
             });
           } else if (action === 'duplicate') {
-            let attempts = getQuizAttempts();
+            let attempts = await getQuizAttempts();
             const attempt = attempts.find(a => a.id === attemptId);
             if (!attempt) return;
             // Generate unique name
