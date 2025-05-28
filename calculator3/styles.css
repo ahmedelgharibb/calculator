@@ -1030,6 +1030,7 @@ footer {
     margin-bottom: 14px !important;
     font-size: 1.09rem !important;
     box-sizing: border-box;
+    text-align: center !important;
   }
   #fieldsForm .field-weight-input {
     max-width: 100% !important;
