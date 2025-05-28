@@ -643,7 +643,7 @@ async function showCalculatorInline(id) {
   calcDetail.style.display = 'block';
   calcDetail.innerHTML = 'Loading...';
   // Fetch calculator and attempts from localStorage
-  const calculators = getCalculators();
+  const calculators = await getCalculators();
   const calc = calculators.find(c => c.id === id);
   if (!calc) {
     calcDetail.innerHTML = `<div style='color:#f87171;'>Calculator not found.</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
