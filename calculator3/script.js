@@ -622,7 +622,7 @@ async function fetchCalculatorsInline() {
           const calcList = document.getElementById('calcList');
           if (calcList) calcList.style.display = 'block';
         }
-        fetchCalculatorsInline();
+        await fetchCalculatorsInline();
       });
     };
   });
@@ -652,9 +652,9 @@ async function showCalculatorInline(id) {
   const attempts = (await getQuizAttempts()).filter(a => a.calculator_id === id);
 
   // --- Render previous attempts and New Quiz button ---
-  function renderAttemptsList() {
+  async function renderAttemptsList() {
     // Always fetch latest attempts from localStorage
-    let allAttempts = getQuizAttempts();
+    let allAttempts = await getQuizAttempts();
     let attempts = allAttempts.filter(a => a.calculator_id === id);
     // Sorting state
     let sortBy = window._quizSortBy || 'date';
@@ -733,13 +733,13 @@ async function showCalculatorInline(id) {
       renderAttemptsList();
     };
     document.getElementById('startQuizBtn').onclick = () => renderNamePrompt();
-    document.getElementById('backBtn').onclick = () => {
+    document.getElementById('backBtn').onclick = async () => {
       calcDetail.style.display = 'none';
       calcList.style.display = 'block';
       // Show search bar again
       const searchBar = document.getElementById('searchBarContainer');
       if (searchBar) searchBar.style.display = 'flex';
-      fetchCalculatorsInline();
+      await fetchCalculatorsInline();
     };
     // Calculator options menu logic
     const calcOptionsBtn = document.getElementById('calcOptionsBtn');
