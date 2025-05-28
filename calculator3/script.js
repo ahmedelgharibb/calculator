@@ -74,63 +74,47 @@ async function processSyncQueue() {
 }
 
 // --- Hybrid CRUD for Calculators ---
-async function getCalculators() {
-  try {
-    const { data, error } = await supabase.from('calculators').select('*');
-    if (error) {
-      console.error('Supabase getCalculators error:', error);
-      throw error;
-    }
-    console.log('Supabase getCalculators success:', data);
-    setLocal('calculators', data || []);
-    return data || [];
-  } catch (err) {
-    console.error('getCalculators fallback to localStorage:', err);
-    return getLocal('calculators', []);
+function getCalculators() {
+  // Always return local data instantly
+  const local = getLocal('calculators', []);
+  // Sync with Supabase in background
+  if (isOnline) {
+    supabase.from('calculators').select('*').then(({ data, error }) => {
+      if (!error && data) setLocal('calculators', data);
+    });
   }
+  return local;
 }
-async function saveCalculators(calcs) {
+function saveCalculators(calcs) {
   setLocal('calculators', calcs);
   if (isOnline) {
-    try {
-      await supabase.from('calculators').upsert(calcs);
-      console.log('Supabase saveCalculators success:', calcs);
-    } catch (err) {
-      console.error('Supabase saveCalculators error:', err);
+    supabase.from('calculators').upsert(calcs).catch(() => {
       syncQueue.push({ type: 'saveCalculators', data: calcs });
       showSyncStatus('offline');
-    }
+    });
   } else {
     syncQueue.push({ type: 'saveCalculators', data: calcs });
     showSyncStatus('offline');
   }
 }
-async function getQuizAttempts() {
-  try {
-    const { data, error } = await supabase.from('quiz_attempts').select('*');
-    if (error) {
-      console.error('Supabase getQuizAttempts error:', error);
-      throw error;
-    }
-    console.log('Supabase getQuizAttempts success:', data);
-    setLocal('quiz_attempts', data || []);
-    return data || [];
-  } catch (err) {
-    console.error('getQuizAttempts fallback to localStorage:', err);
-    return getLocal('quiz_attempts', []);
+function getQuizAttempts() {
+  // Always return local data instantly
+  const local = getLocal('quiz_attempts', []);
+  // Sync with Supabase in background
+  if (isOnline) {
+    supabase.from('quiz_attempts').select('*').then(({ data, error }) => {
+      if (!error && data) setLocal('quiz_attempts', data);
+    });
   }
+  return local;
 }
-async function saveQuizAttempts(attempts) {
+function saveQuizAttempts(attempts) {
   setLocal('quiz_attempts', attempts);
   if (isOnline) {
-    try {
-      await supabase.from('quiz_attempts').upsert(attempts);
-      console.log('Supabase saveQuizAttempts success:', attempts);
-    } catch (err) {
-      console.error('Supabase saveQuizAttempts error:', err);
+    supabase.from('quiz_attempts').upsert(attempts).catch(() => {
       syncQueue.push({ type: 'saveQuizAttempts', data: attempts });
       showSyncStatus('offline');
-    }
+    });
   } else {
     syncQueue.push({ type: 'saveQuizAttempts', data: attempts });
     showSyncStatus('offline');
@@ -447,7 +431,7 @@ function renderStep3() {
       return;
     }
     // Save locally
-    const calculators = await getCalculators();
+    const calculators = getCalculators();
     const newCalc = {
       id: generateId(),
       title: calculator.title,
@@ -562,7 +546,7 @@ async function fetchCalculatorsInline() {
   const calcDetail = document.getElementById('calcDetail');
   calcList.innerHTML = `<div class="loader-container"><div class="loader"></div></div>`;
   calcDetail.style.display = 'none';
-  let calculators = await getCalculators();
+  let calculators = getCalculators();
   // Filter by search query if present
   let filtered = calculators;
   if (window._calcSearchQuery && window._calcSearchQuery.length > 0) {
@@ -641,18 +625,18 @@ async function showCalculatorInline(id) {
   calcDetail.style.display = 'block';
   calcDetail.innerHTML = 'Loading...';
   // Fetch calculator and attempts from localStorage
-  const calculators = await getCalculators();
+  const calculators = getCalculators();
   const calc = calculators.find(c => c.id === id);
   if (!calc) {
     calcDetail.innerHTML = `<div style='color:#f87171;'>Calculator not found.</div><button class='back-btn' onclick='fetchCalculatorsInline()'>Back to List</button>`;
     return;
   }
-  const attempts = (await getQuizAttempts()).filter(a => a.calculator_id === id);
+  const attempts = getQuizAttempts().filter(a => a.calculator_id === id);
 
   // --- Render previous attempts and New Quiz button ---
   async function renderAttemptsList() {
     // Always fetch latest attempts from localStorage
-    let allAttempts = await getQuizAttempts();
+    let allAttempts = getQuizAttempts();
     let attempts = allAttempts.filter(a => a.calculator_id === id);
     // Sorting state
     let sortBy = window._quizSortBy || 'date';
@@ -823,7 +807,7 @@ async function showCalculatorInline(id) {
               label: 'Enter new quiz name:',
               initial: oldName,
               onSave: async (newName) => {
-                let attempts = await getQuizAttempts();
+                let attempts = getQuizAttempts();
                 const idx = attempts.findIndex(a => a.id === attemptId);
                 if (idx !== -1) {
                   attempts[idx].user_name = newName;
@@ -834,14 +818,14 @@ async function showCalculatorInline(id) {
               }
             });
           } else if (action === 'edit') {
-            const attempts = await getQuizAttempts();
+            const attempts = getQuizAttempts();
             const attempt = attempts.find(a => a.id === attemptId);
             if (!attempt) return;
             const prevAnswers = attempt.answers;
             renderQuizStep(attempt.user_name, prevAnswers, attemptId);
           } else if (action === 'delete') {
             showDeleteModal(async () => {
-              let attempts = await getQuizAttempts();
+              let attempts = getQuizAttempts();
               attempts = attempts.filter(a => a.id !== attemptId);
               saveQuizAttempts(attempts);
               // Remove row instantly
@@ -849,14 +833,14 @@ async function showCalculatorInline(id) {
               if (row) row.remove();
             });
           } else if (action === 'duplicate') {
-            let attempts = await getQuizAttempts();
+            let attempts = getQuizAttempts();
             const attempt = attempts.find(a => a.id === attemptId);
             if (!attempt) return;
             // Generate unique name
             let baseName = attempt.user_name.replace(/\(\d+\)$/, '').trim();
             let name = baseName;
             let counter = 1;
-            const names = attempts.map(a => a.user_name);
+            const names = getQuizAttempts().map(a => a.user_name);
             while (names.includes(name)) {
               name = `${baseName}(${counter})`;
               counter++;
@@ -867,7 +851,7 @@ async function showCalculatorInline(id) {
               user_name: name,
               created_at: new Date().toISOString()
             };
-            let newAttempts = [newAttempt, ...attempts];
+            let newAttempts = [newAttempt, ...getQuizAttempts()];
             saveQuizAttempts(newAttempts);
             renderAttemptsList();
             setTimeout(() => {
@@ -1085,7 +1069,7 @@ async function showCalculatorInline(id) {
       }
       userName = name;
     }
-    let quizAttempts = await getQuizAttempts();
+    let quizAttempts = getQuizAttempts();
     if (editAttemptId) {
       // Update existing attempt
       const idx = quizAttempts.findIndex(a => a.id === editAttemptId);
@@ -1109,7 +1093,7 @@ async function showCalculatorInline(id) {
     }
     // Refetch attempts and show list
     attempts.length = 0;
-    attempts.push(...((await getQuizAttempts()).filter(a => a.calculator_id === id)));
+    attempts.push(...(getQuizAttempts().filter(a => a.calculator_id === id)));
     renderAttemptsList();
   }
 
