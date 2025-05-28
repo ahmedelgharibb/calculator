@@ -655,107 +655,66 @@ footer {
   }
 }
 
-/* --- Improved Previous Attempts Card Styles --- */
+/* --- Refined Spacing for Previous Attempts Quiz Cards --- */
 
 .quiz-attempt-row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 24px rgba(60,72,100,0.13);
-  padding: 22px 24px 18px 20px;
   margin-bottom: 18px;
-  border: 1.5px solid #f1f1f3;
-  position: relative;
-  min-height: 90px;
-  width: 100%;
-  transition: box-shadow 0.18s, border 0.18s;
-}
-.quiz-attempt-row:hover {
-  box-shadow: 0 8px 32px rgba(60,72,100,0.18);
-  border: 1.5px solid #6366f1;
+  padding: 20px 18px 16px 18px;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(60,72,100,0.10);
+  min-height: 80px;
+  gap: 0;
 }
 .quiz-attempt-info {
-  display: flex;
-  flex-direction: column;
+  gap: 6px;
+  margin-left: 10px;
+  margin-bottom: 0;
   align-items: flex-start;
-  gap: 4px;
-  flex: 1;
-  margin-left: 12px;
 }
 .quiz-attempt-name {
-  font-size: 1.22rem;
-  font-weight: 900;
-  color: #232946;
-  margin-bottom: 2px;
-  letter-spacing: -0.01em;
+  margin-bottom: 0;
+  margin-top: 2px;
 }
 .quiz-attempt-score {
-  font-size: 1.01rem;
-  color: #6366f1;
-  font-weight: 600;
-  opacity: 0.85;
   margin-top: 0;
 }
 .serial-num {
-  font-size: 1.13em;
-  font-weight: 700;
-  color: #6366f1;
-  min-width: 2.2em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
   margin-right: 0.7em;
+  margin-bottom: 0;
 }
 .options-menu-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: #232946;
-  font-size: 1.7rem;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.18s, box-shadow 0.18s;
-  outline: none;
-  z-index: 2;
-}
-.options-menu-btn:focus, .options-menu-btn:hover {
-  background: #f1f1f3;
-  box-shadow: 0 2px 8px #6366f122;
+  top: 14px;
+  right: 14px;
 }
 @media (max-width: 600px) {
   .quiz-attempt-row {
     flex-direction: column;
-    align-items: stretch;
-    padding: 18px 10px 14px 10px;
-    min-height: 80px;
+    align-items: center;
+    padding: 14px 8px 12px 8px;
+    gap: 0;
+    min-height: 70px;
   }
   .serial-num {
+    margin-bottom: 2px;
     margin-right: 0;
-    margin-bottom: 4px;
-    justify-content: flex-start;
+    align-self: center;
   }
   .quiz-attempt-info {
     align-items: center;
     margin-left: 0;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+    gap: 4px;
+  }
+  .quiz-attempt-name {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+  .quiz-attempt-score {
+    margin-top: 0;
   }
   .options-menu-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 44px;
-    height: 44px;
+    top: 10px;
+    right: 10px;
   }
 }
 
