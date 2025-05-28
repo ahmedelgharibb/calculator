@@ -662,105 +662,56 @@ footer {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background: #f8fafc;
-  border-radius: 22px;
-  box-shadow: 0 6px 28px rgba(60,72,100,0.13);
-  padding: 26px 18px 22px 18px;
-  margin-bottom: 22px;
-  border: 1.5px solid #e5e7eb;
-  min-height: 90px;
+  min-height: 70px;
+  padding: 14px 16px;
+  border: 2px solid #7c7cf8;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: none;
+  margin-bottom: 16px;
   width: 100%;
-  position: relative;
-  transition: box-shadow 0.18s, border 0.18s;
+  gap: 0;
 }
 .quiz-attempt-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  margin: 0 0 0 12px;
-  flex: 1;
+  gap: 0.4em;
 }
 .serial-num {
-  font-size: 1.13em;
+  font-size: 1em;
+  color: #7c7cf8;
   font-weight: 700;
-  color: #6366f1;
-  margin-right: 18px;
-  align-self: flex-start;
+  margin: 0;
 }
 .quiz-attempt-name {
-  font-size: 1.18rem;
   font-weight: 900;
-  color: #232946;
-  margin-bottom: 2px;
-  letter-spacing: -0.01em;
-  text-align: left;
+  font-size: 1.13rem;
+  margin: 0;
 }
 .quiz-attempt-score {
-  font-size: 1.05rem;
-  color: #6366f1;
+  color: #7c7cf8;
   font-weight: 700;
-  opacity: 0.95;
-  margin-top: 0;
-  text-align: left;
+  font-size: 1.01rem;
+  margin: 0;
 }
 .options-menu-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 44px;
-  height: 44px;
+  align-self: center;
+  margin-left: 18px;
+  position: static;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s;
 }
-@media (max-width: 600px) {
-  .quiz-attempt-row {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 90px;
-    padding: 16px 14px;
-    position: relative;
-    border: 2px solid #7c7cf8;
-    border-radius: 18px;
-    background: #fff;
-    box-shadow: none;
-    margin-bottom: 18px;
-    width: 100%;
-    gap: 0;
-  }
-  .attempt-header-row {
-    display: flex;
-    align-items: center;
-    gap: 0.7em;
-    margin-bottom: 4px;
-  }
-  .serial-num {
-    font-size: 1.1em;
-    color: #7c7cf8;
-    font-weight: 700;
-    margin: 0;
-  }
-  .quiz-attempt-name {
-    font-weight: 900;
-    font-size: 1.22rem;
-    margin: 0;
-  }
-  .attempt-bottom-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 0;
-  }
-  .quiz-attempt-score {
-    color: #7c7cf8;
-    font-weight: 700;
-    font-size: 1.08rem;
-    margin: 0;
-  }
-  .options-menu-btn {
-    position: static;
-    margin-left: auto;
-  }
+.options-menu-btn:focus, .options-menu-btn:hover {
+  background: #f1f1f3;
 }
 
 /* Quiz attempts card row redesign */

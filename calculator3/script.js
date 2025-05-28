@@ -679,14 +679,18 @@ async function showCalculatorInline(id) {
             else sorted.sort((a, b) => sortDir === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
             return sorted.map((a, idx) => `
               <div class="quiz-attempt-row" data-id="${a.id}">
-                <div class="attempt-header-row" style="display:flex;align-items:center;gap:0.7em;">
-                  <span class="serial-num">${idx+1}</span>
-                  <span class="quiz-attempt-name">${a.user_name}</span>
+                <div class="quiz-attempt-main" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+                  <div class="quiz-attempt-info" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.5em;">
+                    <div style="display:flex;align-items:center;gap:0.6em;">
+                      <span class="serial-num">${idx+1}</span>
+                      <span class="quiz-attempt-name">${a.user_name}</span>
+                    </div>
+                    <span class="quiz-attempt-score">Score: ${a.score}</span>
+                  </div>
+                  <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}" style="align-self:center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                  </button>
                 </div>
-                <span class="quiz-attempt-score">Score: ${a.score}</span>
-                <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
-                </button>
                 <div class="options-menu" id="optionsMenu${a.id}" role="menu" aria-label="Quiz options">
                   <button class="options-menu-item" data-action="rename" data-id="${a.id}" role="menuitem" tabindex="-1">Rename</button>
                   <button class="options-menu-item" data-action="edit" data-id="${a.id}" role="menuitem" tabindex="-1">Edit</button>
