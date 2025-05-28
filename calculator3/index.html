@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Score Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+  <header class="bg-[#181824] text-white shadow sticky top-0 z-10">
+    <div class="flex items-center h-16 px-6">
+      <a href="#" class="text-2xl font-extrabold tracking-tight mr-8" id="logoHome">ScoreCalc</a>
+      <nav id="mainNav" class="flex gap-6 items-center flex-1">
+        <a href="#" class="hover:bg-[#232946] hover:text-white px-4 py-2 rounded-lg font-semibold transition active">Home</a>
+        <a href="#create" class="hover:bg-[#232946] hover:text-white px-4 py-2 rounded-lg font-semibold transition">Create Calculator</a>
+        <a href="#browse" class="hover:bg-[#232946] hover:text-white px-4 py-2 rounded-lg font-semibold transition">Browse Calculators</a>
+        <a href="#about" class="hover:bg-[#232946] hover:text-white px-4 py-2 rounded-lg font-semibold transition">About</a>
+      </nav>
+      <button id="menuToggle" aria-label="Open menu" class="block md:hidden ml-auto p-2 rounded hover:bg-[#232946] focus:outline-none" style="display:none;">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div id="mobileMenu" class="hidden fixed top-0 left-0 w-full h-full bg-[#232946] bg-opacity-98 z-50 flex-col items-center justify-center">
+      <a href="#" class="text-white text-3xl my-4 mobile-link">Home</a>
+      <a href="#create" class="text-white text-3xl my-4 mobile-link">Create Calculator</a>
+      <a href="#browse" class="text-white text-3xl my-4 mobile-link">Browse Calculators</a>
+      <a href="#about" class="text-white text-3xl my-4 mobile-link">About</a>
+      <button id="closeMobileMenu" aria-label="Close menu" class="mt-8 text-[#232946] bg-white px-8 py-3 rounded-lg text-xl font-bold">Close</button>
+    </div>
+  </header>
+  <div class="flex min-h-screen">
+    <main class="flex-1 px-4 md:px-12 py-10 bg-gray-50 min-h-screen flex flex-col items-stretch">
+      <div class="max-w-3xl w-full mx-auto" id="app"></div>
+    </main>
+  </div>
+  <footer class="bg-[#181824] text-white text-center py-8 text-lg border-t border-gray-200 shadow-inner mt-12">
+    &copy; 2025 ScoreCalc. All rights reserved.
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Responsive mobile menu logic
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const closeMobileMenu = document.getElementById('closeMobileMenu');
+    const mainNav = document.getElementById('mainNav');
+
+    function showMobileMenu() {
+      mobileMenu.classList.remove('hidden');
+      mobileMenu.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+    function hideMobileMenu() {
+      mobileMenu.classList.add('hidden');
+      mobileMenu.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    menuToggle.onclick = showMobileMenu;
+    closeMobileMenu.onclick = hideMobileMenu;
+    mobileMenu.onclick = (e) => {
+      if (e.target.classList.contains('mobile-link')) hideMobileMenu();
+    };
+
+    function handleResizeNav() {
+      if (window.innerWidth <= 900) {
+        mainNav.style.display = 'none';
+        menuToggle.style.display = 'block';
+      } else {
+        mainNav.style.display = 'flex';
+        menuToggle.style.display = 'none';
+        hideMobileMenu();
+      }
+    }
+    window.addEventListener('resize', handleResizeNav);
+    document.addEventListener('DOMContentLoaded', handleResizeNav);
+  </script>
+</body>
+</html>
