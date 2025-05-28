@@ -345,25 +345,25 @@ function renderStep3() {
       // Before adding, update fields from current DOM inputs
       document.querySelectorAll('.field-name-input').forEach(inp => {
         const idx = inp.getAttribute('data-idx');
-        fields[idx].name = inp.value;
+        calculator.fields[idx].name = inp.value;
       });
       document.querySelectorAll('.field-weight-input').forEach(inp => {
         const idx = inp.getAttribute('data-idx');
-        fields[idx].weight = parseFloat(inp.value);
+        calculator.fields[idx].weight = parseFloat(inp.value);
       });
       // Also update all option label and percent values from DOM
       document.querySelectorAll('.option-label-input').forEach(inp => {
         const idx = inp.getAttribute('data-idx');
         const oidx = inp.getAttribute('data-oidx');
-        if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
-          fields[idx].options[oidx].label = inp.value;
+        if (calculator.fields[idx] && calculator.fields[idx].options && calculator.fields[idx].options[oidx]) {
+          calculator.fields[idx].options[oidx].label = inp.value;
         }
       });
       document.querySelectorAll('.option-percent-input').forEach(inp => {
         const idx = inp.getAttribute('data-idx');
         const oidx = inp.getAttribute('data-oidx');
-        if (fields[idx] && fields[idx].options && fields[idx].options[oidx]) {
-          fields[idx].options[oidx].value = parseFloat(inp.value) * fields[idx].weight / 100;
+        if (calculator.fields[idx] && calculator.fields[idx].options && calculator.fields[idx].options[oidx]) {
+          calculator.fields[idx].options[oidx].value = parseFloat(inp.value) * calculator.fields[idx].weight / 100;
         }
       });
       // Now add the option as before
@@ -374,24 +374,22 @@ function renderStep3() {
       let percent = percentInput.value.trim();
       labelInput.classList.remove('border-red-400');
       percentInput.classList.remove('border-red-400');
-      const labels = (fields[idx].options || []).map(opt => opt.label.trim());
+      const labels = (calculator.fields[idx].options || []).map(opt => opt.label.trim());
       let hasError = false;
       if (!label) { labelInput.classList.add('border-red-400'); hasError = true; }
       if (percent === '' || isNaN(percent)) { percentInput.classList.add('border-red-400'); hasError = true; }
       if (labels.includes(label)) { labelInput.classList.add('border-red-400'); hasError = true; }
       percent = Math.max(0, Math.min(100, parseFloat(percent)));
-      const weight = fields[idx].weight;
+      const weight = calculator.fields[idx].weight;
       const points = Math.round((percent / 100) * weight * 100) / 100;
       if (hasError) return;
-      fields[idx].options = fields[idx].options || [];
-      fields[idx].options.push({ label, value: points });
+      calculator.fields[idx].options = calculator.fields[idx].options || [];
+      calculator.fields[idx].options.push({ label, value: points });
       labelInput.value = '';
       percentInput.value = '';
       document.getElementById(`optionPointsPreview${idx}`).textContent = '';
       setTimeout(() => labelInput.focus(), 10);
-      // Deep clone fields to avoid reference issues
-      const newFields = JSON.parse(JSON.stringify(fields));
-      renderEditCalculator({ ...calculator, fields: newFields });
+      renderStep3();
     };
   });
   // Prevent Enter from submitting form on option label/percent inputs
