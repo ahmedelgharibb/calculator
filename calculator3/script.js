@@ -564,7 +564,7 @@ async function fetchCalculatorsInline() {
   const calcDetail = document.getElementById('calcDetail');
   calcList.innerHTML = `<div class="loader-container"><div class="loader"></div></div>`;
   calcDetail.style.display = 'none';
-  let calculators = getCalculators();
+  let calculators = await getCalculators();
   // Filter by search query if present
   let filtered = calculators;
   if (window._calcSearchQuery && window._calcSearchQuery.length > 0) {
