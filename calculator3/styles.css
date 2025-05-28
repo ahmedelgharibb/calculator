@@ -716,14 +716,14 @@ footer {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 140px;
-    padding: 22px 18px;
+    min-height: 90px;
+    padding: 16px 14px;
     position: relative;
     border: 2px solid #7c7cf8;
     border-radius: 18px;
     background: #fff;
     box-shadow: none;
-    margin-bottom: 22px;
+    margin-bottom: 18px;
     width: 100%;
     gap: 0;
   }
@@ -731,7 +731,7 @@ footer {
     display: flex;
     align-items: center;
     gap: 0.7em;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
   .serial-num {
     font-size: 1.1em;
@@ -749,7 +749,7 @@ footer {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-top: auto;
+    margin-top: 0;
   }
   .quiz-attempt-score {
     color: #7c7cf8;
