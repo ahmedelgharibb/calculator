@@ -77,37 +77,63 @@ async function processSyncQueue() {
 async function getCalculators() {
   try {
     const { data, error } = await supabase.from('calculators').select('*');
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase getCalculators error:', error);
+      throw error;
+    }
+    console.log('Supabase getCalculators success:', data);
     setLocal('calculators', data || []);
     return data || [];
-  } catch {
+  } catch (err) {
+    console.error('getCalculators fallback to localStorage:', err);
     return getLocal('calculators', []);
   }
 }
 async function saveCalculators(calcs) {
   setLocal('calculators', calcs);
   if (isOnline) {
-    try { await supabase.from('calculators').upsert(calcs); } catch { syncQueue.push({ type: 'saveCalculators', data: calcs }); showSyncStatus('offline'); }
+    try {
+      await supabase.from('calculators').upsert(calcs);
+      console.log('Supabase saveCalculators success:', calcs);
+    } catch (err) {
+      console.error('Supabase saveCalculators error:', err);
+      syncQueue.push({ type: 'saveCalculators', data: calcs });
+      showSyncStatus('offline');
+    }
   } else {
-    syncQueue.push({ type: 'saveCalculators', data: calcs }); showSyncStatus('offline');
+    syncQueue.push({ type: 'saveCalculators', data: calcs });
+    showSyncStatus('offline');
   }
 }
 async function getQuizAttempts() {
   try {
     const { data, error } = await supabase.from('quiz_attempts').select('*');
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase getQuizAttempts error:', error);
+      throw error;
+    }
+    console.log('Supabase getQuizAttempts success:', data);
     setLocal('quiz_attempts', data || []);
     return data || [];
-  } catch {
+  } catch (err) {
+    console.error('getQuizAttempts fallback to localStorage:', err);
     return getLocal('quiz_attempts', []);
   }
 }
 async function saveQuizAttempts(attempts) {
   setLocal('quiz_attempts', attempts);
   if (isOnline) {
-    try { await supabase.from('quiz_attempts').upsert(attempts); } catch { syncQueue.push({ type: 'saveQuizAttempts', data: attempts }); showSyncStatus('offline'); }
+    try {
+      await supabase.from('quiz_attempts').upsert(attempts);
+      console.log('Supabase saveQuizAttempts success:', attempts);
+    } catch (err) {
+      console.error('Supabase saveQuizAttempts error:', err);
+      syncQueue.push({ type: 'saveQuizAttempts', data: attempts });
+      showSyncStatus('offline');
+    }
   } else {
-    syncQueue.push({ type: 'saveQuizAttempts', data: attempts }); showSyncStatus('offline');
+    syncQueue.push({ type: 'saveQuizAttempts', data: attempts });
+    showSyncStatus('offline');
   }
 }
 
