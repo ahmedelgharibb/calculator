@@ -714,19 +714,23 @@ footer {
 @media (max-width: 600px) {
   .quiz-attempt-row {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     padding: 18px 8px 14px 8px;
     min-height: 80px;
+    position: relative;
   }
   .serial-num {
-    margin-right: 0;
-    margin-bottom: 4px;
-    align-self: flex-start;
+    margin: 0 0 6px 0;
+    align-self: center;
+    text-align: center;
+    width: 100%;
+    font-size: 1.13em;
   }
   .quiz-attempt-info {
     align-items: center;
     margin: 0 0 8px 0;
     gap: 4px;
+    width: 100%;
   }
   .quiz-attempt-name, .quiz-attempt-score {
     text-align: center;
