@@ -775,13 +775,13 @@ async function showCalculatorInline(id) {
       });
     }
     // Quiz row options menu logic
-    document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(btn => {
+    document.querySelectorAll('.quiz-attempt-row .options-menu-btn').forEach(btn => {
       btn.onclick = (e) => {
         e.stopPropagation();
         const id = btn.getAttribute('data-id');
         const menu = document.getElementById(`optionsMenu${id}`);
-        document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
-        document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        document.querySelectorAll('.quiz-attempt-row .options-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+        document.querySelectorAll('.quiz-attempt-row .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
         const expanded = btn.getAttribute('aria-expanded') === 'true';
         if (!expanded) {
           menu.classList.add('open');
@@ -794,12 +794,12 @@ async function showCalculatorInline(id) {
       };
     });
     document.addEventListener('click', function closeQuizMenus(e) {
-      if (!e.target.closest('.quiz-attempt-options')) {
-        document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(m => m.classList.remove('open'));
-        document.querySelectorAll('.quiz-attempt-options .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+      if (!e.target.closest('.quiz-attempt-row')) {
+        document.querySelectorAll('.quiz-attempt-row .options-menu').forEach(m => m.classList.remove('open'));
+        document.querySelectorAll('.quiz-attempt-row .options-menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
       }
     });
-    document.querySelectorAll('.quiz-attempt-options .options-menu').forEach(menu => {
+    document.querySelectorAll('.quiz-attempt-row .options-menu').forEach(menu => {
       menu.querySelectorAll('.options-menu-item').forEach(item => {
         item.onclick = async (e) => {
           const action = item.getAttribute('data-action');
