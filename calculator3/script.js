@@ -684,16 +684,14 @@ async function showCalculatorInline(id) {
                   <span class="quiz-attempt-name">${a.user_name}</span>
                   <span class="quiz-attempt-score">Score: ${a.score}</span>
                 </div>
-                <div class="quiz-attempt-options">
-                  <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
-                  </button>
-                  <div class="options-menu" id="optionsMenu${a.id}" role="menu" aria-label="Quiz options">
-                    <button class="options-menu-item" data-action="rename" data-id="${a.id}" role="menuitem" tabindex="-1">Rename</button>
-                    <button class="options-menu-item" data-action="edit" data-id="${a.id}" role="menuitem" tabindex="-1">Edit</button>
-                    <button class="options-menu-item" data-action="duplicate" data-id="${a.id}" role="menuitem" tabindex="-1">Duplicate</button>
-                    <button class="options-menu-item danger" data-action="delete" data-id="${a.id}" role="menuitem" tabindex="-1">Delete</button>
-                  </div>
+                <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#232946" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                </button>
+                <div class="options-menu" id="optionsMenu${a.id}" role="menu" aria-label="Quiz options">
+                  <button class="options-menu-item" data-action="rename" data-id="${a.id}" role="menuitem" tabindex="-1">Rename</button>
+                  <button class="options-menu-item" data-action="edit" data-id="${a.id}" role="menuitem" tabindex="-1">Edit</button>
+                  <button class="options-menu-item" data-action="duplicate" data-id="${a.id}" role="menuitem" tabindex="-1">Duplicate</button>
+                  <button class="options-menu-item danger" data-action="delete" data-id="${a.id}" role="menuitem" tabindex="-1">Delete</button>
                 </div>
               </div>
             `).join('');
