@@ -849,56 +849,11 @@ footer {
 }
 
 @media (max-width: 600px) {
-  .quiz-attempt-row {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 22px 12px 18px 12px;
-    min-height: 90px;
-    position: relative;
-    margin-bottom: 22px;
-  }
-  .serial-num {
-    order: 1;
-    font-size: 0.98em;
-    color: #a3a3b3;
-    font-weight: 600;
-    margin: 0 0 10px 0;
-    align-self: flex-start;
-    text-align: left;
+  .quiz-attempt-main {
     width: 100%;
-    letter-spacing: 0.01em;
-  }
-  .quiz-attempt-info {
-    order: 2;
-    align-items: flex-start;
-    margin: 0 0 0 0;
-    gap: 0;
-    width: 100%;
-  }
-  .quiz-attempt-name {
-    order: 1;
-    font-size: 1.22rem;
-    font-weight: 900;
-    color: #232946;
-    margin-bottom: 8px;
-    text-align: left;
-    width: 100%;
-    letter-spacing: -0.01em;
-  }
-  .quiz-attempt-score {
-    order: 2;
-    font-size: 1.08rem;
-    color: #6366f1;
-    font-weight: 700;
-    margin-bottom: 6px;
-    text-align: left;
-    width: 100%;
-    display: inline-block;
   }
   .options-menu-btn {
-    top: 14px;
-    right: 14px;
-    z-index: 2;
+    margin-left: auto;
   }
 }
 
