@@ -1016,7 +1016,7 @@ async function showCalculatorInline(id) {
           showStep();
         }
       };
-      document.getElementById('quizForm').onsubmit = (e) => {
+      document.getElementById('quizForm').onsubmit = async (e) => {
         e.preventDefault();
         const selected = document.querySelector('input[name="option"]:checked');
         if (!selected) return;
@@ -1025,7 +1025,7 @@ async function showCalculatorInline(id) {
           currentStep++;
           showStep();
         } else {
-          renderQuizResult(userName, answers, editAttemptId);
+          await renderQuizResult(userName, answers, editAttemptId);
         }
       };
       document.querySelectorAll('input[name="option"]').forEach((input, i) => {
@@ -1064,7 +1064,7 @@ async function showCalculatorInline(id) {
   }
 
   // --- Quiz result and save ---
-  function renderQuizResult(userName, answers, editAttemptId = null) {
+  async function renderQuizResult(userName, answers, editAttemptId = null) {
     let total = 0;
     // Only consider fields with options, and map answers accordingly
     const quizFields = calc.fields.filter(f => (f.options && f.options.length > 0));
@@ -1087,7 +1087,7 @@ async function showCalculatorInline(id) {
       }
       userName = name;
     }
-    let quizAttempts = getQuizAttempts();
+    let quizAttempts = await getQuizAttempts();
     if (editAttemptId) {
       // Update existing attempt
       const idx = quizAttempts.findIndex(a => a.id === editAttemptId);
@@ -1111,7 +1111,7 @@ async function showCalculatorInline(id) {
     }
     // Refetch attempts and show list
     attempts.length = 0;
-    attempts.push(...(getQuizAttempts().filter(a => a.calculator_id === id)));
+    attempts.push(...((await getQuizAttempts()).filter(a => a.calculator_id === id)));
     renderAttemptsList();
   }
 
