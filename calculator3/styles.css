@@ -655,62 +655,72 @@ footer {
   }
 }
 
-/* --- Refined Spacing for Previous Attempts Quiz Cards --- */
+/* --- Visually Distinct Previous Attempts Quiz Cards --- */
 
 .quiz-attempt-row {
-  margin-bottom: 18px;
-  padding: 20px 18px 16px 18px;
-  border-radius: 18px;
-  box-shadow: 0 4px 18px rgba(60,72,100,0.10);
-  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 22px;
+  box-shadow: 0 6px 28px rgba(60,72,100,0.13);
+  padding: 32px 18px 28px 18px;
+  margin-bottom: 26px;
+  border: 1.5px solid #e5e7eb;
+  min-height: 110px;
+  width: 100%;
+  transition: box-shadow 0.18s, border 0.18s;
   gap: 0;
 }
 .quiz-attempt-info {
-  gap: 6px;
-  margin-left: 10px;
-  margin-bottom: 0;
-  align-items: flex-start;
-}
-.quiz-attempt-name {
-  margin-bottom: 0;
-  margin-top: 2px;
-}
-.quiz-attempt-score {
-  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
 }
 .serial-num {
-  margin-right: 0.7em;
-  margin-bottom: 0;
+  font-size: 1.18em;
+  font-weight: 700;
+  color: #6366f1;
+  margin-bottom: 6px;
+  align-self: center;
+}
+.quiz-attempt-name {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #232946;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+.quiz-attempt-score {
+  font-size: 1.08rem;
+  color: #6366f1;
+  font-weight: 700;
+  opacity: 0.95;
+  margin-top: 0;
+  text-align: center;
 }
 .options-menu-btn {
-  top: 14px;
-  right: 14px;
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
 }
 @media (max-width: 600px) {
   .quiz-attempt-row {
-    flex-direction: column;
-    align-items: center;
-    padding: 14px 8px 12px 8px;
-    gap: 0;
-    min-height: 70px;
-  }
-  .serial-num {
-    margin-bottom: 2px;
-    margin-right: 0;
-    align-self: center;
+    padding: 26px 6px 22px 6px;
+    min-height: 90px;
+    margin-bottom: 18px;
   }
   .quiz-attempt-info {
-    align-items: center;
-    margin-left: 0;
+    gap: 8px;
+  }
+  .serial-num {
     margin-bottom: 4px;
-    gap: 4px;
-  }
-  .quiz-attempt-name {
-    margin-bottom: 0;
-    margin-top: 0;
-  }
-  .quiz-attempt-score {
-    margin-top: 0;
   }
   .options-menu-btn {
     top: 10px;
