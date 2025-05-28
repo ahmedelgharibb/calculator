@@ -842,3 +842,131 @@ footer {
 #sortDirBtn:focus, #sortDirBtn:hover {
   background: #f1f1f3;
 }
+
+/* --- Responsive Calculator Creation Form --- */
+
+/* Form container for Configure Fields step */
+#fieldsForm, #optionsForm {
+  width: 90vw;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 501px) {
+  #fieldsForm, #optionsForm {
+    width: 100%;
+    max-width: 500px;
+    padding: 32px 32px;
+  }
+}
+
+/* Input fields */
+#fieldsForm .field-name-input,
+#fieldsForm .field-weight-input,
+#optionsForm .option-label-input,
+#optionsForm .option-percent-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 1.08rem;
+}
+
+#fieldsForm .field-weight-input,
+#optionsForm .option-percent-input {
+  max-width: 120px;
+  display: inline-block;
+}
+
+#fieldsForm .field-name-input {
+  margin-right: 8px;
+}
+
+/* Spacing between input groups */
+#fieldsForm .bg-gray-50,
+#optionsForm .bg-gray-50 {
+  margin-bottom: 20px;
+  padding: 16px 12px;
+}
+
+/* Progress bar and step indicator */
+.step-progress-container {
+  width: 100%;
+  padding: 0 0 8px 0;
+}
+.step-progress-bar {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0.5rem;
+}
+.step-label {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #6366f1;
+  margin-top: 0.2rem;
+  margin-bottom: 0.4rem;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .step-label {
+    font-size: 1.15rem;
+    padding: 0 0.2em;
+  }
+}
+
+/* Back/Next buttons full width on mobile */
+#fieldsForm .glass-btn,
+#fieldsForm .next-btn,
+#fieldsForm #backBtn2,
+#optionsForm .glass-btn,
+#optionsForm .next-btn,
+#optionsForm #backBtn3 {
+  padding: 14px;
+  font-size: 1.08rem;
+  border-radius: 1rem;
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  #fieldsForm .glass-btn,
+  #fieldsForm .next-btn,
+  #fieldsForm #backBtn2,
+  #optionsForm .glass-btn,
+  #optionsForm .next-btn,
+  #optionsForm #backBtn3 {
+    width: 100%;
+    margin-top: 16px;
+    margin-bottom: 0;
+  }
+  #fieldsForm .flex.gap-4,
+  #optionsForm .flex.gap-4 {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+/* General vertical padding for form container */
+#fieldsForm, #optionsForm {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  #fieldsForm, #optionsForm {
+    width: 90vw;
+    max-width: 98vw;
+    padding: 20px 8px;
+  }
+}
+
+@media (max-width: 400px) {
+  #fieldsForm, #optionsForm {
+    padding: 12px 2px;
+  }
+  .step-label {
+    font-size: 1rem;
+  }
+}
