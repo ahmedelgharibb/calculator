@@ -678,13 +678,11 @@ async function showCalculatorInline(id) {
             if (sortBy === 'score') sorted.sort((a, b) => sortDir === 'asc' ? a.score - b.score : b.score - a.score);
             else sorted.sort((a, b) => sortDir === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
             return sorted.map((a, idx) => `
-              <div class="quiz-attempt-row" data-id="${a.id}" style="background:#f9fafb;border-radius:1.3em;padding:1.3em 1.1em 1.3em 1.1em;margin-bottom:1.2em;box-shadow:0 2px 10px rgba(60,72,100,0.08);display:flex;align-items:center;justify-content:space-between;gap:1.1em;min-height:72px;">
-                <div style="display:flex;align-items:center;gap:1.1em;">
-                  <span class="serial-num" style="font-size:1.1em;font-weight:700;color:#6366f1;min-width:2.2em;display:inline-block;text-align:right;">${idx+1}</span>
-                  <div class="quiz-attempt-info">
-                    <span class="quiz-attempt-name">${a.user_name}</span>
-                    <span class="quiz-attempt-score">Score: ${a.score}</span>
-                  </div>
+              <div class="quiz-attempt-row" data-id="${a.id}">
+                <span class="serial-num">${idx+1}</span>
+                <div class="quiz-attempt-info">
+                  <span class="quiz-attempt-name">${a.user_name}</span>
+                  <span class="quiz-attempt-score">Score: ${a.score}</span>
                 </div>
                 <div class="quiz-attempt-options">
                   <button class="options-menu-btn" aria-label="Options" aria-haspopup="true" aria-expanded="false" data-id="${a.id}">
