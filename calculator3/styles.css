@@ -714,7 +714,7 @@ footer {
 @media (max-width: 600px) {
   .quiz-attempt-row {
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     padding: 18px 8px 14px 8px;
     min-height: 80px;
     position: relative;
@@ -725,14 +725,14 @@ footer {
     color: #a3a3b3;
     font-weight: 600;
     margin: 0 0 8px 0;
-    align-self: center;
-    text-align: center;
+    align-self: flex-start;
+    text-align: left;
     width: 100%;
     letter-spacing: 0.01em;
   }
   .quiz-attempt-info {
     order: 2;
-    align-items: center;
+    align-items: flex-start;
     margin: 0 0 8px 0;
     gap: 8px;
     width: 100%;
@@ -743,7 +743,7 @@ footer {
     font-weight: 900;
     color: #232946;
     margin-bottom: 6px;
-    text-align: center;
+    text-align: left;
     width: 100%;
     letter-spacing: -0.01em;
   }
@@ -753,7 +753,7 @@ footer {
     color: #6366f1;
     font-weight: 700;
     margin: 0;
-    text-align: center;
+    text-align: left;
     width: 100%;
     display: inline-block;
   }
