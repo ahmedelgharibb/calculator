@@ -85,13 +85,14 @@ function getCalculators() {
   }
   return local;
 }
-function saveCalculators(calcs) {
+async function saveCalculators(calcs) {
   setLocal('calculators', calcs);
   if (isOnline) {
-    supabase.from('calculators').upsert(calcs).catch(() => {
+    const { error } = await supabase.from('calculators').upsert(calcs);
+    if (error) {
       syncQueue.push({ type: 'saveCalculators', data: calcs });
       showSyncStatus('offline');
-    });
+    }
   } else {
     syncQueue.push({ type: 'saveCalculators', data: calcs });
     showSyncStatus('offline');
@@ -108,13 +109,14 @@ function getQuizAttempts() {
   }
   return local;
 }
-function saveQuizAttempts(attempts) {
+async function saveQuizAttempts(attempts) {
   setLocal('quiz_attempts', attempts);
   if (isOnline) {
-    supabase.from('quiz_attempts').upsert(attempts).catch(() => {
+    const { error } = await supabase.from('quiz_attempts').upsert(attempts);
+    if (error) {
       syncQueue.push({ type: 'saveQuizAttempts', data: attempts });
       showSyncStatus('offline');
-    });
+    }
   } else {
     syncQueue.push({ type: 'saveQuizAttempts', data: attempts });
     showSyncStatus('offline');
